@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en-NG" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO & Meta -->
+  <title>ParkDrop — Simple Package Management for Local Parks</title>
+  <meta name="description" content="ParkDrop helps parcel businesses record packages, notify customers and find packages quickly when it's time for pickup. Free to use.">
+  <link rel="canonical" href="https://example.com/">
+  
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://example.com/">
+  <meta property="og:title" content="ParkDrop — Simple Package Management for Local Parks">
+  <meta property="og:description" content="ParkDrop helps parcel businesses record packages, notify customers and find packages quickly when it's time for pickup. Free to use.">
+  <meta property="og:locale" content="en_NG">
+  
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <meta name="theme-color" content="#2563EB">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  
+  <!-- Preload fonts -->
+  <link rel="preload" href="assets/fonts/Manrope-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
+  
+  <!-- Styles & Scripts -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script src="assets/js/main.js" defer></script>
+  <script>
+    document.documentElement.classList.remove('no-js');
+    document.documentElement.classList.add('js');
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.documentElement.setAttribute('data-reduced-motion', 'true');
+    }
+  </script>
+</head>
+<body>
+  <!-- SVG Sprite -->
+  <svg style="display: none;" aria-hidden="true">
+    <defs>
+      <g id="icon-check" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></g>
+      <g id="icon-message-square" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></g>
+      <g id="icon-search" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></g>
+      <g id="icon-badge-check" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></g>
+      <g id="icon-package-plus" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16h6"></path><path d="M19 13v6"></path><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"></path><path d="m7.5 4.27 9 5.15"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></g>
+      <g id="icon-camera" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></g>
+      <g id="icon-smartphone" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></g>
+      <g id="icon-menu" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></g>
+      <g id="icon-x" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></g>
+      <g id="icon-user" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></g>
+      <g id="icon-history" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></g>
+      <g id="icon-zap" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></g>
+    </defs>
+  </svg>
+
+  <header class="site-header" id="header">
+    <div class="container header-inner">
+      <a href="#main" class="sr-only focus:not-sr-only">Skip to content</a>
+      
+      <a href="/" class="logo" aria-label="ParkDrop home">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" width="32" height="32">
+          <rect x="4" y="12" width="24" height="16" rx="3" fill="#2563EB"/>
+          <path d="M4 15 L16 9 L28 15" fill="#1D4ED8"/>
+          <rect x="13" y="12" width="6" height="16" fill="#1D4ED8" opacity="0.5"/>
+          <circle cx="23" cy="7" r="4" fill="#FFFFFF"/>
+          <circle cx="23" cy="7" r="2" fill="#2563EB"/>
+          <path d="M23 11 L21 14 L23 12.5 L25 14 Z" fill="#FFFFFF"/>
+        </svg>
+        ParkDrop
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="#how-it-works" class="nav-link">How it works</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#why-parkdrop" class="nav-link">Why ParkDrop</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- TODO(owner): APP_URL -->
+        <a href="https://example.com/app" class="btn btn-primary">Use ParkDrop</a>
+        
+        <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+          <svg width="24" height="24" aria-hidden="true"><use href="#icon-menu"/></svg>
+        </button>
+      </div>
+    </div>
+    
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="#how-it-works" class="mobile-nav-link">How it works</a>
+      <a href="#features" class="mobile-nav-link">Features</a>
+      <a href="#why-parkdrop" class="mobile-nav-link">Why ParkDrop</a>
+    </div>
+  </header>
+
+  <main id="main">
+    
+    <!-- 1. Hero -->
+    <section class="section hero bg-white">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <span class="pill-label">Built for local parcel businesses</span>
+          <h1>Receive packages.<br>Find them in seconds.</h1>
+          <p class="hero-desc">ParkDrop helps parcel businesses record packages, notify customers and find every parcel quickly when it's time for pickup.</p>
+          
+          <div class="hero-actions">
+            <a href="https://example.com/app" class="btn btn-primary">Use ParkDrop — It's Free</a>
+            <a href="#how-it-works" class="btn btn-secondary">See how it works</a>
+          </div>
+          
+          <div class="trust-line">
+            <svg class="trust-icon" width="16" height="16" aria-hidden="true"><use href="#icon-check"/></svg>
+            100% free to use. No subscription.
+          </div>
+        </div>
+        
+        <div class="hero-visual">
+          <picture>
+            <source srcset="assets/images/hero-480.webp 480w, assets/images/hero-800.webp 800w, assets/images/hero-1200.webp 1200w" sizes="(max-width: 768px) 100vw, 50vw" type="image/webp">
+            <img src="assets/images/hero-1200.jpg" alt="An attendant at a pickup point in a motor park with parcels and phone" fetchpriority="high" width="1200" height="900" style="background-color: var(--c-blue-pale); background-image: repeating-linear-gradient(45deg, var(--c-blue-pale-strong) 25%, transparent 25%, transparent 75%, var(--c-blue-pale-strong) 75%, var(--c-blue-pale-strong)), repeating-linear-gradient(45deg, var(--c-blue-pale-strong) 25%, transparent 25%, transparent 75%, var(--c-blue-pale-strong) 75%, var(--c-blue-pale-strong)); background-position: 0 0, 10px 10px; background-size: 20px 20px;">
+          </picture>
+          
+          <div class="status-chip hero-chip-1" role="img" aria-label="Mockup: Package saved for Chinedu Okafor with Pickup code 4821">
+            <svg class="trust-icon" width="20" height="20" aria-hidden="true"><use href="#icon-check"/></svg>
+            <div style="display: flex; flex-direction: column;">
+              <span>Package saved</span>
+              <span style="font-weight: 600; color: var(--c-text-secondary); font-size: 13px;">Chinedu Okafor</span>
+              <span style="font-size: 13px; color: var(--c-text-main);">Pickup code <span class="tabular-nums">4821</span></span>
+            </div>
+          </div>
+          
+          <div class="status-chip chip-success hero-chip-2" role="img" aria-label="Mockup: SMS sent">
+            <svg width="18" height="18" aria-hidden="true"><use href="#icon-check"/></svg>
+            SMS sent
+          </div>
+          
+          <div class="status-chip chip-neutral hero-chip-3" role="img" aria-label="Mockup status: Waiting for pickup">
+            <span class="chip-label">Status</span>
+            <span class="chip-value">WAITING FOR PICKUP</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Value strip -->
+    <section class="value-strip bg-white">
+      <div class="container">
+        <div class="value-item">
+          <div class="value-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-zap"/></svg></div>
+          <div class="value-text">Fast to record. Only enter what matters.</div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-search"/></svg></div>
+          <div class="value-text">Easy to find. Search with a name, phone number or pickup code.</div>
+        </div>
+        <div class="value-item">
+          <div class="value-icon"><svg width="24" height="24" aria-hidden="true"><use href="#icon-message-square"/></svg></div>
+          <div class="value-text">Customer gets notified. Send an SMS when their package arrives.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Problem -->
+    <section class="section bg-pale">
+      <div class="container problem-grid">
+        <div class="problem-text">
+          <h2>No more searching through notebooks.</h2>
+          <p>When someone comes to collect a package, finding it should take seconds — not several minutes of searching through old records.</p>
+        </div>
+        
+        <div class="problem-visual">
+          <!-- Messy notebook -->
+          <div class="messy-book">
+            <div class="messy-scribble">
+              <svg viewBox="0 0 200 60" fill="none" stroke="rgba(15,23,42,0.8)" stroke-width="2" stroke-linecap="round">
+                <path d="M10,20 Q40,10 60,30 T120,20 T180,40"></path>
+                <line x1="5" y1="25" x2="190" y2="25" stroke="rgba(220,38,38,0.8)" stroke-width="3"></line>
+              </svg>
+            </div>
+            <div class="messy-scribble">
+              <svg viewBox="0 0 200 60" fill="none" stroke="rgba(15,23,42,0.8)" stroke-width="2" stroke-linecap="round">
+                <path d="M5,15 Q30,40 80,10 T150,30 T190,15"></path>
+                <path d="M40,5 L50,45" stroke="rgba(15,23,42,0.6)"></path>
+                <path d="M140,0 L130,50" stroke="rgba(15,23,42,0.6)"></path>
+              </svg>
+            </div>
+            <div class="messy-scribble">
+              <svg viewBox="0 0 200 60" fill="none" stroke="rgba(15,23,42,0.8)" stroke-width="2" stroke-linecap="round">
+                <path d="M20,30 Q50,5 90,40 T170,20 T200,35"></path>
+              </svg>
+            </div>
+            
+            <div class="messy-annotation ann-1">Who owns this?</div>
+            <div class="messy-annotation ann-2">Has this person paid?</div>
+            <div class="messy-annotation ann-3">When did this arrive?</div>
+          </div>
+          
+          <!-- Clean UI -->
+          <div class="clean-ui">
+            <div class="mock-search-bar" role="img" aria-label="Mock search interface">
+              <svg width="20" height="20" color="#2563EB" aria-hidden="true"><use href="#icon-search"/></svg>
+              <div class="mock-search-input tabular-nums">0803 123 4567</div>
+            </div>
+            <div class="mock-result" role="img" aria-label="Mock search result for Chinedu Okafor, waiting for pickup">
+              <div class="mock-result-header">
+                <div class="mock-name">Chinedu Okafor</div>
+                <div class="mock-status">Waiting for pickup</div>
+              </div>
+              <div class="mock-id">PD-2841</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. How it works -->
+    <section id="how-it-works" class="section bg-white">
+      <div class="container">
+        <div class="steps-header">
+          <span class="pill-label">How ParkDrop works</span>
+          <h2>From arrival to pickup in four simple steps.</h2>
+        </div>
+        
+        <div class="steps-grid">
+          <div class="step-item">
+            <div class="step-icon">
+              <div class="step-number">1</div>
+              <svg width="28" height="28" aria-hidden="true"><use href="#icon-package-plus"/></svg>
+            </div>
+            <div class="step-title">Add the package</div>
+            <p style="font-size: 1rem;">Enter the customer's basic information.</p>
+          </div>
+          
+          <div class="step-item">
+            <div class="step-icon">
+              <div class="step-number">2</div>
+              <svg width="28" height="28" aria-hidden="true"><use href="#icon-message-square"/></svg>
+            </div>
+            <div class="step-title">Customer gets an SMS</div>
+            <p style="font-size: 1rem;">ParkDrop sends their pickup details.</p>
+          </div>
+          
+          <div class="step-item">
+            <div class="step-icon">
+              <div class="step-number">3</div>
+              <svg width="28" height="28" aria-hidden="true"><use href="#icon-search"/></svg>
+            </div>
+            <div class="step-title">Find the package</div>
+            <p style="font-size: 1rem;">Search by name, phone number, package ID or pickup code.</p>
+          </div>
+          
+          <div class="step-item">
+            <div class="step-icon">
+              <div class="step-number">4</div>
+              <svg width="28" height="28" aria-hidden="true"><use href="#icon-badge-check"/></svg>
+            </div>
+            <div class="step-title">Release it</div>
+            <p style="font-size: 1rem;">Confirm everything and mark the package as collected.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Add a package -->
+    <section class="section bg-pale">
+      <div class="container add-package-grid">
+        <div class="add-package-text">
+          <h2>Adding a package should take seconds.</h2>
+          <p>ParkDrop only asks for the information the attendant actually needs. Everything else is handled automatically.</p>
+        </div>
+        
+        <div class="add-package-visual">
+          <div class="phone-mockup" role="img" aria-label="Mock UI showing Add Package form and automated background tasks">
+            <div class="phone-header">
+              <span>Add Package</span>
+            </div>
+            
+            <div class="phone-field">
+              <span class="phone-label">Customer Name</span>
+              <div class="phone-input">Chinedu Okafor</div>
+            </div>
+            
+            <div class="phone-field">
+              <span class="phone-label">Phone Number</span>
+              <div class="phone-input tabular-nums">0803 123 4567</div>
+            </div>
+            
+            <div class="phone-field">
+              <span class="phone-label">Amount (₦)</span>
+              <div class="phone-input tabular-nums">3,500</div>
+            </div>
+            
+            <div class="phone-field">
+              <div class="phone-input phone-input-photo">
+                <svg width="18" height="18" aria-hidden="true"><use href="#icon-camera"/></svg>
+                Add package photo (optional)
+              </div>
+            </div>
+            
+            <div class="phone-btn">Save Package</div>
+          </div>
+          
+          <!-- Checklist connected to phone -->
+          <div class="checklist">
+            <div class="checklist-title">ParkDrop handles these automatically:</div>
+            <ul class="checklist-list">
+              <li><svg width="16" height="16" aria-hidden="true"><use href="#icon-check"/></svg> Date received</li>
+              <li><svg width="16" height="16" aria-hidden="true"><use href="#icon-check"/></svg> Time received</li>
+              <li><svg width="16" height="16" aria-hidden="true"><use href="#icon-check"/></svg> Package ID</li>
+              <li><svg width="16" height="16" aria-hidden="true"><use href="#icon-check"/></svg> Pickup code</li>
+              <li><svg width="16" height="16" aria-hidden="true"><use href="#icon-check"/></svg> Package status</li>
+              <li><svg width="16" height="16" aria-hidden="true"><use href="#icon-check"/></svg> Payment status</li>
+            </ul>
+          </div>
+          
+          <!-- Saved state -->
+          <div class="saved-state" role="img" aria-label="Mock UI showing Package saved confirmation">
+            <div class="saved-header">
+              <svg width="20" height="20" aria-hidden="true"><use href="#icon-check"/></svg>
+              Package saved
+            </div>
+            <div class="saved-details">
+              <div class="tabular-nums" style="font-weight: 700; color: var(--c-text-main);">PD-2841</div>
+              <div class="tabular-nums" style="color: var(--c-text-secondary); border-left: 1px solid var(--c-border); padding-left: 16px;">Pickup code 4821</div>
+            </div>
+            <div style="font-size: 14px;">Customer Chinedu Okafor</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--c-green-text); display: flex; align-items: center; gap: 4px;">
+              SMS Sent <svg width="14" height="14" aria-hidden="true"><use href="#icon-check"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Automatic SMS -->
+    <section class="section bg-white">
+      <div class="container sms-grid">
+        <div class="sms-content">
+          <span class="pill-label">Automatic notification</span>
+          <h2>Save the package. ParkDrop tells the customer.</h2>
+          <p>Once a package is added, the customer can automatically receive the information they need to come and collect it.</p>
+          
+          <ul class="sms-benefits" style="list-style: none; padding: 0;">
+            <li><svg width="20" height="20" aria-hidden="true"><use href="#icon-check"/></svg> Less manual calling</li>
+            <li><svg width="20" height="20" aria-hidden="true"><use href="#icon-check"/></svg> Customer knows where to go</li>
+            <li><svg width="20" height="20" aria-hidden="true"><use href="#icon-check"/></svg> Customer arrives with a pickup code</li>
+          </ul>
+        </div>
+        
+        <div class="sms-visual">
+          <div class="sms-mockup" role="img" aria-label="Mockup showing SMS sent to customer from ParkDrop">
+            <div class="sms-header">ParkDrop • 10:42 AM</div>
+            <div class="sms-bubble">
+              <p>Your package has arrived at Peace Park.</p>
+              <p>Pickup Point: Chima Parcel Services</p>
+              <p>Pickup code: <span class="tabular-nums">4821</span></p>
+              <p>Show this code when collecting your parcel.</p>
+              <p>ParkDrop</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Search and collect -->
+    <section class="section bg-pale">
+      <div class="container" style="text-align: center;">
+        <h2>Customer is here? Find the package immediately.</h2>
+        
+        <div class="search-demo-container" id="search-demo">
+          <div class="demo-search-bar" role="img" aria-label="Interactive mock search interface">
+            <svg width="24" height="24" color="#2563EB" aria-hidden="true"><use href="#icon-search"/></svg>
+            <div class="demo-input tabular-nums" id="demo-input-text" style="text-align: left; color: var(--c-text-secondary);">Search name, phone or pickup code</div>
+          </div>
+          
+          <div class="demo-result" id="demo-result" role="img" aria-label="Mock search result for Chinedu Okafor with package details">
+            <div class="demo-result-header">
+              <div style="text-align: left;">
+                <div class="mock-name" style="font-size: 24px; margin-bottom: 4px;">Chinedu Okafor</div>
+                <div class="tabular-nums" style="color: var(--c-text-secondary);">Package ID: PD-2841 • Code: 4821</div>
+              </div>
+              <div style="text-align: right;">
+                <div class="tabular-nums" style="font-weight: 700; font-size: 20px;">₦3,500</div>
+                <div style="color: var(--c-text-secondary); font-size: 14px;">Today · 10:42 AM</div>
+              </div>
+            </div>
+            
+            <div class="demo-tags">
+              <div class="tag tag-unpaid">Payment Unpaid</div>
+              <div class="tag tag-waiting">Status Waiting for pickup</div>
+            </div>
+            
+            <div class="demo-actions">
+              <div class="demo-btn demo-btn-secondary" style="color: var(--c-text-main);">Mark as Paid</div>
+              <div class="demo-btn demo-btn-primary">Release Package</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. Features, bento -->
+    <section id="features" class="section bg-white">
+      <div class="container">
+        <div class="bento-header">
+          <h2>Everything a pickup point needs. Nothing it doesn't.</h2>
+        </div>
+        
+        <div class="bento-grid">
+          <!-- Row 1 -->
+          <div class="bento-card bento-card-large bento-1">
+            <h3>Find any package quickly</h3>
+            <div class="bento-ui-fragment">
+              <div class="chip-group">
+                <div class="search-chip"><svg width="16" height="16" aria-hidden="true"><use href="#icon-search"/></svg> Name</div>
+                <div class="search-chip"><svg width="16" height="16" aria-hidden="true"><use href="#icon-search"/></svg> Phone number</div>
+                <div class="search-chip"><svg width="16" height="16" aria-hidden="true"><use href="#icon-search"/></svg> Package ID</div>
+                <div class="search-chip"><svg width="16" height="16" aria-hidden="true"><use href="#icon-search"/></svg> Pickup code</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bento-card bento-2">
+            <h3>Automatic SMS</h3>
+            <p>Let customers know when a package arrives.</p>
+            <div class="bento-ui-fragment">
+              <div class="bento-sms">
+                Your package has arrived at Peace Park...
+              </div>
+            </div>
+          </div>
+          
+          <!-- Row 2 -->
+          <div class="bento-card bento-3">
+            <h3>Payment status</h3>
+            <div class="bento-ui-fragment" style="margin-top: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
+                <div class="tag tag-unpaid">Unpaid</div>
+                <div class="tag" style="background-color: #FEF3C7; color: #92400E;">Partly paid</div>
+                <div class="tag tag-paid">Paid</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bento-card bento-4">
+            <h3>Customer records</h3>
+            <p>Returning customer? ParkDrop remembers them.</p>
+            <div class="bento-ui-fragment">
+              <div class="history-item">
+                <div style="display: flex; gap: 8px; align-items: center; font-weight: 600;"><svg width="16" height="16" color="#2563EB" aria-hidden="true"><use href="#icon-user"/></svg> Chinedu Okafor</div>
+                <div class="tabular-nums" style="color: var(--c-text-secondary);">0803 123 4567</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="bento-card bento-5">
+            <h3>Package history</h3>
+            <p>Old packages stay searchable whenever there's a question or a dispute.</p>
+            <div class="bento-ui-fragment">
+              <div class="bento-history">
+                <div class="history-item" style="opacity: 0.6;">
+                  <span class="tabular-nums font-weight: 600;">PD-1042</span>
+                  <span style="color: var(--c-green-text); font-weight: 700;">COLLECTED</span>
+                </div>
+                <div class="history-item" style="opacity: 0.4;">
+                  <span class="tabular-nums font-weight: 600;">PD-0931</span>
+                  <span style="color: var(--c-green-text); font-weight: 700;">COLLECTED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Row 3 -->
+          <div class="bento-card bento-card-large bento-6" style="flex-direction: row; align-items: center; justify-content: space-between; padding: 24px 32px;">
+            <h3 style="margin: 0;">Works on the phone you already have</h3>
+            <svg width="32" height="32" color="#2563EB" aria-hidden="true"><use href="#icon-smartphone"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. Built for the park -->
+    <section id="why-parkdrop" class="section bg-navy">
+      <div class="container navy-grid">
+        <div class="navy-content">
+          <span class="pill-label" style="background-color: rgba(255,255,255,0.1); color: var(--c-white);">Built for how you actually work</span>
+          <h2>Made for busy park businesses.</h2>
+          <p>There isn't always time to fill long forms or search through books. ParkDrop keeps the work simple so you can record the package and get back to what you're doing.</p>
+          
+          <div class="navy-benefits">
+            <div class="navy-benefit">
+              <h3>Less typing</h3>
+              <p>Only record what matters.</p>
+            </div>
+            <div class="navy-benefit">
+              <h3>Less searching</h3>
+              <p>Find packages quickly.</p>
+            </div>
+            <div class="navy-benefit">
+              <h3>Less calling</h3>
+              <p>Customers can be notified automatically.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="navy-visual">
+          <picture>
+            <source srcset="assets/images/handover-480.webp 480w, assets/images/handover-800.webp 800w, assets/images/handover-1200.webp 1200w" sizes="(max-width: 768px) 100vw, 50vw" type="image/webp">
+            <img src="assets/images/handover-1200.jpg" alt="Attendant handing a package to a customer" loading="lazy" decoding="async" width="1200" height="900" style="background-color: var(--c-blue-dark); background-image: repeating-linear-gradient(45deg, #1D4ED8 25%, transparent 25%, transparent 75%, #1D4ED8 75%, #1D4ED8), repeating-linear-gradient(45deg, #1D4ED8 25%, transparent 25%, transparent 75%, #1D4ED8 75%, #1D4ED8); background-position: 0 0, 10px 10px; background-size: 20px 20px;">
+          </picture>
+          
+          <div class="chip-collected" role="img" aria-label="Mockup status: Collected">
+            COLLECTED
+            <svg width="20" height="20" aria-hidden="true"><use href="#icon-check"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. Free -->
+    <section class="section bg-pale">
+      <div class="container free-section">
+        <span class="pill-label">Yes. It's free.</span>
+        <h2>ParkDrop doesn't cost your business anything to use.</h2>
+        <p style="margin-inline: auto; font-size: 1.25rem;">Record packages, search customers, manage pickups and keep your records organised without paying for the software.</p>
+        
+        <div class="free-checks">
+          <div class="free-check"><svg width="24" height="24" aria-hidden="true"><use href="#icon-check"/></svg> No subscription</div>
+          <div class="free-check"><svg width="24" height="24" aria-hidden="true"><use href="#icon-check"/></svg> No pricing plans</div>
+          <div class="free-check"><svg width="24" height="24" aria-hidden="true"><use href="#icon-check"/></svg> No complicated setup</div>
+        </div>
+        
+        <a href="https://example.com/app" class="btn btn-primary" style="padding-inline: 40px;">Use ParkDrop</a>
+      </div>
+    </section>
+
+    <!-- 11. Final CTA -->
+    <section class="section bg-primary">
+      <div class="container cta-grid">
+        <div class="cta-content">
+          <h2>Every package.<br>Easy to record.<br>Easy to find.</h2>
+          <p style="font-size: 1.25rem;">Give your parcel business a simpler way to work with ParkDrop.</p>
+          
+          <div class="cta-actions">
+            <a href="https://example.com/app" class="btn btn-secondary" style="border: none;">Use ParkDrop — It's Free</a>
+            <a href="#how-it-works" class="btn btn-outline">See how it works</a>
+          </div>
+          
+          <div class="cta-trust">
+            <svg width="16" height="16" aria-hidden="true" style="display: inline; vertical-align: middle; margin-right: 4px; color: #fff;"><use href="#icon-check"/></svg>
+            100% free to use.
+          </div>
+        </div>
+        
+        <div class="cta-visual">
+          <div class="mini-phone" role="img" aria-label="Mock UI showing Package saved confirmation">
+            <div class="saved-header" style="margin-bottom: 12px;">
+              <svg width="20" height="20" aria-hidden="true"><use href="#icon-check"/></svg>
+              Package saved
+            </div>
+            <div class="saved-details" style="margin-bottom: 12px;">
+              <div class="tabular-nums" style="font-weight: 700; color: var(--c-text-main);">PD-2841</div>
+              <div class="tabular-nums" style="color: var(--c-text-secondary); border-left: 1px solid var(--c-border); padding-left: 16px;">Code 4821</div>
+            </div>
+            <div style="font-size: 14px; margin-bottom: 8px;">Chinedu Okafor</div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--c-green-text); display: flex; align-items: center; gap: 4px;">
+              SMS Sent <svg width="14" height="14" aria-hidden="true"><use href="#icon-check"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="logo" aria-label="ParkDrop home">
+          <svg viewBox="0 0 32 32" fill="none" aria-hidden="true" width="24" height="24">
+            <rect x="4" y="12" width="24" height="16" rx="3" fill="#2563EB"/>
+            <path d="M4 15 L16 9 L28 15" fill="#1D4ED8"/>
+            <rect x="13" y="12" width="6" height="16" fill="#1D4ED8" opacity="0.5"/>
+            <circle cx="23" cy="7" r="4" fill="#FFFFFF"/>
+            <circle cx="23" cy="7" r="2" fill="#2563EB"/>
+            <path d="M23 11 L21 14 L23 12.5 L25 14 Z" fill="#FFFFFF"/>
+          </svg>
+          ParkDrop
+        </a>
+        <p style="font-size: 14px; margin-top: 16px; max-width: 300px;">Simple package management for local park businesses.</p>
+      </div>
+      
+      <div class="footer-links-col">
+        <h4>Product</h4>
+        <ul class="footer-links">
+          <li><a href="#how-it-works">How it works</a></li>
+          <li><a href="#features">Features</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-links-col">
+        <h4>Legal & Support</h4>
+        <ul class="footer-links">
+          <!-- TODO(owner): WhatsApp URL -->
+          <li><a href="https://wa.me/234XXXXXXXXXX">Contact</a></li>
+          <li><a href="privacy.html">Privacy</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="footer-bottom">
+        <div>&copy; 2026 ParkDrop</div>
+        <div>Made to make parcel pickup simpler.</div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
