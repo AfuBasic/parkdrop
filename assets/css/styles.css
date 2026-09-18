@@ -372,7 +372,7 @@ button {
 .hero {
   position: relative;
   overflow: hidden;
-  min-height: 740px;
+  padding-block: 80px 60px;
   background-color: #F8FBFF !important;
   background-image: 
     radial-gradient(circle at 25% 35%, rgba(37, 99, 235, 0.10), transparent 38%),
@@ -389,8 +389,8 @@ button {
   background-image: 
     linear-gradient(to right, rgba(37, 99, 235, 0.08) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(37, 99, 235, 0.08) 1px, transparent 1px);
-  mask-image: radial-gradient(circle at 80% 50%, black, transparent 65%);
-  -webkit-mask-image: radial-gradient(circle at 80% 50%, black, transparent 65%);
+  mask-image: radial-gradient(circle at 85% 50%, black, transparent 75%);
+  -webkit-mask-image: radial-gradient(circle at 85% 50%, black, transparent 75%);
   z-index: 1;
   pointer-events: none;
 }
@@ -561,7 +561,7 @@ button {
   background-color: var(--c-white);
   border-radius: 14px;
   padding: 14px 18px;
-  box-shadow: 0 10px 30px rgba(15,23,42,0.10);
+  box-shadow: 0 8px 24px rgba(15,23,42,0.06);
   border: 1px solid rgba(226,232,240,0.9);
   display: flex;
   align-items: center;
@@ -641,7 +641,7 @@ button {
 }
 .hero-chip-3 {
   bottom: 120px;
-  right: -30px;
+  right: 16px;
   flex-direction: column;
   align-items: flex-start;
   gap: 0;
@@ -675,7 +675,7 @@ button {
 .value-strip .container {
   display: grid;
   gap: 32px;
-  padding-block: 48px;
+  padding-block: 32px;
 }
 
 @media (min-width: 768px) {
@@ -692,10 +692,8 @@ button {
 }
 
 .value-icon {
-  width: 48px;
-  height: 48px;
-  background-color: var(--c-blue-pale);
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1410,23 +1408,22 @@ html[data-reduced-motion="true"] .demo-result {
 
 /* Free Section */
 .free-section {
-  text-align: center;
+  text-align: left;
   max-width: 800px;
-  margin-inline: auto;
 }
 
 .free-checks {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  align-items: center;
+  align-items: flex-start;
   margin-block: 48px;
 }
 
 @media (min-width: 768px) {
   .free-checks {
     flex-direction: row;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 32px;
   }
 }
