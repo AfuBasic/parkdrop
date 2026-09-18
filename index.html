@@ -5,22 +5,105 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- SEO & Meta -->
-  <title>ParkDrop — Simple Package Management for Local Parks</title>
-  <meta name="description" content="ParkDrop helps parcel businesses record packages, notify customers and find packages quickly when it's time for pickup. Free to use.">
-  <link rel="canonical" href="https://example.com/">
-  
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://example.com/">
-  <meta property="og:title" content="ParkDrop — Simple Package Management for Local Parks">
-  <meta property="og:description" content="ParkDrop helps parcel businesses record packages, notify customers and find packages quickly when it's time for pickup. Free to use.">
-  <meta property="og:locale" content="en_NG">
-  
-  <meta name="twitter:card" content="summary_large_image">
-  
+  <title>ParkDrop — Free Parcel Management for Local Park Businesses</title>
+  <meta name="description" content="ParkDrop is a free parcel management app for local park businesses. Record packages, notify customers by SMS, track payment status and find parcels quickly at pickup.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://parkdrop.com.ng/">
   <meta name="theme-color" content="#2563EB">
   
-  <!-- Favicon -->
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ParkDrop">
+  <meta property="og:title" content="ParkDrop — Free Parcel Management for Local Park Businesses">
+  <meta property="og:description" content="Record packages, notify customers and find parcels quickly with ParkDrop. Simple parcel management built for local park businesses — completely free.">
+  <meta property="og:url" content="https://parkdrop.com.ng/">
+  <meta property="og:image" content="https://parkdrop.com.ng/assets/images/parkdrop-og.jpg">
+  <meta property="og:image:secure_url" content="https://parkdrop.com.ng/assets/images/parkdrop-og.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ParkDrop parcel management application">
+  <meta property="og:locale" content="en_NG">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ParkDrop — Free Parcel Management for Local Park Businesses">
+  <meta name="twitter:description" content="Record packages, notify customers and find parcels quickly with ParkDrop.">
+  <meta name="twitter:image" content="https://parkdrop.com.ng/assets/images/parkdrop-og.jpg">
+  <meta name="twitter:image:alt" content="ParkDrop parcel management application">
+  
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  
+  <!-- Structured Data JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://parkdrop.com.ng/#organization",
+        "name": "ParkDrop",
+        "url": "https://parkdrop.com.ng/",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://parkdrop.com.ng/assets/images/parkdrop-logo.png"
+        },
+        "description": "ParkDrop provides free parcel management software for local park businesses."
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://parkdrop.com.ng/#website",
+        "url": "https://parkdrop.com.ng/",
+        "name": "ParkDrop",
+        "description": "Free parcel management for local park businesses.",
+        "publisher": {
+          "@id": "https://parkdrop.com.ng/#organization"
+        },
+        "inLanguage": "en-NG"
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://parkdrop.com.ng/#webpage",
+        "url": "https://parkdrop.com.ng/",
+        "name": "ParkDrop — Free Parcel Management for Local Park Businesses",
+        "description": "ParkDrop helps local park businesses record packages, notify customers, track payment status and manage parcel pickup.",
+        "isPartOf": {
+          "@id": "https://parkdrop.com.ng/#website"
+        },
+        "about": {
+          "@id": "https://parkdrop.com.ng/#software"
+        },
+        "inLanguage": "en-NG"
+      },
+      {
+        "@type": [
+          "SoftwareApplication",
+          "WebApplication"
+        ],
+        "@id": "https://parkdrop.com.ng/#software",
+        "name": "ParkDrop",
+        "url": "https://parkdrop.com.ng/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "ParkDrop is a free parcel management application that helps local park businesses record packages, notify customers by SMS, track payment status and manage parcel pickup.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "NGN"
+        },
+        "publisher": {
+          "@id": "https://parkdrop.com.ng/#organization"
+        }
+      }
+    ]
+  }
+  </script>
   
   <!-- Preload fonts -->
   <link rel="preload" href="assets/fonts/Manrope-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
@@ -79,7 +162,7 @@
 
       <div class="header-actions">
         <!-- TODO(owner): APP_URL -->
-        <a href="https://example.com/app" class="btn btn-primary">Use ParkDrop</a>
+        <a href="https://parkdrop.com.ng/" class="btn btn-primary">Use ParkDrop</a>
         
         <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
           <svg width="24" height="24" aria-hidden="true"><use href="#icon-menu"/></svg>
@@ -105,7 +188,7 @@
           <p class="hero-desc">ParkDrop helps parcel businesses record packages, notify customers and find every parcel quickly when it's time for pickup.</p>
           
           <div class="hero-actions">
-            <a href="https://example.com/app" class="btn btn-primary">Use ParkDrop — It's Free</a>
+            <a href="https://parkdrop.com.ng/" class="btn btn-primary">Use ParkDrop — It's Free</a>
             <a href="#how-it-works" class="btn btn-secondary">See how it works</a>
           </div>
           
@@ -531,7 +614,7 @@
           <div class="free-check"><svg width="24" height="24" aria-hidden="true"><use href="#icon-check"/></svg> No complicated setup</div>
         </div>
         
-        <a href="https://example.com/app" class="btn btn-primary" style="padding-inline: 40px;">Use ParkDrop</a>
+        <a href="https://parkdrop.com.ng/" class="btn btn-primary" style="padding-inline: 40px;">Use ParkDrop</a>
       </div>
     </section>
 
@@ -543,7 +626,7 @@
           <p style="font-size: 1.25rem;">Give your parcel business a simpler way to work with ParkDrop.</p>
           
           <div class="cta-actions">
-            <a href="https://example.com/app" class="btn btn-secondary" style="border: none;">Use ParkDrop — It's Free</a>
+            <a href="https://parkdrop.com.ng/" class="btn btn-secondary" style="border: none;">Use ParkDrop — It's Free</a>
             <a href="#how-it-works" class="btn btn-outline">See how it works</a>
           </div>
           
