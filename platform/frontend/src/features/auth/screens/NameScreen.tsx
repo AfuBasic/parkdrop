@@ -3,11 +3,12 @@ import { AuthStrings } from '../strings';
 import { Field, Input, Button } from '@/design-system';
 
 interface NameScreenProps {
+  initialName?: string;
   onContinue: (name: string) => void;
 }
 
-export function NameScreen({ onContinue }: NameScreenProps) {
-  const [name, setName] = React.useState('');
+export function NameScreen({ initialName = '', onContinue }: NameScreenProps) {
+  const [name, setName] = React.useState(initialName);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
