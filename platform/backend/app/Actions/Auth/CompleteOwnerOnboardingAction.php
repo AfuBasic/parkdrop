@@ -19,16 +19,26 @@ class CompleteOwnerOnboardingAction
     public function execute(array $data): array
     {
         return DB::transaction(function () use ($data) {
-            // Verify challenge id for registration to ensure they actually verified an OTP
+            $normalizedEmail = strtolower(trim($data['email']));
+
+            // Verify challenge id for registration/auth to ensure they actually verified an OTP
             $challenge = AuthChallenge::findOrFail($data['challenge_id']);
-            if ($challenge->email !== $data['email'] || $challenge->purpose !== 'registration' || is_null($challenge->used_at)) {
+            if (
+                strtolower(trim($challenge->email)) !== $normalizedEmail ||
+                ! in_array($challenge->purpose, ['auth', 'registration']) ||
+                is_null($challenge->used_at)
+            ) {
                 abort(422, 'Invalid or unverified challenge provided for registration.');
             }
 
             // 1. Create or update User
             $user = User::firstOrCreate(
-                ['email' => $data['email']],
-                ['first_name' => $data['first_name']]
+                ['email_normalized' => $normalizedEmail],
+                [
+                    'email' => $normalizedEmail,
+                    'first_name' => $data['first_name'],
+                    'email_verified_at' => now(),
+                ]
             );
 
             // 2. Create Business
