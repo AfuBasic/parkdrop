@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/design-system';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -10,10 +10,16 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, onBack, showBack = true }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-6 md:p-12 relative overflow-hidden">
-      {/* Decorative background elements to make it premium */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
+    <div 
+      className="min-h-screen flex flex-col items-center p-6 md:p-12 relative overflow-hidden"
+      style={{
+        background: `
+          radial-gradient(circle at 15% 10%, rgba(37, 99, 235, 0.07), transparent 30%),
+          radial-gradient(circle at 90% 20%, rgba(59, 130, 246, 0.05), transparent 28%),
+          var(--color-surface-page)
+        `
+      }}
+    >
 
       <div className="w-full max-w-md flex-1 flex flex-col z-10">
         <header className="flex items-center justify-between mb-12">
