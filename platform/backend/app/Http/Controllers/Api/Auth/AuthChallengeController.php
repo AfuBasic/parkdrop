@@ -5,19 +5,20 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RequestChallengeRequest;
 use App\Http\Requests\Auth\VerifyChallengeRequest;
+use App\Models\User;
+use App\Models\UserDevice;
 use App\Services\Auth\AuthChallengeService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class AuthChallengeController extends Controller
 {
-    public function __construct(private AuthChallengeService $challengeService)
-    {
-    }
+    public function __construct(private AuthChallengeService $challengeService) {}
 
     public function requestChallenge(RequestChallengeRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        
+
         $challenge = $this->challengeService->createChallenge(
             email: $validated['email'],
             purpose: $validated['purpose'],
@@ -41,14 +42,14 @@ class AuthChallengeController extends Controller
             purpose: $validated['purpose']
         );
 
-        if (!$challenge) {
+        if (! $challenge) {
             return response()->json([
                 'message' => 'Invalid or expired code',
             ], 422);
         }
 
         // Look up user by normalized email
-        $user = \App\Models\User::where('email_normalized', $normalizedEmail)
+        $user = User::where('email_normalized', $normalizedEmail)
             ->orWhere('email', $normalizedEmail)
             ->first();
 
@@ -60,8 +61,8 @@ class AuthChallengeController extends Controller
             }
 
             // Update user device if device_uuid was sent
-            if (!empty($validated['device_uuid'])) {
-                \App\Models\UserDevice::updateOrCreate(
+            if (! empty($validated['device_uuid'])) {
+                UserDevice::updateOrCreate(
                     [
                         'user_id' => $user->id,
                         'device_uuid' => $validated['device_uuid'],
@@ -74,7 +75,7 @@ class AuthChallengeController extends Controller
             }
 
             // Create Sanctum session
-            \Illuminate\Support\Facades\Auth::login($user);
+            Auth::login($user);
             $request->session()->regenerate();
 
             // Load primary business membership
