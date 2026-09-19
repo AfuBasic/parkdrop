@@ -33,9 +33,10 @@ class AuthChallengeController extends Controller
     public function verifyChallenge(VerifyChallengeRequest $request): JsonResponse
     {
         $validated = $request->validated();
+        $normalizedEmail = strtolower(trim($validated['email']));
 
         $challenge = $this->challengeService->verifyChallenge(
-            email: $validated['email'],
+            email: $normalizedEmail,
             code: $validated['code'],
             purpose: $validated['purpose']
         );
@@ -46,15 +47,65 @@ class AuthChallengeController extends Controller
             ], 422);
         }
 
-        // We do NOT create the Sanctum session here for registration.
-        // For 'login' or 'new_device' on an existing user, we would log them in.
-        // For 'registration', they proceed to onboarding.
-        // For V1, the frontend will proceed to Name/PIN, and the final 
-        // CompleteOnboardingRequest will create the user and issue the session.
+        // Look up user by normalized email
+        $user = \App\Models\User::where('email_normalized', $normalizedEmail)
+            ->orWhere('email', $normalizedEmail)
+            ->first();
 
+        if ($user) {
+            // Update email_verified_at if null
+            if (is_null($user->email_verified_at)) {
+                $user->email_verified_at = now();
+                $user->save();
+            }
+
+            // Update user device if device_uuid was sent
+            if (!empty($validated['device_uuid'])) {
+                \App\Models\UserDevice::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'device_uuid' => $validated['device_uuid'],
+                    ],
+                    [
+                        'authorized_at' => now(),
+                        'last_seen_at' => now(),
+                    ]
+                );
+            }
+
+            // Create Sanctum session
+            \Illuminate\Support\Facades\Auth::login($user);
+            $request->session()->regenerate();
+
+            // Load primary business membership
+            $membership = $user->businessMemberships()->with('business.pickupPoints')->first();
+            $business = $membership?->business;
+
+            return response()->json([
+                'outcome' => 'authenticated',
+                'message' => 'Logged in successfully',
+                'user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'first_name' => $user->first_name,
+                    'status' => $user->status,
+                ],
+                'business' => $business ? [
+                    'id' => $business->id,
+                    'public_id' => $business->public_id,
+                    'name' => $business->name,
+                    'pickup_points' => $business->pickupPoints,
+                ] : null,
+                'role' => $membership?->role ?? 'owner',
+            ]);
+        }
+
+        // User does not exist yet -> new_user outcome
         return response()->json([
+            'outcome' => 'new_user',
             'message' => 'Code verified successfully',
-            'challenge_id' => $challenge->id, // Frontend can use this to prove verification later if needed
+            'challenge_id' => $challenge->id,
+            'email' => $normalizedEmail,
         ]);
     }
 }
