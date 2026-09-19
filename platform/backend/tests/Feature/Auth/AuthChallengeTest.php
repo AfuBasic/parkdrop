@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-use App\Models\AuthChallenge;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
 use App\Mail\AuthChallengeMail;
+use App\Models\AuthChallenge;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Tests\TestCase;
 
 class AuthChallengeTest extends TestCase
 {
@@ -23,7 +23,7 @@ class AuthChallengeTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJson(['message' => 'Challenge sent successfully']);
+            ->assertJson(['message' => 'Challenge sent successfully']);
 
         $this->assertDatabaseHas('auth_challenges', [
             'email' => 'test@example.com',
@@ -59,12 +59,12 @@ class AuthChallengeTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJson(['message' => 'Code verified successfully']);
+            ->assertJson(['message' => 'Code verified successfully']);
 
         $this->assertDatabaseHas('auth_challenges', [
             'id' => $challenge->id,
         ]);
-        
+
         $this->assertNotNull($challenge->fresh()->used_at);
     }
 
