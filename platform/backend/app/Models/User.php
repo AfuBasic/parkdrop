@@ -22,6 +22,8 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'email',
+        'email_normalized',
+        'email_verified_at',
         'first_name',
         'status',
     ];
@@ -41,7 +43,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            // No password or email_verified_at casts needed anymore
+            'email_verified_at' => 'datetime',
         ];
     }
 
