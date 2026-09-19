@@ -16,7 +16,7 @@ class SessionController extends Controller
     {
         $user = $request->user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'authenticated' => false,
                 'user' => null,
