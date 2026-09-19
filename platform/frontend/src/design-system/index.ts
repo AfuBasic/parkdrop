@@ -29,3 +29,8 @@ export * from "./patterns/QuickAction"
 // App Shell
 export * from "./shell"
 
+// Illustrations
+export * from "./illustrations/ParcelPattern"
+export * from "./illustrations/EmptyParcelIllustration"
+export * from "./illustrations/SyncIllustration"
+
