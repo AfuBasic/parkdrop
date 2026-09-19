@@ -9,6 +9,7 @@ import { ReadyScreen } from '../screens/ReadyScreen';
 import { authApi } from '../api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
+import { toast } from 'sonner';
 
 type Step = 'email' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
 
@@ -35,6 +36,7 @@ export function AuthFlow() {
       setStep('code');
     } catch (err: any) {
       setError(err.message || 'Failed to send code');
+      toast.error(err.message || 'Failed to send code');
     } finally {
       setIsLoading(false);
     }
@@ -53,6 +55,7 @@ export function AuthFlow() {
       setStep('name');
     } catch (err: any) {
       setError(err.message || 'Invalid code');
+      toast.error(err.message || 'Invalid code');
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +102,7 @@ export function AuthFlow() {
 
       setStep('ready');
     } catch (err: any) {
-      alert(err.message || 'Onboarding failed');
+      toast.error(err.message || 'Onboarding failed');
     } finally {
       setIsLoading(false);
     }
