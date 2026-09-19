@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { AuthStrings } from '../strings';
 import { Button } from '@/design-system';
 import { User, ArrowRight } from 'lucide-react';
