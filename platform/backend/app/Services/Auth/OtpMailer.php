@@ -10,6 +10,7 @@ class OtpMailer
     public function sendOtp(string $email, string $code): void
     {
         // We queue the mail so the API response isn't delayed by SMTP negotiation
-        Mail::to($email)->send(new AuthChallengeMail($code));
+        $message = (new AuthChallengeMail($code))->onQueue(config('otp.queue', 'auth'));
+        Mail::to($email)->send($message);
     }
 }

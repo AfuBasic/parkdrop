@@ -4,13 +4,14 @@ namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AuthChallengeMail extends Mailable implements ShouldQueue
+class AuthChallengeMail extends Mailable implements ShouldQueue, ShouldBeEncrypted
 {
     use Queueable, SerializesModels;
 
@@ -30,7 +31,7 @@ class AuthChallengeMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your ParkDrop confirmation code: '.$this->code,
+            subject: 'Your ParkDrop sign-in code',
         );
     }
 
@@ -40,9 +41,11 @@ class AuthChallengeMail extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            markdown: 'emails.auth.challenge',
+            view: 'emails.auth.sign-in-code',
+            text: 'emails.auth.sign-in-code-text',
             with: [
                 'code' => $this->code,
+                'expiryMinutes' => config('otp.expiry', 10),
             ],
         );
     }

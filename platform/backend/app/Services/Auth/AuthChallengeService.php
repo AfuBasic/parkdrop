@@ -3,6 +3,7 @@
 namespace App\Services\Auth;
 
 use App\Models\AuthChallenge;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AuthChallengeService
@@ -16,17 +17,25 @@ class AuthChallengeService
     {
         $normalizedEmail = strtolower(trim($email));
         $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+        $expiryMinutes = config('otp.expiry', 10);
+        $maxAttempts = config('otp.max_verify_attempts', 5);
 
-        $challenge = AuthChallenge::create([
-            'email' => $normalizedEmail,
-            'code_hash' => Hash::make($code),
-            'purpose' => $purpose,
-            'expires_at' => now()->addMinutes(15),
-            'device_uuid' => $deviceUuid,
-            'max_attempts' => 3,
-        ]);
+        $challenge = DB::transaction(function () use ($normalizedEmail, $code, $purpose, $deviceUuid, $expiryMinutes, $maxAttempts) {
+            $challenge = AuthChallenge::create([
+                'email' => $normalizedEmail,
+                'code_hash' => Hash::make($code),
+                'purpose' => $purpose,
+                'expires_at' => now()->addMinutes($expiryMinutes),
+                'device_uuid' => $deviceUuid,
+                'max_attempts' => $maxAttempts,
+            ]);
 
-        $this->mailer->sendOtp($normalizedEmail, $code);
+            DB::afterCommit(function () use ($normalizedEmail, $code) {
+                $this->mailer->sendOtp($normalizedEmail, $code);
+            });
+
+            return $challenge;
+        });
 
         return $challenge;
     }
@@ -38,28 +47,33 @@ class AuthChallengeService
     {
         $normalizedEmail = strtolower(trim($email));
 
-        // Find the most recent active challenge for this email and purpose
-        $challenge = AuthChallenge::where('email', $normalizedEmail)
-            ->where('purpose', $purpose)
-            ->whereNull('used_at')
-            ->where('expires_at', '>', now())
-            ->where('attempt_count', '<', 3) // Hardcode to 3 for now, matching default max_attempts
-            ->latest()
-            ->first();
+        return DB::transaction(function () use ($normalizedEmail, $code, $purpose) {
+            $maxAttempts = config('otp.max_verify_attempts', 5);
 
-        if (! $challenge) {
-            return null; // No valid challenge found
-        }
+            // Find the most recent active challenge for this email and purpose with a row lock
+            $challenge = AuthChallenge::where('email', $normalizedEmail)
+                ->where('purpose', $purpose)
+                ->whereNull('used_at')
+                ->where('expires_at', '>', now())
+                ->where('attempt_count', '<', $maxAttempts)
+                ->lockForUpdate()
+                ->latest()
+                ->first();
 
-        $challenge->increment('attempt_count');
+            if (! $challenge) {
+                return null; // No valid challenge found
+            }
 
-        if (! Hash::check($code, $challenge->code_hash)) {
-            return null; // Invalid code
-        }
+            $challenge->increment('attempt_count');
 
-        // Code is valid
-        $challenge->update(['used_at' => now()]);
+            if (! Hash::check($code, $challenge->code_hash)) {
+                return null; // Invalid code
+            }
 
-        return $challenge;
+            // Code is valid
+            $challenge->update(['used_at' => now()]);
+
+            return $challenge;
+        });
     }
 }
