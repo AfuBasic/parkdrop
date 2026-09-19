@@ -17,10 +17,11 @@ class AuthChallengeService
      */
     public function createChallenge(string $email, string $purpose, ?string $deviceUuid = null): AuthChallenge
     {
+        $normalizedEmail = strtolower(trim($email));
         $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
         
         $challenge = AuthChallenge::create([
-            'email' => $email,
+            'email' => $normalizedEmail,
             'code_hash' => Hash::make($code),
             'purpose' => $purpose,
             'expires_at' => now()->addMinutes(15),
@@ -28,7 +29,7 @@ class AuthChallengeService
             'max_attempts' => 3,
         ]);
 
-        $this->mailer->sendOtp($email, $code);
+        $this->mailer->sendOtp($normalizedEmail, $code);
 
         return $challenge;
     }
@@ -38,8 +39,10 @@ class AuthChallengeService
      */
     public function verifyChallenge(string $email, string $code, string $purpose): ?AuthChallenge
     {
+        $normalizedEmail = strtolower(trim($email));
+
         // Find the most recent active challenge for this email and purpose
-        $challenge = AuthChallenge::where('email', $email)
+        $challenge = AuthChallenge::where('email', $normalizedEmail)
             ->where('purpose', $purpose)
             ->whereNull('used_at')
             ->where('expires_at', '>', now())
