@@ -34,8 +34,8 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
     return (
       <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
         <div className="mb-10 text-center">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">{AuthStrings.pinSetupTitle}</h1>
-          <p className="text-muted-foreground text-lg">{AuthStrings.pinSetupSubtitle}</p>
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.pinSetupTitle}</h1>
+          <p className="text-text-secondary text-lg">{AuthStrings.pinSetupSubtitle}</p>
         </div>
         <div className="flex flex-col items-center flex-1">
           <PinInput length={4} value={pin} onChange={setPin} onComplete={handleSetupComplete} secure />
@@ -47,8 +47,8 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
   return (
     <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{AuthStrings.pinConfirmTitle}</h1>
-        <p className="text-muted-foreground text-lg">{AuthStrings.pinConfirmSubtitle}</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.pinConfirmTitle}</h1>
+        <p className="text-text-secondary text-lg">{AuthStrings.pinConfirmSubtitle}</p>
       </div>
       <div className="flex flex-col items-center flex-1">
         <PinInput 
@@ -62,7 +62,7 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
           secure 
           error={!!error}
         />
-        {error && <p className="text-sm text-destructive font-medium mt-4">{error}</p>}
+        {error && <p className="text-sm text-status-danger font-medium mt-4">{error}</p>}
       </div>
     </div>
   );
