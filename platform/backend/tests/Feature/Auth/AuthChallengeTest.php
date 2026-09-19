@@ -101,6 +101,18 @@ class AuthChallengeTest extends TestCase
             'status' => 'active',
         ]);
 
+        $business = \App\Models\Business::create([
+            'public_id' => (string) \Illuminate\Support\Str::uuid(),
+            'name' => 'Owner Business',
+            'status' => 'active',
+        ]);
+
+        \App\Models\BusinessMembership::create([
+            'business_id' => $business->id,
+            'user_id' => $user->id,
+            'role' => 'owner',
+        ]);
+
         $code = '654321';
         AuthChallenge::create([
             'email' => 'owner@example.com',
@@ -153,7 +165,11 @@ class AuthChallengeTest extends TestCase
                 'email' => 'newuser@example.com',
             ]);
 
-        $this->assertGuest();
+        // Immediate authentication: User is created and logged in
+        $this->assertDatabaseHas('users', [
+            'email' => 'newuser@example.com',
+        ]);
+        $this->assertAuthenticated();
     }
 
     public function test_session_endpoint_and_logout()
