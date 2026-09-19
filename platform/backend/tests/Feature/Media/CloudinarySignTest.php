@@ -14,7 +14,7 @@ class CloudinarySignTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Mock the Cloudinary config so we don't depend on .env during tests
         Config::set('cloudinary.cloud_name', 'test_cloud');
         Config::set('cloudinary.api_key', 'test_key');
@@ -59,7 +59,7 @@ class CloudinarySignTest extends TestCase
         $this->assertEquals(false, $json['already_uploaded']);
         $this->assertEquals('test_cloud', $json['cloudName']);
         $this->assertEquals('test_key', $json['apiKey']);
-        
+
         // Crucially, assert the secret is never leaked
         $this->assertArrayNotHasKey('apiSecret', $json);
         $this->assertArrayNotHasKey('api_secret', $json);
