@@ -6,5 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Business extends Model
 {
-    //
+    protected $fillable = [
+        'public_id',
+        'name',
+        'status',
+    ];
+
+    public function memberships()
+    {
+        return $this->hasMany(BusinessMembership::class);
+    }
+
+    public function pickupPoints()
+    {
+        return $this->hasMany(PickupPoint::class);
+    }
+
+    public function smsWallet()
+    {
+        return $this->hasOne(SmsWallet::class);
+    }
 }
