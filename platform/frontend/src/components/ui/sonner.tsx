@@ -6,28 +6,29 @@ type ToasterProps = React.ComponentProps<typeof Sonner>
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
-      theme="system"
+      theme="light"
       className="toaster group"
       position="top-center"
       toastOptions={{
-        className: "max-w-[calc(100vw-32px)] sm:max-w-md",
+        unstyled: true,
+        className: "w-full max-w-[calc(100vw-32px)] sm:max-w-[420px]",
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-surface-default group-[.toaster]:text-text-primary group-[.toaster]:border-border-default group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl font-sans",
+            "group toast flex w-full items-start gap-3 p-4 rounded-xl border shadow-lg font-sans bg-surface-default text-text-primary border-border-default [&_[data-content]]:flex [&_[data-content]]:flex-col [&_[data-content]]:gap-1",
           error: 
-            "group toast group-[.toaster]:bg-status-danger-bg group-[.toaster]:text-status-danger-text-strong group-[.toaster]:border-status-danger-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-danger group-[.toaster]:shadow-lg [&_[data-description]]:text-status-danger-text",
+            "!bg-status-danger-bg text-status-danger-text-strong !border-status-danger-border !border-l-[6px] !border-l-status-danger [&_[data-description]]:!text-status-danger-text [&_[data-icon]]:!text-status-danger",
           success:
-            "group toast group-[.toaster]:bg-status-success-bg group-[.toaster]:text-status-success-text group-[.toaster]:border-status-success-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-success group-[.toaster]:shadow-lg [&_[data-description]]:text-status-success-text",
+            "!bg-status-success-bg text-status-success-text !border-status-success-border !border-l-[6px] !border-l-status-success [&_[data-description]]:!text-status-success-text [&_[data-icon]]:!text-status-success",
           warning:
-            "group toast group-[.toaster]:bg-status-warning-bg group-[.toaster]:text-status-warning-text group-[.toaster]:border-status-warning-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-warning group-[.toaster]:shadow-lg [&_[data-description]]:text-status-warning-text",
+            "!bg-status-warning-bg text-status-warning-text !border-status-warning-border !border-l-[6px] !border-l-status-warning [&_[data-description]]:!text-status-warning-text [&_[data-icon]]:!text-status-warning",
           info:
-            "group toast group-[.toaster]:bg-status-info-bg group-[.toaster]:text-status-info-text group-[.toaster]:border-status-info-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-info group-[.toaster]:shadow-lg [&_[data-description]]:text-status-info-text",
-          title: "font-semibold",
+            "!bg-status-info-bg text-status-info-text !border-status-info-border !border-l-[6px] !border-l-status-info [&_[data-description]]:!text-status-info-text [&_[data-icon]]:!text-status-info",
+          title: "font-semibold text-[15px]",
           description: "text-sm",
           actionButton:
-            "group-[.toast]:bg-action-primary group-[.toast]:text-text-inverse font-medium rounded-md",
+            "bg-action-primary text-text-inverse font-medium rounded-md px-3 py-2 text-sm mt-2",
           cancelButton:
-            "group-[.toast]:bg-surface-subtle group-[.toast]:text-text-primary font-medium rounded-md border border-border-default",
+            "bg-surface-subtle text-text-primary font-medium rounded-md border border-border-default px-3 py-2 text-sm mt-2",
         },
       }}
       {...props}

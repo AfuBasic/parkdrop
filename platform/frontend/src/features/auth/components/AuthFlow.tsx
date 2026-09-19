@@ -10,7 +10,7 @@ import { authApi } from '../api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
 import { useAuth } from '../AuthContext';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 
 type Step = 'email' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
 
@@ -42,7 +42,7 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
       setStep('code');
     } catch (err: any) {
       setError(err.message || 'Failed to send confirmation code');
-      toast.error(err.message || 'Failed to send confirmation code');
+      notify.error(err, 'Failed to send confirmation code');
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +59,7 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
       });
 
       if (res.outcome === 'authenticated') {
-        toast.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
+        notify.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
         await setAuthenticatedUser(res.user, res.business);
         return;
       }
@@ -70,7 +70,7 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
       }
     } catch (err: any) {
       setError(err.message || 'Invalid or expired confirmation code');
-      toast.error(err.message || 'Invalid or expired confirmation code');
+      notify.error(err, 'Invalid or expired confirmation code');
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +118,7 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
       await setAuthenticatedUser(res.user, res.business);
       setStep('ready');
     } catch (err: any) {
-      toast.error(err.message || 'Onboarding failed');
+      notify.error(err, 'Onboarding failed');
     } finally {
       setIsLoading(false);
     }

@@ -4,7 +4,7 @@ import { RememberedReauthScreen } from '../screens/RememberedReauthScreen';
 import { CodeScreen } from '../screens/CodeScreen';
 import { authApi } from '../api';
 import { useAuth } from '../AuthContext';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import type { RememberedIdentity } from '@/lib/db';
 
 interface RememberedReauthFlowProps {
@@ -31,7 +31,7 @@ export function RememberedReauthFlow({ identity, onSwitchToEmail }: RememberedRe
       setStep('code');
     } catch (err: any) {
       setError(err.message || 'Failed to send confirmation code');
-      toast.error(err.message || 'Failed to send confirmation code');
+      notify.error(err, 'Failed to send confirmation code');
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +48,7 @@ export function RememberedReauthFlow({ identity, onSwitchToEmail }: RememberedRe
       });
 
       if (res.outcome === 'authenticated') {
-        toast.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
+        notify.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
         await setAuthenticatedUser(res.user, res.business);
         return;
       }
@@ -57,7 +57,7 @@ export function RememberedReauthFlow({ identity, onSwitchToEmail }: RememberedRe
       onSwitchToEmail();
     } catch (err: any) {
       setError(err.message || 'Invalid or expired confirmation code');
-      toast.error(err.message || 'Invalid or expired confirmation code');
+      notify.error(err, 'Invalid or expired confirmation code');
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,6 @@
 import type { UseFormReturn, Path } from 'react-hook-form';
 import { ApiError } from './api';
-import { toast } from 'sonner';
+import { notify } from './notify';
 
 /**
  * Maps Laravel API validation errors to a react-hook-form instance.
@@ -29,15 +29,10 @@ export function handleApiError<TFieldValues extends Record<string, any>>(
     }
     
     // Some other API error (401, 403, 404, 500, etc) with a message from the backend
-    toast.error(error.message || genericMessage);
+    notify.error(error, genericMessage);
     return;
   }
 
   // A generic JS Error (Network error, etc)
-  let finalMessage = error instanceof Error ? error.message : genericMessage;
-  if (finalMessage === 'Failed to fetch' || finalMessage.includes('NetworkError')) {
-    finalMessage = 'Could not connect. Check your internet and try again.';
-  }
-  
-  toast.error(finalMessage);
+  notify.error(error, genericMessage);
 }
