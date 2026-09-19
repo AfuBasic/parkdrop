@@ -9,6 +9,7 @@ import { ApiError } from '@/lib/api';
 export type AuthState = 
   | 'booting'              // Initial state while resolving session/storage
   | 'authenticated'        // Valid session exists -> Dashboard
+  | 'onboarding'           // Authenticated user but business/onboarding incomplete -> OnboardingFlow
   | 'locked'               // Device registered with PIN lock -> UnlockScreen
   | 'remembered_expired'   // Device has remembered email but session expired -> RememberedReauthScreen
   | 'unknown';             // Fresh unknown visitor -> Universal Email OTP Flow
@@ -38,56 +39,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initAuth = React.useCallback(async () => {
     setState('booting');
     try {
-      // 1. Check local Dexie storage
+      // ─── Phase 1: Resolve from local IndexedDB immediately (no network) ───────
+      // This resolves state instantly without any spinner delay.
       const meta = await db.deviceMeta.toCollection().first();
       setDeviceMeta(meta || null);
 
       const recentIdentity = await getMostRecentRememberedIdentity();
       setRememberedIdentity(recentIdentity);
 
-      // 2. Inspect server session via Sanctum
-      let sessionData = null;
-      let sessionUnauthorized = false;
-
-      try {
-        const res = await authApi.getSession();
-        if (res.authenticated && res.user) {
-          sessionData = res;
-        }
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 401) {
-          sessionUnauthorized = true;
-        } else {
-          // Network error or offline: do NOT log out or clear session if device exists
-          console.warn('Network error checking session, respecting offline state:', err);
-        }
+      // Determine local-only state and render immediately
+      let localState: typeof state;
+      if (meta?.pin_hash) {
+        localState = 'locked';
+      } else if (recentIdentity || meta?.first_name) {
+        localState = 'remembered_expired';
+      } else {
+        localState = 'unknown';
       }
+      setState(localState);
 
-      // 3. Resolve state machine
-      if (sessionData?.user) {
-        setUser(sessionData.user);
-        setBusiness(sessionData.business);
-        
-        // If device requires PIN lock
+      // ─── Phase 2: Validate against server session in background ──────────────
+      // Do NOT block the UI. This silently upgrades or downgrades state if needed.
+      authApi.getSession().then((res) => {
+        if (!res.authenticated || !res.user) return; // no upgrade possible
+
+        setUser(res.user);
+        setBusiness(res.business);
+
+        if (res.needs_onboarding || !res.business) {
+          setState('onboarding');
+          return;
+        }
+
+        // Server confirms session is live — upgrade from local state
         if (meta?.pin_hash) {
+          // Device still locked; keep showing PIN screen even with live session
           setState('locked');
         } else {
           setState('authenticated');
         }
-        return;
-      }
-
-      // If server explicitly said 401 Unauthenticated
-      if (sessionUnauthorized || !sessionData) {
-        if (recentIdentity) {
-          setState('remembered_expired');
-        } else if (meta?.first_name) {
-          // Fallback to device meta if available
-          setState('remembered_expired');
+      }).catch((err) => {
+        // 401 means session truly expired — local state already set correctly, nothing to do.
+        // Network failure? Local state is already appropriate; don't touch it.
+        if (err instanceof ApiError && err.status === 401) {
+          // Already set to correct degraded state in Phase 1
         } else {
-          setState('unknown');
+          console.warn('Background session check failed, keeping local state:', err);
         }
-      }
+      });
+
     } catch (err) {
       console.error('Auth initialization error:', err);
       setState('unknown');
