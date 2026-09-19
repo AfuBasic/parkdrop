@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AuthStrings } from '../strings';
-import { PinInput } from '../components/PinInput';
 import { Button } from '@/design-system';
+import { cn } from '@/lib/utils';
 
 interface CodeScreenProps {
   email: string;
@@ -9,11 +9,24 @@ interface CodeScreenProps {
   onResend: () => void;
   isLoading?: boolean;
   error?: string;
+  onChangeEmail?: () => void;
 }
 
-export function CodeScreen({ email, onVerify, onResend, isLoading, error }: CodeScreenProps) {
+export function CodeScreen({ 
+  email, 
+  onVerify, 
+  onResend, 
+  isLoading, 
+  error, 
+  onChangeEmail 
+}: CodeScreenProps) {
   const [code, setCode] = React.useState('');
   const [countdown, setCountdown] = React.useState(30);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   React.useEffect(() => {
     if (countdown > 0) {
@@ -22,59 +35,121 @@ export function CodeScreen({ email, onVerify, onResend, isLoading, error }: Code
     }
   }, [countdown]);
 
-  const handleComplete = (val: string) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Keep only numbers, max 6 characters
+    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+    setCode(val);
+
+    // Auto-submit when exactly 6 digits entered
     if (val.length === 6) {
       onVerify(val);
     }
   };
 
   const handleResend = () => {
-    if (countdown === 0) {
+    if (countdown === 0 && !isLoading) {
       setCountdown(30);
       onResend();
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.length === 6 && !isLoading) {
+      onVerify(code);
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.codeTitle}</h1>
-        <p className="text-text-secondary text-lg">{AuthStrings.codeSubtitle(email)}</p>
+    <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-right-3 duration-300">
+      <div className="mb-6 md:mb-8 text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-text-primary">
+          {AuthStrings.codeTitle}
+        </h1>
+        <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 text-sm sm:text-base text-text-secondary leading-relaxed">
+          <span>{AuthStrings.codeSubtitle(email)}</span>
+          {onChangeEmail && (
+            <button
+              type="button"
+              onClick={onChangeEmail}
+              disabled={isLoading}
+              className="text-xs font-semibold text-action-primary hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-action-primary rounded cursor-pointer"
+            >
+              Edit
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="flex flex-col items-center flex-1 gap-8">
-        <PinInput 
-          length={6} 
-          value={code} 
-          onChange={setCode} 
-          onComplete={handleComplete}
-          disabled={isLoading}
-          error={!!error}
-        />
-        
-        {error && <p className="text-sm text-status-danger font-medium">{error}</p>}
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1">
+        <div className="flex flex-col gap-3">
+          <label htmlFor="otp-input" className="text-sm font-semibold text-text-primary">
+            6-Digit Code
+          </label>
+          
+          <input
+            ref={inputRef}
+            id="otp-input"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            autoComplete="one-time-code"
+            maxLength={6}
+            value={code}
+            onChange={handleChange}
+            disabled={isLoading}
+            placeholder="······"
+            className={cn(
+              "w-full h-14 rounded-xl border bg-surface-default px-4 text-center font-mono text-2xl sm:text-3xl tracking-[0.5em] sm:tracking-[0.75em] text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 transition-all select-all",
+              error
+                ? "border-status-danger focus-visible:ring-status-danger"
+                : "border-border-strong focus-visible:ring-border-focus"
+            )}
+          />
 
-        <Button 
-          variant="ghost" 
-          disabled={countdown > 0}
-          onClick={handleResend}
-          className="mt-4"
-        >
-          {countdown > 0 ? AuthStrings.resendCountdown(countdown) : AuthStrings.resendCode}
-        </Button>
+          {error ? (
+            <p className="text-xs sm:text-sm text-status-danger font-medium mt-1">
+              {error}
+            </p>
+          ) : (
+            <p className="text-xs text-text-muted mt-1">
+              Verification codes expire in 15 minutes.
+            </p>
+          )}
+        </div>
 
-        <div className="mt-auto w-full">
-          <Button 
-            className="w-full" 
-            size="lg" 
-            disabled={code.length < 6}
+        <div className="mt-4 flex justify-start">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={countdown > 0 || isLoading}
+            onClick={handleResend}
+            className="text-xs sm:text-sm font-medium text-action-primary hover:text-action-primary-hover hover:bg-surface-subtle px-2 h-8"
+          >
+            {countdown > 0 ? AuthStrings.resendCountdown(countdown) : AuthStrings.resendCode}
+          </Button>
+        </div>
+
+        <div className="mt-auto pt-8 flex flex-col gap-4 items-center">
+          <Button
+            type="submit"
+            className="w-full h-12 text-base font-semibold"
+            size="lg"
+            disabled={code.length < 6 || isLoading}
             loading={isLoading}
-            onClick={() => onVerify(code)}
           >
             {AuthStrings.continue}
           </Button>
+
+          <a
+            href="mailto:support@parkdrop.com.ng?subject=ParkDrop%20Verification%20Code%20Help"
+            className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded"
+          >
+            {AuthStrings.problemLoggingIn}
+          </a>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
