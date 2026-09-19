@@ -4,20 +4,26 @@ export const AuthStrings = {
   back: "Back",
   needHelp: "Need Help?",
   processing: "Processing...",
+  problemLoggingIn: "Problem logging in?",
   
   // Email Screen
-  emailTitle: "What's your email?",
-  emailSubtitle: "We'll send you a short code to sign in securely.",
+  emailTitle: "Welcome to ParkDrop",
+  emailSubtitle: "Enter your email to sign in or create an account.",
   emailLabel: "Email address",
-  emailPlaceholder: "e.g. you@example.com",
+  emailPlaceholder: "name@company.com",
   invalidEmail: "Please enter a valid email address",
   
   // Code Screen
-  codeTitle: "Check your email",
+  codeTitle: "Enter confirmation code",
   codeSubtitle: (email: string) => `We sent a 6-digit code to ${email}`,
   resendCode: "Resend code",
-  resendCountdown: (seconds: number) => `Resend code in ${seconds}s`,
+  resendCountdown: (seconds: number) => `Resend in ${seconds}s`,
   invalidCode: "The code you entered is incorrect or has expired.",
+
+  // Reauth Screen
+  reauthTitle: (name?: string) => name ? `Welcome back, ${name}` : "Welcome back",
+  reauthSubtitle: (email: string) => `Continue with ${email}`,
+  useDifferentEmail: "Use a different email",
   
   // Name Screen
   nameTitle: "What should we call you?",
