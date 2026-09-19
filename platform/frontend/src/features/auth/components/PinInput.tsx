@@ -89,10 +89,10 @@ export function PinInput({
           onChange={(e) => handleChange(e, i)}
           onKeyDown={(e) => handleKeyDown(e, i)}
           className={cn(
-            "w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold rounded-xl border bg-background",
-            "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all",
-            error ? "border-destructive text-destructive focus:ring-destructive" : "border-input",
-            disabled ? "opacity-50 cursor-not-allowed bg-muted" : "bg-background"
+            "w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold rounded-xl border bg-surface-default text-text-primary",
+            "focus:outline-none focus:ring-2 focus:ring-border-focus focus:border-transparent transition-all",
+            error ? "border-status-danger text-status-danger focus:ring-status-danger" : "border-border-strong",
+            disabled ? "opacity-50 cursor-not-allowed bg-surface-disabled" : ""
           )}
         />
       ))}
