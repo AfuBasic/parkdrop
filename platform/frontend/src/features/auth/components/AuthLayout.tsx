@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/design-system';
+import { Button, AuthBackdrop } from '@/design-system';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -10,38 +10,60 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, onBack, showBack = true }: AuthLayoutProps) {
   return (
-    <div 
-      className="min-h-screen flex flex-col items-center p-6 md:p-12 relative overflow-hidden"
-      style={{
-        background: `
-          radial-gradient(circle at 15% 10%, rgba(37, 99, 235, 0.07), transparent 30%),
-          radial-gradient(circle at 90% 20%, rgba(59, 130, 246, 0.05), transparent 28%),
-          var(--color-surface-page)
-        `
-      }}
-    >
+    <div className="min-h-screen bg-surface-page flex flex-col items-center justify-center p-4 sm:p-6 md:p-10 relative overflow-hidden">
+      {/* Mobile background atmospheric motif */}
+      <div className="absolute -top-12 -right-12 w-80 h-80 pointer-events-none opacity-40 md:hidden">
+        <AuthBackdrop className="w-full h-full" />
+      </div>
 
-      <div className="w-full max-w-md flex-1 flex flex-col z-10">
-        <header className="flex items-center justify-between mb-12">
-          {showBack && onBack ? (
-            <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full hover:bg-black/5 -ml-2">
-              <ArrowLeft className="h-6 w-6" />
-            </Button>
-          ) : (
-            <div className="w-10 h-10" />
-          )}
-          
-          <div className="flex items-center gap-3">
-            <img src="/parkdrop-icon-only.png" alt="ParkDrop Logo" className="w-9 h-9 object-contain" />
-            <span className="font-bold text-xl tracking-tight">ParkDrop</span>
+      <div className="w-full max-w-5xl flex-1 flex flex-col justify-center z-10 my-auto">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center bg-surface-default/70 md:bg-surface-default border border-border-default rounded-3xl p-6 sm:p-10 shadow-elevation-2 backdrop-blur-sm">
+          {/* Left Column: Form & Navigation */}
+          <div className="md:col-span-7 flex flex-col min-h-[460px]">
+            <header className="flex items-center justify-between mb-8">
+              {showBack && onBack ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onBack}
+                  className="rounded-full hover:bg-surface-subtle -ml-2 text-text-secondary"
+                  aria-label="Go back"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              ) : (
+                <div className="w-9 h-9" />
+              )}
+
+              <div className="flex items-center gap-2.5">
+                <img src="/parkdrop-icon-only.png" alt="ParkDrop Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+                <span className="font-bold text-xl tracking-tight text-text-primary">ParkDrop</span>
+              </div>
+
+              <div className="w-9 h-9" />
+            </header>
+
+            <main className="flex-1 flex flex-col justify-center">
+              {children}
+            </main>
           </div>
 
-          <div className="w-10 h-10" />
-        </header>
-
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
+          {/* Right Column (Desktop): Brand Visual Composition */}
+          <div className="hidden md:flex md:col-span-5 flex-col items-center justify-center bg-pd-blue-50/60 border border-pd-blue-100 rounded-2xl p-8 min-h-[460px] relative overflow-hidden">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <AuthBackdrop className="w-full h-full scale-110" />
+            </div>
+            
+            <div className="relative z-10 text-center max-w-[260px] mt-auto">
+              <h2 className="text-base font-semibold text-pd-blue-900 mb-1">
+                Reliable Parcel Operations
+              </h2>
+              <p className="text-xs text-pd-blue-700/80 leading-relaxed">
+                Log packages, notify recipients instantly via SMS, and release pickups with verified tokens.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
