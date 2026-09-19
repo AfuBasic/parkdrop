@@ -14,6 +14,7 @@ Next build: TBD based on priorities (likely Offline Engine).
 - **Local PIN:** A 4-digit PIN is used purely as an offline device unlock mechanism for the locally authorized workspace. It is **not** an API credential.
 - **Passwords:** There are no passwords. The `users` table has been simplified to rely entirely on email and OTP.
 - **Email Provider:** ZeptoMail is used for sending OTP emails. This cost is platform-funded and entirely separate from business customer SMS credits.
+- **Canonical Design Language:** ParkDrop Field Blue is the global design theme (see `docs/design-system.md`). All screens must consume semantic tokens from `@/design-system` and `index.css`.
 
 ### 2. Multi-Tenancy & Onboarding (Build 1)
 Multi-tenancy is centered around the `Business` model.
