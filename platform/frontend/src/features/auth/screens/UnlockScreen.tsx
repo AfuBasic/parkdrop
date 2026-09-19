@@ -2,7 +2,7 @@ import * as React from 'react';
 import { AuthStrings } from '../strings';
 import { PinInput } from '../components/PinInput';
 import { AuthLayout } from '../components/AuthLayout';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/design-system';
 import { verifyPin } from '@/lib/pin';
 import type { DeviceMeta } from '@/lib/db';
 
@@ -38,13 +38,13 @@ export function UnlockScreen({ deviceMeta, onUnlocked, onLogout }: UnlockScreenP
     <AuthLayout showBack={false}>
       <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="mb-10 text-center">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-3xl font-bold text-primary">{deviceMeta.first_name[0]}</span>
+          <div className="w-20 h-20 bg-status-info-bg rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl font-bold text-status-info">{deviceMeta.first_name[0]}</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
+          <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">
             {AuthStrings.unlockTitle(deviceMeta.first_name)}
           </h1>
-          <p className="text-muted-foreground text-lg">{AuthStrings.unlockSubtitle}</p>
+          <p className="text-text-secondary text-lg">{AuthStrings.unlockSubtitle}</p>
         </div>
 
         <div className="flex flex-col items-center flex-1">
@@ -61,10 +61,10 @@ export function UnlockScreen({ deviceMeta, onUnlocked, onLogout }: UnlockScreenP
             error={!!error}
           />
           
-          {error && <p className="text-sm text-destructive font-medium mt-4">{error}</p>}
+          {error && <p className="text-sm text-status-danger font-medium mt-4">{error}</p>}
 
           <div className="mt-auto flex flex-col w-full gap-4 pb-8">
-            <Button variant="ghost" className="w-full text-muted-foreground" onClick={onLogout}>
+            <Button variant="ghost" className="w-full" onClick={onLogout}>
               Not {deviceMeta.first_name}? Sign out
             </Button>
           </div>
