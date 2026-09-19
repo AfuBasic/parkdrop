@@ -29,6 +29,7 @@ class SessionController extends Controller
 
         return response()->json([
             'authenticated' => true,
+            'needs_onboarding' => is_null($business),
             'user' => [
                 'id' => $user->id,
                 'email' => $user->email,
