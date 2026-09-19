@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { AuthStrings } from '../strings';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
+import { Field, Input, Button } from '@/design-system';
 
 interface EmailScreenProps {
   onContinue: (email: string) => void;
@@ -31,8 +29,7 @@ export function EmailScreen({ onContinue, isLoading }: EmailScreenProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="email">{AuthStrings.emailLabel}</Label>
+        <Field label={AuthStrings.emailLabel} htmlFor="email" error={error}>
           <Input
             id="email"
             type="email"
@@ -44,14 +41,13 @@ export function EmailScreen({ onContinue, isLoading }: EmailScreenProps) {
               if (error) setError('');
             }}
             disabled={isLoading}
-            className={error ? "border-destructive focus-visible:ring-destructive" : ""}
+            error={!!error}
           />
-          {error && <p className="text-sm text-destructive font-medium">{error}</p>}
-        </div>
+        </Field>
 
         <div className="mt-auto">
-          <Button type="submit" className="w-full" size="lg" disabled={isLoading || !email}>
-            {isLoading ? AuthStrings.processing : AuthStrings.continue}
+          <Button type="submit" className="w-full" size="lg" disabled={!email} loading={isLoading}>
+            {AuthStrings.continue}
           </Button>
         </div>
       </form>
