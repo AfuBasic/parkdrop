@@ -10,9 +10,10 @@ interface UnlockScreenProps {
   deviceMeta: DeviceMeta;
   onUnlocked: () => void;
   onLogout: () => void;
+  onForgotPin?: () => void;
 }
 
-export function UnlockScreen({ deviceMeta, onUnlocked, onLogout }: UnlockScreenProps) {
+export function UnlockScreen({ deviceMeta, onUnlocked, onLogout, onForgotPin }: UnlockScreenProps) {
   const [pin, setPin] = React.useState('');
   const [error, setError] = React.useState('');
   const [isVerifying, setIsVerifying] = React.useState(false);
@@ -63,8 +64,19 @@ export function UnlockScreen({ deviceMeta, onUnlocked, onLogout }: UnlockScreenP
           
           {error && <p className="text-sm text-status-danger font-medium mt-4">{error}</p>}
 
-          <div className="mt-auto flex flex-col w-full gap-4 pb-8">
-            <Button variant="ghost" className="w-full" onClick={onLogout}>
+          <div className="mt-auto flex flex-col w-full gap-3 pb-8">
+            {onForgotPin && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-sm font-semibold text-action-primary hover:bg-action-primary/10"
+                onClick={onForgotPin}
+              >
+                {AuthStrings.forgotPin}
+              </Button>
+            )}
+
+            <Button variant="ghost" className="w-full text-text-secondary" onClick={onLogout}>
               Not {deviceMeta.first_name}? Sign out
             </Button>
           </div>
