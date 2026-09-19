@@ -41,6 +41,11 @@ class CompleteOwnerOnboardingAction
                 ]
             );
 
+            if (! empty($data['first_name'])) {
+                $user->first_name = $data['first_name'];
+                $user->save();
+            }
+
             // 2. Create Business
             $business = Business::create([
                 'public_id' => Str::uuid()->toString(),
