@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthFlow } from '@/features/auth/components/AuthFlow';
 import { RememberedReauthFlow } from '@/features/auth/components/RememberedReauthFlow';
+import { ForgotPinFlow } from '@/features/auth/components/ForgotPinFlow';
 import { UnlockScreen } from '@/features/auth/screens/UnlockScreen';
 import { ThemeDemo } from '@/routes/theme-demo';
 
@@ -18,6 +19,7 @@ function AppContent() {
     forgetRememberedIdentity 
   } = useAuth();
   const [switchAccount, setSwitchAccount] = React.useState(false);
+  const [isForgotPin, setIsForgotPin] = React.useState(false);
 
   if (state === 'booting') {
     return (
@@ -42,8 +44,8 @@ function AppContent() {
     );
   }
 
-  // Unknown visitor or user chose to switch account
-  if (state === 'unknown' || (state === 'remembered_expired' && switchAccount)) {
+  // Unknown visitor, onboarding pending, or user chose to switch account
+  if (state === 'unknown' || state === 'onboarding' || (state === 'remembered_expired' && switchAccount)) {
     return (
       <AuthFlow 
         initialEmail={switchAccount && rememberedIdentity ? '' : ''} 
@@ -53,11 +55,22 @@ function AppContent() {
 
   // Device registered with local PIN protection
   if (state === 'locked' && deviceMeta) {
+    if (isForgotPin) {
+      return (
+        <ForgotPinFlow 
+          deviceMeta={deviceMeta} 
+          rememberedIdentity={rememberedIdentity}
+          onCancel={() => setIsForgotPin(false)} 
+        />
+      );
+    }
+
     return (
       <UnlockScreen 
         deviceMeta={deviceMeta} 
         onUnlocked={unlock} 
         onLogout={forgetRememberedIdentity} 
+        onForgotPin={() => setIsForgotPin(true)}
       />
     );
   }
