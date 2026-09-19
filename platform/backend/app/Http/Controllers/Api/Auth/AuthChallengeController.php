@@ -21,9 +21,9 @@ class AuthChallengeController extends Controller
     {
         $validated = $request->validated();
         $email = strtolower(trim($validated['email']));
-        
+
         $tooManyRequests = $this->checkRateLimits($request, $email);
-        
+
         if ($tooManyRequests instanceof JsonResponse) {
             return $tooManyRequests;
         }
@@ -131,7 +131,7 @@ class AuthChallengeController extends Controller
             'email' => $normalizedEmail,
         ]);
     }
-    
+
     /**
      * Check if the request exceeds any rate limits.
      * Returns a JsonResponse if limits are exceeded, null otherwise.
@@ -141,7 +141,7 @@ class AuthChallengeController extends Controller
         $hash = hash('sha256', $email);
         $cooldownKey = 'auth-code-cooldown:'.$hash;
         $ip = $request->ip();
-        
+
         $limiters = [
             'auth-code-global' => 'global-otp-send',
             'auth-code-ip' => $ip,
@@ -159,38 +159,38 @@ class AuthChallengeController extends Controller
         foreach ($limiters as $limiter => $key) {
             // Because we defined these in AppServiceProvider via RateLimiter::for(),
             // we have to check them via the middleware, or resolve them manually.
-            // But RateLimiter::for() defines limit objects for middleware, it doesn't automatically 
+            // But RateLimiter::for() defines limit objects for middleware, it doesn't automatically
             // map to RateLimiter::tooManyAttempts unless we pass it to the middleware stack.
             // Wait, RateLimiter facade can check custom named limiters using the key if we just apply the same key pattern.
             // Actually, the named limiters in RateLimiter::for() only take effect when `throttle` middleware is used.
-            // Since we want standard response logic that doesn't reveal if the email exists, we can apply the `throttle` 
-            // middleware to the route, OR just manually enforce limits here. 
+            // Since we want standard response logic that doesn't reveal if the email exists, we can apply the `throttle`
+            // middleware to the route, OR just manually enforce limits here.
             // Since I registered them in RateLimiter::for, it's easier to use the `throttle` middleware in routes.
             // BUT wait, `throttle` middleware throws a `ThrottleRequestsException` which Laravel renders as standard 429.
             // It might reveal information or log differently, and the user requested:
             // "Do NOT reveal whether the email belongs to a ParkDrop account."
             // "Return an appropriate 429 Too Many Requests with a useful Retry-After."
-            
+
             // To be 100% compliant with the spec, doing it manually is safest.
         }
-        
+
         // Manual rate limit enforcement for exact precision and no middleware side-effects:
-        
+
         // Global daily
         if (RateLimiter::tooManyAttempts('global-otp:'.$ip, config('otp.limits.global_daily.attempts', 1000))) {
             return $this->buildRateLimitResponse(RateLimiter::availableIn('global-otp:'.$ip));
         }
-        
+
         // IP 15 min
         if (RateLimiter::tooManyAttempts('ip-otp:'.$ip, config('otp.limits.ip.attempts', 20))) {
             return $this->buildRateLimitResponse(RateLimiter::availableIn('ip-otp:'.$ip));
         }
-        
+
         // Email daily
         if (RateLimiter::tooManyAttempts('email-daily-otp:'.$hash, config('otp.limits.send_daily.attempts', 8))) {
             return $this->buildRateLimitResponse(RateLimiter::availableIn('email-daily-otp:'.$hash));
         }
-        
+
         // Email 15 min
         if (RateLimiter::tooManyAttempts('email-window-otp:'.$hash, config('otp.limits.send_short_window.attempts', 3))) {
             return $this->buildRateLimitResponse(RateLimiter::availableIn('email-window-otp:'.$hash));
@@ -205,17 +205,17 @@ class AuthChallengeController extends Controller
 
         return null;
     }
-    
+
     protected function buildRateLimitResponse(int $retryAfter): JsonResponse
     {
         $minutes = ceil($retryAfter / 60);
-        $message = "Too many code requests. Wait a little and try again.";
+        $message = 'Too many code requests. Wait a little and try again.';
         if ($minutes > 0) {
             $message = "Too many code requests. Try again in about {$minutes} minutes.";
         } else {
-            $message = "Too many code requests. Try again in a few seconds.";
+            $message = 'Too many code requests. Try again in a few seconds.';
         }
-        
+
         return response()->json([
             'message' => $message,
         ], 429, [

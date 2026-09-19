@@ -72,21 +72,21 @@ class AppServiceProvider extends ServiceProvider
             $email = strtolower(trim($request->input('email', '')));
             $hash = hash('sha256', $email);
 
-            // Using perMinute as a close proxy if cooldown is 60s, 
+            // Using perMinute as a close proxy if cooldown is 60s,
             // but for exact seconds we can use an integer division or a cache block in the controller.
             // Actually, we can use RateLimiter directly in the controller for strict second-based checks,
             // or use Limit::perMinute(1)->by($hash).
             // But if they want exact configurable seconds, we can define a generic rate limiter or handle it manually.
-            // Since `Limit::perMinutes()` only accepts minutes (it multiplies by 60), 
-            // `Limit::none()` can be used to bypass and handle manually if we need seconds, 
+            // Since `Limit::perMinutes()` only accepts minutes (it multiplies by 60),
+            // `Limit::none()` can be used to bypass and handle manually if we need seconds,
             // but there's no `Limit::perSeconds()`.
             // Wait, there is no perSeconds natively that accepts a customizable number of seconds in Limit builder.
             // Wait! `RateLimiter::attempt()` takes `$decaySeconds`. So we don't strictly need a `Limit` object for the cooldown if we use `RateLimiter::attempt()` directly in the controller!
             // But let's just stick to configuring it in the controller using `RateLimiter` facade.
-            
+
             // To match Laravel convention, we will define them here. If the cooldown is strictly configured in seconds, we can just use `Limit::none()` here and manage it in controller, or just skip it here and do it in controller.
             // Let's just manage the cooldown in the controller via `RateLimiter::attempt(..., $decaySeconds)`
-            
+
             return Limit::none();
         });
     }

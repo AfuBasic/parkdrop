@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Mail\AuthChallengeMail;
 use App\Models\AuthChallenge;
 use App\Models\User;
+use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -18,31 +19,33 @@ class AuthChallengeTest extends TestCase
     {
         Mail::fake();
 
-        $response = $this->postJson('/api/v1/auth/challenge', [
+        $response = $this->postJson('/api/v1/auth/code', [
             'email' => 'test@example.com',
             'purpose' => 'login',
         ]);
 
         $response->assertStatus(200)
-            ->assertJson(['message' => 'Challenge sent successfully']);
+            ->assertJson([
+                'message' => 'Challenge sent successfully',
+                'expires_in_minutes' => config('otp.expiry', 10),
+            ]);
 
         $this->assertDatabaseHas('auth_challenges', [
             'email' => 'test@example.com',
             'purpose' => 'login',
         ]);
 
-        Mail::assertQueued(AuthChallengeMail::class);
+        Mail::assertQueued(AuthChallengeMail::class, function ($mail) {
+            $this->assertInstanceOf(ShouldBeEncrypted::class, $mail);
+            $this->assertEquals(config('otp.queue', 'auth'), $mail->queue);
+
+            return $mail->hasTo('test@example.com');
+        });
     }
 
     public function test_can_verify_a_valid_auth_challenge()
     {
         Mail::fake();
-
-        // Create a challenge
-        $this->postJson('/api/v1/auth/challenge', [
-            'email' => 'test@example.com',
-            'purpose' => 'registration',
-        ]);
 
         $code = '123456';
         $challenge = AuthChallenge::create([
@@ -50,10 +53,10 @@ class AuthChallengeTest extends TestCase
             'code_hash' => Hash::make($code),
             'purpose' => 'login',
             'expires_at' => now()->addMinutes(15),
-            'max_attempts' => 3,
+            'max_attempts' => 5,
         ]);
 
-        $response = $this->postJson('/api/v1/auth/verify', [
+        $response = $this->postJson('/api/v1/auth/code/verify', [
             'email' => 'verify@example.com',
             'code' => $code,
             'purpose' => 'login',
@@ -77,10 +80,10 @@ class AuthChallengeTest extends TestCase
             'code_hash' => Hash::make($code),
             'purpose' => 'login',
             'expires_at' => now()->addMinutes(15),
-            'max_attempts' => 3,
+            'max_attempts' => 5,
         ]);
 
-        $response = $this->postJson('/api/v1/auth/verify', [
+        $response = $this->postJson('/api/v1/auth/code/verify', [
             'email' => 'fail@example.com',
             'code' => '000000',
             'purpose' => 'login',
@@ -104,12 +107,13 @@ class AuthChallengeTest extends TestCase
             'code_hash' => Hash::make($code),
             'purpose' => 'auth',
             'expires_at' => now()->addMinutes(15),
-            'max_attempts' => 3,
+            'max_attempts' => 5,
         ]);
 
         $response = $this->postJson('/api/v1/auth/code/verify', [
             'email' => 'OWNER@example.com ',
             'code' => $code,
+            'purpose' => 'auth',
         ]);
 
         $response->assertStatus(200)
@@ -133,12 +137,13 @@ class AuthChallengeTest extends TestCase
             'code_hash' => Hash::make($code),
             'purpose' => 'auth',
             'expires_at' => now()->addMinutes(15),
-            'max_attempts' => 3,
+            'max_attempts' => 5,
         ]);
 
         $response = $this->postJson('/api/v1/auth/code/verify', [
             'email' => 'newuser@example.com',
             'code' => $code,
+            'purpose' => 'auth',
         ]);
 
         $response->assertStatus(200)
