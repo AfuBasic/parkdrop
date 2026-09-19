@@ -1,138 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Blue Scale (Brand & Action) */
-  --color-blue-50: #EFF6FF;
-  --color-blue-100: #DBEAFE;
-  --color-blue-200: #BFDBFE;
-  --color-blue-300: #93C5FD;
-  --color-blue-400: #60A5FA;
-  --color-blue-500: #3B82F6;
-  --color-blue-600: #2563EB;
-  --color-blue-700: #1D4ED8;
-  --color-blue-800: #1E40AF;
-  --color-blue-900: #1E3A8A;
-  --color-blue-950: #172554;
-
-  /* Neutral Scale */
-  --color-neutral-0: #FFFFFF;
-  --color-neutral-50: #F8FAFC;
-  --color-neutral-100: #F1F5F9;
-  --color-neutral-200: #E2E8F0;
-  --color-neutral-300: #CBD5E1;
-  --color-neutral-400: #94A3B8;
-  --color-neutral-500: #64748B;
-  --color-neutral-600: #475569;
-  --color-neutral-700: #334155;
-  --color-neutral-800: #1E293B;
-  --color-neutral-900: #0F172A;
-  --color-neutral-950: #020617;
-
-  /* Semantic Tokens - Actions */
-  --color-action-primary: var(--color-blue-600);
-  --color-action-primary-hover: var(--color-blue-700);
-  --color-action-primary-active: var(--color-blue-800);
-  --color-action-primary-disabled: var(--color-neutral-300);
-
-  /* Semantic Tokens - Text */
-  --color-text-primary: var(--color-neutral-900);
-  --color-text-secondary: var(--color-neutral-600);
-  --color-text-muted: var(--color-neutral-400);
-  --color-text-inverse: var(--color-neutral-0);
-  --color-text-link: var(--color-blue-600);
-
-  /* Semantic Tokens - Surfaces */
-  --color-surface-page: var(--color-neutral-50);
-  --color-surface-default: var(--color-neutral-0);
-  --color-surface-subtle: var(--color-neutral-100);
-  --color-surface-raised: var(--color-neutral-0);
-  --color-surface-selected: var(--color-blue-50);
-
-  /* Semantic Tokens - Borders */
-  --color-border-default: var(--color-neutral-200);
-  --color-border-strong: var(--color-neutral-300);
-  --color-border-focus: var(--color-blue-400);
-
-  /* Semantic Tokens - Status */
-  --color-status-success: #16A34A; /* Green 600 */
-  --color-status-warning: #D97706; /* Amber 600 */
-  --color-status-danger: #DC2626; /* Red 600 */
-  --color-status-info: var(--color-blue-600);
-
-  /* Typography - Font Families */
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
   
-  /* Typography - Size scale */
-  --text-display: 2.5rem; /* 40px */
-  --text-display--line-height: 3rem; /* 48px */
-  --text-heading-xl: 2rem; /* 32px */
-  --text-heading-xl--line-height: 2.5rem; /* 40px */
-  --text-heading-lg: 1.5rem; /* 24px */
-  --text-heading-lg--line-height: 2rem; /* 32px */
-  --text-heading-md: 1.25rem; /* 20px */
-  --text-heading-md--line-height: 1.75rem; /* 28px */
-  --text-heading-sm: 1rem; /* 16px */
-  --text-heading-sm--line-height: 1.5rem; /* 24px */
+  --color-background: #ffffff;
+  --color-foreground: #020817;
   
-  --text-body-lg: 1.125rem; /* 18px */
-  --text-body-lg--line-height: 1.75rem; /* 28px */
-  --text-body-md: 1rem; /* 16px */
-  --text-body-md--line-height: 1.5rem; /* 24px */
-  --text-body-sm: 0.875rem; /* 14px */
-  --text-body-sm--line-height: 1.25rem; /* 20px */
+  /* Vibrant Premium Blue */
+  --color-primary: #1d4ed8; 
+  --color-primary-foreground: #ffffff;
   
-  --text-label: 0.875rem; /* 14px */
-  --text-label--line-height: 1.25rem; /* 20px */
-  --text-caption: 0.75rem; /* 12px */
-  --text-caption--line-height: 1rem; /* 16px */
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  
+  --color-muted: #f8fafc;
+  --color-muted-foreground: #64748b;
+  
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+  
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #1d4ed8;
 
-  /* Spacing Scale */
-  --spacing-0: 0;
-  --spacing-1: 2px;
-  --spacing-2: 4px;
-  --spacing-3: 8px;
-  --spacing-4: 12px;
-  --spacing-5: 16px;
-  --spacing-6: 20px;
-  --spacing-7: 24px;
-  --spacing-8: 32px;
-  --spacing-9: 40px;
-  --spacing-10: 48px;
-  --spacing-11: 64px;
-  --spacing-12: 80px;
+  --radius-xl: 1rem;
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
 
-  /* Radius Scale */
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-full: 9999px;
-
-  /* Elevation (Shadows) */
-  --shadow-elevation-0: none;
-  --shadow-elevation-1: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Dropdowns/popovers */
-  --shadow-elevation-2: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Drawers/dialogs */
-
-  /* Motion Duration */
-  --animate-duration-fast: 120ms;
-  --animate-duration-normal: 180ms;
-  --animate-duration-slow: 240ms;
-
-  /* Breakpoints */
-  --breakpoint-sm: 480px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
-  --breakpoint-2xl: 1440px;
+  --animate-in: animate-in 0.3s ease-out;
+  --animate-out: animate-out 0.3s ease-in;
 }
 
 @layer base {
   :root {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-color: var(--color-surface-page);
-    color: var(--color-text-primary);
+  }
+
+  * {
+    border-color: var(--color-border);
   }
 
   body {
@@ -140,23 +52,5 @@
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
     padding: 0;
-  }
-
-  /* Consistent Focus Ring Pattern */
-  *:focus-visible {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
-  }
-
-  /* Respect reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    ::before,
-    ::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
   }
 }
