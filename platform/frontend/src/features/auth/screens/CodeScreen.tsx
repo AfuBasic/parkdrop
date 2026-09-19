@@ -49,6 +49,8 @@ export function CodeScreen({
   const handleResend = () => {
     if (countdown === 0 && !isLoading) {
       setCountdown(30);
+      setCode('');
+      inputRef.current?.focus();
       onResend();
     }
   };
