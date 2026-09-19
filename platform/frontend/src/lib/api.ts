@@ -1,12 +1,18 @@
 export class ApiError extends Error {
   status: number;
   data?: any;
+  errors?: Record<string, string[]>;
 
   constructor(status: number, message: string, data?: any) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.data = data;
+    
+    // Auto-extract Laravel's validation errors bag if it's a 422 Unprocessable Entity
+    if (status === 422 && data?.errors) {
+      this.errors = data.errors;
+    }
   }
 }
 
