@@ -1,14 +1,16 @@
 <x-mail::message>
 # Welcome to ParkDrop
 
-Use the following 6-digit code to securely log in to your account. This code expires in 15 minutes.
+Use the 6-digit confirmation code below to complete your sign in. This code is valid for 15 minutes.
 
 <x-mail::panel>
-# {{ $code }}
+<div style="font-family: monospace; font-size: 32px; letter-spacing: 6px; font-weight: bold; text-align: center; color: #1e3a8a;">
+{{ $code }}
+</div>
 </x-mail::panel>
 
-If you did not request this code, you can safely ignore this email.
+If you didn't request this code, you can safely ignore this message. No changes will be made to your account.
 
-Thanks,<br>
-{{ config('app.name') }}
+Warm regards,<br>
+The {{ config('app.name') }} Team
 </x-mail::message>
