@@ -2,15 +2,15 @@
 
 namespace App\Actions\Auth;
 
+use App\Models\AuthChallenge;
 use App\Models\Business;
 use App\Models\BusinessMembership;
 use App\Models\PickupPoint;
-use App\Models\SmsWallet;
+use App\Models\PrivacyAcknowledgement;
 use App\Models\SmsCreditTransaction;
+use App\Models\SmsWallet;
 use App\Models\User;
 use App\Models\UserDevice;
-use App\Models\PrivacyAcknowledgement;
-use App\Models\AuthChallenge;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -44,7 +44,7 @@ class CompleteOwnerOnboardingAction
             // 2. Create Business
             $business = Business::create([
                 'public_id' => Str::uuid()->toString(),
-                'name' => $data['first_name'] . "'s Business", // Default name, can be changed later
+                'name' => $data['first_name']."'s Business", // Default name, can be changed later
                 'status' => 'active',
             ]);
 
@@ -65,7 +65,7 @@ class CompleteOwnerOnboardingAction
             ]);
 
             // 5. Register Device
-            if (!empty($data['device_uuid'])) {
+            if (! empty($data['device_uuid'])) {
                 UserDevice::updateOrCreate(
                     [
                         'user_id' => $user->id,
