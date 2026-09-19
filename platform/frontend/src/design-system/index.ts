@@ -33,4 +33,5 @@ export * from "./shell"
 export * from "./illustrations/ParcelPattern"
 export * from "./illustrations/EmptyParcelIllustration"
 export * from "./illustrations/SyncIllustration"
+export * from "./illustrations/AuthBackdrop"
 
