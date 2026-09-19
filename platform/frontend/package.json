@@ -7,18 +7,24 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@radix-ui/react-slot": "^1.3.3",
     "@tanstack/react-query": "^5.103.1",
     "@tanstack/react-router": "^1.170.38",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "laravel-echo": "^2.5.0",
     "lucide-react": "^1.47.0",
     "pusher-js": "^8.6.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.88.0",
+    "tailwind-merge": "^3.7.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -36,6 +42,16 @@
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "storybook": "^10.6.0",
+    "@storybook/tanstack-react": "^10.6.0",
+    "@chromatic-com/storybook": "latest",
+    "@storybook/addon-vitest": "^10.6.0",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/addon-mcp": "^10.6.0",
+    "@vitest/browser-playwright": "5.0.1",
+    "@vitest/coverage-v8": "5.0.1",
+    "playwright": "latest"
   }
 }
