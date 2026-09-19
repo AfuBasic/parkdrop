@@ -127,6 +127,63 @@
     background-color: var(--color-surface-page);
     color: var(--color-text-primary);
     font-family: var(--font-sans);
+
+    /* Direct --pd-* CSS variable aliases for raw CSS / inline style consumption */
+    --pd-blue-50: var(--color-pd-blue-50);
+    --pd-blue-100: var(--color-pd-blue-100);
+    --pd-blue-200: var(--color-pd-blue-200);
+    --pd-blue-300: var(--color-pd-blue-300);
+    --pd-blue-400: var(--color-pd-blue-400);
+    --pd-blue-500: var(--color-pd-blue-500);
+    --pd-blue-600: var(--color-pd-blue-600);
+    --pd-blue-700: var(--color-pd-blue-700);
+    --pd-blue-800: var(--color-pd-blue-800);
+    --pd-blue-900: var(--color-pd-blue-900);
+    --pd-blue-950: var(--color-pd-blue-950);
+
+    --pd-action-primary: var(--color-action-primary);
+    --pd-action-primary-hover: var(--color-action-primary-hover);
+    --pd-action-primary-active: var(--color-action-primary-active);
+    --pd-action-primary-disabled: var(--color-action-primary-disabled);
+
+    --pd-text-primary: var(--color-text-primary);
+    --pd-text-secondary: var(--color-text-secondary);
+    --pd-text-muted: var(--color-text-muted);
+    --pd-text-disabled: var(--color-text-disabled);
+    --pd-text-inverse: var(--color-text-inverse);
+    --pd-text-link: var(--color-text-link);
+
+    --pd-surface-page: var(--color-surface-page);
+    --pd-surface-default: var(--color-surface-default);
+    --pd-surface-subtle: var(--color-surface-subtle);
+    --pd-surface-raised: var(--color-surface-raised);
+    --pd-surface-selected: var(--color-surface-selected);
+    --pd-surface-disabled: var(--color-surface-disabled);
+
+    --pd-border-default: var(--color-border-default);
+    --pd-border-strong: var(--color-border-strong);
+    --pd-border-focus: var(--color-border-focus);
+    --pd-border-disabled: var(--color-border-disabled);
+
+    --pd-status-success: var(--color-status-success);
+    --pd-status-success-text: var(--color-status-success-text);
+    --pd-status-success-bg: var(--color-status-success-bg);
+    --pd-status-success-border: var(--color-status-success-border);
+
+    --pd-status-danger: var(--color-status-danger);
+    --pd-status-danger-text: var(--color-status-danger-text);
+    --pd-status-danger-bg: var(--color-status-danger-bg);
+    --pd-status-danger-border: var(--color-status-danger-border);
+
+    --pd-status-warning: var(--color-status-warning);
+    --pd-status-warning-text: var(--color-status-warning-text);
+    --pd-status-warning-bg: var(--color-status-warning-bg);
+    --pd-status-warning-border: var(--color-status-warning-border);
+
+    --pd-status-info: var(--color-status-info);
+    --pd-status-info-text: var(--color-status-info-text);
+    --pd-status-info-bg: var(--color-status-info-bg);
+    --pd-status-info-border: var(--color-status-info-border);
   }
 
   * {
