@@ -20,11 +20,29 @@ Multi-tenancy is handled explicitly through the `Business` model.
 Data integrity is enforced at the database level, not just the application level.
 *   Strict `NOT NULL` columns.
 *   Foreign keys with cascading rules where appropriate.
+*   Normalized email column (`email_normalized`) with case-insensitive unique index to prevent duplicate user records.
 *   Money values stored as minor units (kobo).
 
 ### State Management & Events
 *   **Idempotency:** Core actions (payments, SMS sending) use idempotency keys to prevent duplicate execution.
 *   **Outbox Pattern:** Important domain events are saved to `outbox_events` within the same database transaction as the entity updates, ensuring reliable dispatch to the queue.
+
+### Universal OTP Authentication & Session Lifecycle
+*   **Single Unified Flow:** `Enter Email → Enter OTP → ParkDrop Decides`.
+*   **Endpoints:**
+    *   `POST /api/v1/auth/code` — Generates and emails a 15-minute 6-digit confirmation code via ZeptoMail.
+    *   `POST /api/v1/auth/code/verify` — Validates code against `auth_challenges`. Inspects database:
+        *   If user exists: Logs in via Laravel Sanctum session (`Auth::login($user)`) and responds with `{ outcome: 'authenticated', user, business }`.
+        *   If user does not exist: Returns `{ outcome: 'new_user', challenge_id, email }` allowing completion of name and pickup point.
+    *   `GET /api/v1/auth/session` — Returns active session state (`{ authenticated: true, user, business }` or 401).
+    *   `POST /api/v1/auth/logout` — Destroys server-side session and invalidates CSRF token.
+*   **Client State Machine (`AuthContext`):**
+    *   `booting` → initial session verification.
+    *   `authenticated` → active API session.
+    *   `locked` → registered workspace locked by 4-digit PIN.
+    *   `remembered_expired` → session expired, offers 1-tap re-authentication without retyping email.
+    *   `unknown` → first-time visitor or explicitly switched account.
+*   **Offline Tolerance:** Network failure during session check does not log out an authorized offline workspace.
 
 ## Frontend Architecture (React)
 
