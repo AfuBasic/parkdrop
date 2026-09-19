@@ -1,10 +1,24 @@
-import React from "react"
-import { RouterProvider, createRouter, createRoute, createRootRoute } from "@tanstack/react-router"
-import { AuthLayout } from "./components/layouts/AuthLayout"
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router"
+import { AppShell } from "./design-system"
+
+// Root component that wraps everything in AppShell
+const RootComponent = () => {
+  const location = useLocation()
+  const navigate = useNavigate()
+  
+  return (
+    <AppShell 
+      currentPath={location.pathname} 
+      onNavigate={(path) => navigate({ to: path })}
+    >
+      <Outlet />
+    </AppShell>
+  )
+}
 
 // 1. Create a root route
 const rootRoute = createRootRoute({
-  component: AuthLayout,
+  component: RootComponent,
 })
 
 // 2. Create placeholder views
@@ -38,11 +52,20 @@ const PackagesComponent = () => (
   </div>
 )
 
-const SettingsComponent = () => (
+const CustomersComponent = () => (
   <div className="space-y-6">
-    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Settings</h1>
+    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Customers</h1>
     <div className="rounded-xl border border-border-default bg-surface-default p-6 shadow-sm">
-      <p className="text-text-secondary">Business settings will go here...</p>
+      <p className="text-text-secondary">Customer management will go here...</p>
+    </div>
+  </div>
+)
+
+const MoreComponent = () => (
+  <div className="space-y-6">
+    <h1 className="text-2xl font-bold tracking-tight text-text-primary">More</h1>
+    <div className="rounded-xl border border-border-default bg-surface-default p-6 shadow-sm">
+      <p className="text-text-secondary">Settings and other links will go here...</p>
     </div>
   </div>
 )
@@ -51,9 +74,10 @@ const SettingsComponent = () => (
 const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: IndexComponent })
 const addRoute = createRoute({ getParentRoute: () => rootRoute, path: "/add", component: AddComponent })
 const packagesRoute = createRoute({ getParentRoute: () => rootRoute, path: "/packages", component: PackagesComponent })
-const settingsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/settings", component: SettingsComponent })
+const customersRoute = createRoute({ getParentRoute: () => rootRoute, path: "/customers", component: CustomersComponent })
+const moreRoute = createRoute({ getParentRoute: () => rootRoute, path: "/more", component: MoreComponent })
 
-const routeTree = rootRoute.addChildren([indexRoute, addRoute, packagesRoute, settingsRoute])
+const routeTree = rootRoute.addChildren([indexRoute, addRoute, packagesRoute, customersRoute, moreRoute])
 
 // 4. Create router instance
 const router = createRouter({ routeTree })
