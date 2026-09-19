@@ -8,8 +8,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme="system"
       className="toaster group"
-      position="bottom-right"
-      richColors
+      position="top-center"
       toastOptions={{
         className: "max-w-[calc(100vw-32px)] sm:max-w-md",
         classNames: {

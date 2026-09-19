@@ -34,5 +34,10 @@ export function handleApiError<TFieldValues extends Record<string, any>>(
   }
 
   // A generic JS Error (Network error, etc)
-  toast.error(error instanceof Error ? error.message : genericMessage);
+  let finalMessage = error instanceof Error ? error.message : genericMessage;
+  if (finalMessage === 'Failed to fetch' || finalMessage.includes('NetworkError')) {
+    finalMessage = 'Could not connect. Check your internet and try again.';
+  }
+  
+  toast.error(finalMessage);
 }

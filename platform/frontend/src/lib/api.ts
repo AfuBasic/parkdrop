@@ -32,7 +32,15 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}): Pro
     credentials: 'include', // Vite proxy / same-origin will use cookies if configured properly
   };
 
-  const response = await fetch(url, fetchOptions);
+  let response: Response;
+  try {
+    response = await fetch(url, fetchOptions);
+  } catch (err) {
+    if (err instanceof Error && (err.message === 'Failed to fetch' || err.message.includes('NetworkError'))) {
+      throw new Error('Could not connect. Check your internet and try again.');
+    }
+    throw err;
+  }
 
   if (!response.ok) {
     let message = 'An error occurred';
