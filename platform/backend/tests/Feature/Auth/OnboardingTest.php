@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Auth;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\AuthChallenge;
-use App\Models\User;
 use App\Models\Business;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
 
 class OnboardingTest extends TestCase
 {
@@ -35,7 +35,7 @@ class OnboardingTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-                 ->assertJsonStructure(['user' => ['id'], 'business' => ['id']]);
+            ->assertJsonStructure(['user' => ['id'], 'business' => ['id']]);
 
         // Assert User created
         $this->assertDatabaseHas('users', [
