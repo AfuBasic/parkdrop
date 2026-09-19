@@ -16,7 +16,6 @@ export function ForgotPinFlow({ deviceMeta, rememberedIdentity, onCancel }: Forg
   const { setAuthenticatedUser } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [hasSentInitialCode, setHasSentInitialCode] = React.useState(false);
 
   // Email associated with the remembered device or remembered identity
   const email = deviceMeta.email || rememberedIdentity?.email || '';
@@ -44,13 +43,15 @@ export function ForgotPinFlow({ deviceMeta, rememberedIdentity, onCancel }: Forg
     }
   }, [email, deviceMeta.device_uuid]);
 
-  // Trigger code send on initial mount
+  const hasSentRef = React.useRef(false);
+
+  // Trigger code send on initial mount exactly once
   React.useEffect(() => {
-    if (!hasSentInitialCode) {
-      setHasSentInitialCode(true);
+    if (!hasSentRef.current) {
+      hasSentRef.current = true;
       handleSendCode();
     }
-  }, [hasSentInitialCode, handleSendCode]);
+  }, [handleSendCode]);
 
   const handleVerifyCode = async (code: string) => {
     setIsLoading(true);
