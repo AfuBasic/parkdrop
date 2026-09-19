@@ -30,7 +30,7 @@ class AuthChallengeMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your ParkDrop Login Code: ' . $this->code,
+            subject: 'Your ParkDrop confirmation code: ' . $this->code,
         );
     }
 
