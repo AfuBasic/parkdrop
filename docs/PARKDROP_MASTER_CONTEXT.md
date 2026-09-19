@@ -15,8 +15,11 @@ Next build: TBD based on priorities (likely Offline Engine).
   - No passwords. No "Don't have an account? Sign up" patterns.
   - The user simply enters their email and continues.
 - **Backend Decision Engine:**
-  - `POST /api/v1/auth/code` sends a 6-digit confirmation code (expires in 15 minutes).
+  - `POST /api/v1/auth/code` sends a 10-minute 6-digit confirmation code.
+    - Heavily rate-limited (cooldown, short-window, daily, IP, global).
+    - Email dispatch is high-priority queued (`auth` queue) *after* DB transaction commits.
   - `POST /api/v1/auth/code/verify` checks the code and inspects the database:
+    - Verifications are brute-force protected (max 5 attempts) and row-locked to prevent concurrent consumption.
     - If user exists: logs user into Sanctum session (`Auth::login($user)`) and returns `{ outcome: 'authenticated', user, business }`.
     - If user does not exist: returns `{ outcome: 'new_user', challenge_id, email }`, leading seamlessly to Name and Pickup Point setup.
 - **Session & Identity Continuity:**

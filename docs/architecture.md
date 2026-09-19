@@ -29,8 +29,14 @@ Data integrity is enforced at the database level, not just the application level
 
 ### Universal OTP Authentication & Session Lifecycle
 *   **Single Unified Flow:** `Enter Email → Enter OTP → ParkDrop Decides`.
+*   **OTP Security Principles:**
+    *   **Layered Rate Limiting:** Cooldown (1/60s), short-window (3/15m), daily (8/24h), IP limits, and global safety caps protect the `/code` endpoint. Keys are hashed normalized emails to protect PII.
+    *   **Verification Protection:** Brute-force guessing is blocked (max 5 attempts per challenge).
+    *   **Challenge Storage:** Challenges store a `code_hash` rather than raw OTP to protect against database leaks.
+    *   **Concurrency Safe:** Row locks and transactions guarantee single-use consumption and prevent race conditions.
+    *   **Mail Queueing:** Dispatch occurs *after* commit on a high-priority `auth` queue. Payloads are encrypted at rest to avoid raw OTPs leaking in failed jobs.
 *   **Endpoints:**
-    *   `POST /api/v1/auth/code` — Generates and emails a 15-minute 6-digit confirmation code via ZeptoMail.
+    *   `POST /api/v1/auth/code` — Generates and queues a 10-minute 6-digit confirmation code via ZeptoMail.
     *   `POST /api/v1/auth/code/verify` — Validates code against `auth_challenges`. Inspects database:
         *   If user exists: Logs in via Laravel Sanctum session (`Auth::login($user)`) and responds with `{ outcome: 'authenticated', user, business }`.
         *   If user does not exist: Returns `{ outcome: 'new_user', challenge_id, email }` allowing completion of name and pickup point.

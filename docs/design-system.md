@@ -51,6 +51,20 @@ Status indicators and toasts pair soft background fills, subtle border framing, 
 
 ---
 
+## Transactional Email
+
+ParkDrop emails are designed to be transactional and reassuring. We do not use promotional or marketing visual styles for authentication or operations.
+
+### Visual Rules
+- **Palette**: The outer background uses `#F8FBFF`. The main surface is `#FFFFFF`.
+- **OTP Panel**: The code focus area uses a soft blue surface (`#EFF6FF`) with a pale border (`#BFDBFE`) to clearly distinguish it.
+- **Logo Usage**: We use the canonical ParkDrop logo (e.g. `parkdrop-logo.png`) exclusively. Do not rely on inline SVGs, text substitutions, or third-party icons.
+- **Typography**: Emails must use an email-safe system font stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`).
+- **Responsive Guidelines**: Limit main content width to roughly 560px with generous 40px internal padding on desktop, scaling down to 24px padding on mobile viewports (e.g., 375px/390px). 
+- **Plain-text**: Every HTML email must have an identical plain-text counterpart.
+
+---
+
 ## Illustrations & Visual Motifs (`src/design-system/illustrations`)
 
 - **Rule**: No generic stock vector art or external raster illustrations.
