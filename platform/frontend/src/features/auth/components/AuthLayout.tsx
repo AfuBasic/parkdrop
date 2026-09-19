@@ -10,14 +10,14 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, onBack, showBack = true }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen bg-surface-page flex flex-col items-center justify-center p-4 sm:p-6 md:p-10 relative overflow-hidden">
+    <div className="min-h-screen bg-surface-page flex flex-col items-center justify-center p-0 sm:p-6 md:p-10 relative overflow-hidden">
       {/* Mobile background atmospheric motif */}
-      <div className="absolute -top-12 -right-12 w-80 h-80 pointer-events-none opacity-40 md:hidden">
+      <div className="absolute -top-12 -right-12 w-80 h-80 pointer-events-none opacity-30 md:hidden">
         <AuthBackdrop className="w-full h-full" />
       </div>
 
-      <div className="w-full max-w-5xl flex-1 flex flex-col justify-center z-10 my-auto">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center bg-surface-default/70 md:bg-surface-default border border-border-default rounded-3xl p-6 sm:p-10 shadow-elevation-2 backdrop-blur-sm">
+      <div className="w-full max-w-5xl flex-1 flex flex-col justify-center z-10 sm:my-auto">
+        <div className="min-h-screen sm:min-h-[540px] grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-center bg-transparent sm:bg-surface-default border-0 sm:border sm:border-border-default sm:rounded-3xl p-6 sm:p-10 sm:shadow-elevation-2 backdrop-blur-none sm:backdrop-blur-sm">
           {/* Left Column: Form & Navigation */}
           <div className="md:col-span-7 flex flex-col min-h-[460px]">
             <header className="flex items-center justify-between mb-8">
