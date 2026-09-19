@@ -1,36 +1,38 @@
 # ParkDrop Design System
 
-## Core Aesthetics
-ParkDrop uses a highly intentional, "blue-led" design system. It is designed to feel clean, trustworthy, simple, modern, and product-led.
+The ParkDrop design system is the visual and interaction foundation for the entire application. It is built to be fast, calm, practical, trustworthy, modern, approachable, deliberate, and efficient.
 
-## Typography
-*   **Primary Font:** Inter
-*   **Scale:** Follows standard Tailwind spacing, utilizing `tracking-tight` for headers.
+## Architecture
 
-## Colors
+- **Tailwind CSS v4**: Utility-first CSS using a comprehensive theme defined in `src/index.css`.
+- **Radix UI Primitives**: Accessible, unstyled UI components for things like Dialogs, Tooltips, Switches, Checkboxes, and Tabs.
+- **CVA (Class Variance Authority)**: For managing component variants (e.g. Button sizes, colors).
 
-### Blue Scale (Action & Brand)
-We utilize a unified blue scale for all primary actions.
-*   `--color-blue-50` to `--color-blue-950`
-*   **Primary Action:** `--color-blue-600`
-*   **Primary Action Hover:** `--color-blue-700`
+## Token System (`src/index.css`)
 
-### Surfaces & Backgrounds
-*   **Page Background:** `--color-surface-page` (`#f8fafc` - Slate 50)
-*   **Card/Component Surface:** `--color-surface-default` (`#ffffff` - White)
-*   **Subtle/Secondary Surface:** `--color-surface-subtle` (`#f1f5f9` - Slate 100)
-*   **Selected Surface:** `--color-surface-selected` (Blue 50)
+### Colors
+- **Brand/Action (Blue)**: Scale from `blue-50` to `blue-950`.
+- **Neutrals**: Scale from `neutral-0` to `neutral-950`.
+- **Semantic Status**: Success (Green), Warning (Amber), Danger (Red), Info (Blue).
 
-### Borders
-*   **Default:** `--color-border-default` (`#e2e8f0` - Slate 200)
-*   **Strong:** `--color-border-strong` (`#cbd5e1` - Slate 300)
-*   **Focus:** `--color-border-focus` (Blue 400)
+### Typography
+- **Font**: Inter
+- **Scales**: Display, Heading (xl, lg, md, sm), Body (lg, md, sm), Label, Caption.
 
-## Mobile First UI
-*   **Touch Targets:** All interactive elements (buttons, inputs) must be at least `48px` tall (e.g. `min-h-[48px]`).
-*   **Navigation:** Mobile utilizes a bottom tab navigation bar. Desktop utilizes a side rail.
+### Spacing & Radius
+- **Spacing**: 0 to 80px scale.
+- **Radius**: xs (6px) to full (9999px).
 
-## Primitives
-*   **Button:** Supports `default`, `destructive`, `outline`, `secondary`, `ghost`, and `link` variants.
-*   **Input:** Unified styling for text fields.
-*   **Badge:** Status indicators for Packages and Subscriptions.
+## Layers
+
+1. **Primitives (`src/design-system/components`)**: Basic UI elements like `Button`, `Input`, `StatusBadge`, `Dialog`.
+2. **Patterns (`src/design-system/patterns`)**: Domain-specific UI combinations like `PackageListItem`, `SmsCreditBalance`, `ActivityTimeline`.
+3. **App Shell (`src/design-system/shell`)**: High-level layout components like `AppShell`, `PageHeader`, `NavItem`.
+
+## Usage
+
+All components are exported from `src/design-system/index.ts`.
+
+```tsx
+import { Button, PackageListItem } from "@/design-system"
+```
