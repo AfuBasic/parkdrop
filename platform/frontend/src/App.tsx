@@ -1,7 +1,9 @@
-
+import * as React from 'react';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
+import { Toaster } from '@/components/ui/sonner';
 import { AuthFlow } from '@/features/auth/components/AuthFlow';
 import { UnlockScreen } from '@/features/auth/screens/UnlockScreen';
+import { ThemeDemo } from '@/routes/theme-demo';
 
 function AppContent() {
   const { state, deviceMeta, unlock, logout } = useAuth();
@@ -41,9 +43,19 @@ function AppContent() {
 }
 
 function App() {
+  if (typeof window !== 'undefined' && window.location.pathname === '/theme') {
+    return (
+      <React.Fragment>
+        <ThemeDemo />
+        <Toaster />
+      </React.Fragment>
+    );
+  }
+
   return (
     <AuthProvider>
       <AppContent />
+      <Toaster />
     </AuthProvider>
   );
 }
