@@ -1,77 +1,178 @@
 /* eslint-disable react-refresh/only-export-components */
 import * as React from 'react';
-import { db, type DeviceMeta } from '@/lib/db';
+import { db, type DeviceMeta, type RememberedIdentity } from '@/lib/db';
 import { authApi } from './api';
-import type { AuthUser } from './types';
+import { getMostRecentRememberedIdentity, saveRememberedIdentity, clearAllRememberedIdentities } from './lib/rememberedIdentity';
+import type { AuthUser, AuthBusiness } from './types';
+import { ApiError } from '@/lib/api';
 
-type AuthState = 'loading' | 'unregistered' | 'locked' | 'authenticated';
+export type AuthState = 
+  | 'booting'              // Initial state while resolving session/storage
+  | 'authenticated'        // Valid session exists -> Dashboard
+  | 'locked'               // Device registered with PIN lock -> UnlockScreen
+  | 'remembered_expired'   // Device has remembered email but session expired -> RememberedReauthScreen
+  | 'unknown';             // Fresh unknown visitor -> Universal Email OTP Flow
 
 interface AuthContextValue {
   state: AuthState;
-  deviceMeta: DeviceMeta | null;
   user: AuthUser | null;
+  business: AuthBusiness | null;
+  deviceMeta: DeviceMeta | null;
+  rememberedIdentity: RememberedIdentity | null;
+  setAuthenticatedUser: (user: AuthUser, business: AuthBusiness | null) => Promise<void>;
   unlock: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
+  forgetRememberedIdentity: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 export const AuthContext = React.createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState<AuthState>('loading');
-  const [deviceMeta, setDeviceMeta] = React.useState<DeviceMeta | null>(null);
+  const [state, setState] = React.useState<AuthState>('booting');
   const [user, setUser] = React.useState<AuthUser | null>(null);
+  const [business, setBusiness] = React.useState<AuthBusiness | null>(null);
+  const [deviceMeta, setDeviceMeta] = React.useState<DeviceMeta | null>(null);
+  const [rememberedIdentity, setRememberedIdentity] = React.useState<RememberedIdentity | null>(null);
 
-  React.useEffect(() => {
-    async function initAuth() {
+  const initAuth = React.useCallback(async () => {
+    setState('booting');
+    try {
+      // 1. Check local Dexie storage
+      const meta = await db.deviceMeta.toCollection().first();
+      setDeviceMeta(meta || null);
+
+      const recentIdentity = await getMostRecentRememberedIdentity();
+      setRememberedIdentity(recentIdentity);
+
+      // 2. Inspect server session via Sanctum
+      let sessionData = null;
+      let sessionUnauthorized = false;
+
       try {
-        // 1. Check if device is registered
-        const meta = await db.deviceMeta.toCollection().first();
-        
-        if (!meta) {
-          setState('unregistered');
-          return;
-        }
-
-        setDeviceMeta(meta);
-
-        // 2. Check if we have an active API session
-        try {
-          const apiUser = await authApi.getUser();
-          setUser(apiUser);
-          setState('authenticated'); // Session is alive
-        } catch {
-          // If 401, we just need to unlock (which re-authenticates or we'll just show locked screen and the unlock flow will handle API auth if needed. Actually, V1 unlock just bypasses PIN and we assume Sanctum cookie is still valid, OR if cookie is expired, they need to re-request OTP. But the prompt said: "Returning on a known device should normally be: Open ParkDrop -> Enter 4-digit PIN -> Home". So if we have a device, we show locked.)
-          
-          // Actually, let's always show 'locked' if there's a device, enforcing the PIN entry every time the app opens/reloads.
-          setState('locked'); 
+        const res = await authApi.getSession();
+        if (res.authenticated && res.user) {
+          sessionData = res;
         }
       } catch (err) {
-        console.error("Auth init failed", err);
-        setState('unregistered');
+        if (err instanceof ApiError && err.status === 401) {
+          sessionUnauthorized = true;
+        } else {
+          // Network error or offline: do NOT log out or clear session if device exists
+          console.warn('Network error checking session, respecting offline state:', err);
+        }
       }
+
+      // 3. Resolve state machine
+      if (sessionData?.user) {
+        setUser(sessionData.user);
+        setBusiness(sessionData.business);
+        
+        // If device requires PIN lock
+        if (meta?.pin_hash) {
+          setState('locked');
+        } else {
+          setState('authenticated');
+        }
+        return;
+      }
+
+      // If server explicitly said 401 Unauthenticated
+      if (sessionUnauthorized || !sessionData) {
+        if (recentIdentity) {
+          setState('remembered_expired');
+        } else if (meta?.first_name) {
+          // Fallback to device meta if available
+          setState('remembered_expired');
+        } else {
+          setState('unknown');
+        }
+      }
+    } catch (err) {
+      console.error('Auth initialization error:', err);
+      setState('unknown');
     }
-    
-    initAuth();
   }, []);
 
-  const unlock = async () => {
-    // In a real app, unlocking might also refresh the API session if needed, 
-    // but for now, we just update local state.
+  React.useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  const setAuthenticatedUser = async (authUser: AuthUser, authBusiness: AuthBusiness | null) => {
+    setUser(authUser);
+    setBusiness(authBusiness);
+
+    // Persist to remembered identity in Dexie
+    await saveRememberedIdentity({
+      email: authUser.email,
+      name: authUser.first_name,
+      business_name: authBusiness?.name,
+    });
+
+    const recent = await getMostRecentRememberedIdentity();
+    setRememberedIdentity(recent);
+
+    // If local PIN exists, lock; else go straight to authenticated
+    const meta = await db.deviceMeta.toCollection().first();
+    if (meta?.pin_hash) {
+      setState('locked');
+    } else {
+      setState('authenticated');
+    }
+  };
+
+  const unlock = () => {
     setState('authenticated');
   };
 
   const logout = async () => {
-    // Clear everything
+    try {
+      await authApi.logout();
+    } catch (e) {
+      console.warn('Logout API error:', e);
+    }
+
+    setUser(null);
+    setBusiness(null);
+    
+    // Check if we have a remembered identity to fall back to
+    const recent = await getMostRecentRememberedIdentity();
+    if (recent) {
+      setState('remembered_expired');
+    } else {
+      setState('unknown');
+    }
+  };
+
+  const forgetRememberedIdentity = async () => {
+    await clearAllRememberedIdentities();
     await db.deviceMeta.clear();
+    setRememberedIdentity(null);
     setDeviceMeta(null);
     setUser(null);
-    setState('unregistered');
-    
-    // Might also want to call a backend /logout endpoint here to kill the cookie
+    setBusiness(null);
+    setState('unknown');
+  };
+
+  const refreshSession = async () => {
+    await initAuth();
   };
 
   return (
-    <AuthContext.Provider value={{ state, deviceMeta, user, unlock, logout }}>
+    <AuthContext.Provider
+      value={{
+        state,
+        user,
+        business,
+        deviceMeta,
+        rememberedIdentity,
+        setAuthenticatedUser,
+        unlock,
+        logout,
+        forgetRememberedIdentity,
+        refreshSession,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
