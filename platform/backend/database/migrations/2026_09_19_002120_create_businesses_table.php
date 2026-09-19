@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('businesses', function (Blueprint $table) {
             $table->id();
+            $table->uuid('public_id')->unique();
+            $table->string('name');
+            $table->string('status')->default('active');
             $table->timestamps();
         });
     }
