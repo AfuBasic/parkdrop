@@ -1,93 +1,51 @@
-import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router"
-import { AppShell } from "./design-system"
 
-// Root component that wraps everything in AppShell
-const RootComponent = () => {
-  const location = useLocation()
-  const navigate = useNavigate()
-  
-  return (
-    <AppShell 
-      currentPath={location.pathname} 
-      onNavigate={(path) => navigate({ to: path })}
-    >
-      <Outlet />
-    </AppShell>
-  )
-}
+import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
+import { AuthFlow } from '@/features/auth/components/AuthFlow';
+import { UnlockScreen } from '@/features/auth/screens/UnlockScreen';
 
-// 1. Create a root route
-const rootRoute = createRootRoute({
-  component: RootComponent,
-})
+function AppContent() {
+  const { state, deviceMeta, unlock, logout } = useAuth();
 
-// 2. Create placeholder views
-const IndexComponent = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Dashboard</h1>
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div className="rounded-xl border border-border-default bg-surface-default p-6 shadow-sm">
-        <h3 className="text-sm font-medium text-text-secondary">Packages Today</h3>
-        <p className="mt-2 text-3xl font-bold text-text-primary">24</p>
+  if (state === 'loading') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
-    </div>
-  </div>
-)
-
-const AddComponent = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Add Package</h1>
-    <div className="rounded-xl border border-border-default bg-surface-default p-6 shadow-sm">
-      <p className="text-text-secondary">Package entry form will go here...</p>
-    </div>
-  </div>
-)
-
-const PackagesComponent = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Packages</h1>
-    <div className="rounded-xl border border-border-default bg-surface-default p-6 shadow-sm">
-      <p className="text-text-secondary">Package list and search will go here...</p>
-    </div>
-  </div>
-)
-
-const CustomersComponent = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold tracking-tight text-text-primary">Customers</h1>
-    <div className="rounded-xl border border-border-default bg-surface-default p-6 shadow-sm">
-      <p className="text-text-secondary">Customer management will go here...</p>
-    </div>
-  </div>
-)
-
-const MoreComponent = () => (
-  <div className="space-y-6">
-    <h1 className="text-2xl font-bold tracking-tight text-text-primary">More</h1>
-    <div className="rounded-xl border border-border-default bg-surface-default p-6 shadow-sm">
-      <p className="text-text-secondary">Settings and other links will go here...</p>
-    </div>
-  </div>
-)
-
-// 3. Create route tree
-const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: IndexComponent })
-const addRoute = createRoute({ getParentRoute: () => rootRoute, path: "/add", component: AddComponent })
-const packagesRoute = createRoute({ getParentRoute: () => rootRoute, path: "/packages", component: PackagesComponent })
-const customersRoute = createRoute({ getParentRoute: () => rootRoute, path: "/customers", component: CustomersComponent })
-const moreRoute = createRoute({ getParentRoute: () => rootRoute, path: "/more", component: MoreComponent })
-
-const routeTree = rootRoute.addChildren([indexRoute, addRoute, packagesRoute, customersRoute, moreRoute])
-
-// 4. Create router instance
-const router = createRouter({ routeTree })
-
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router
+    );
   }
+
+  if (state === 'unregistered') {
+    return <AuthFlow />;
+  }
+
+  if (state === 'locked' && deviceMeta) {
+    return <UnlockScreen deviceMeta={deviceMeta} onUnlocked={unlock} onLogout={logout} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+      <img src="/parkdrop-icon-only.png" alt="ParkDrop Logo" className="w-20 h-20 object-contain mb-6 drop-shadow-md" />
+      <h1 className="text-2xl font-bold mb-2">Welcome to ParkDrop Dashboard</h1>
+      <p className="text-muted-foreground mb-8 text-center max-w-sm">
+        Your first-time setup is complete. You can now start managing packages and SMS credits.
+      </p>
+      
+      <button 
+        onClick={logout}
+        className="px-6 py-2 bg-destructive/10 text-destructive font-semibold rounded-xl hover:bg-destructive/20 transition-colors"
+      >
+        Sign Out & Reset Device
+      </button>
+    </div>
+  );
 }
 
-export default function App() {
-  return <RouterProvider router={router} />
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
 }
+
+export default App;
