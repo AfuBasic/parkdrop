@@ -41,3 +41,59 @@ Domain events use the outbox pattern.
 
 ### 5. Frontend Stack
 React, TypeScript, Vite, TanStack Router, TanStack Query, Tailwind CSS v4, Lucide React, Dexie (IndexedDB) for offline storage.
+
+---
+
+## Mobile-First Design Mandate
+
+### Canonical Repository-Level Mobile Design Skill
+
+**Location:** `.agents/skills/parkdrop-mobile-design/`
+
+The Skill file: `.agents/skills/parkdrop-mobile-design/SKILL.md`
+
+This is the canonical mobile product-design Skill for the ParkDrop application.
+It governs all UI/UX decisions across the ParkDrop application codebase.
+
+References:
+- `.agents/skills/parkdrop-mobile-design/references/mobile-ui-rules.md` — Touch, typography, offline, keyboard, QA checklist
+- `.agents/skills/parkdrop-mobile-design/references/parkdrop-mobile-patterns.md` — Screen-by-screen mobile design patterns
+
+### Mobile-First Rule
+
+**ParkDrop application UI must be designed mobile-first before any tablet or desktop adaptation.**
+
+Design and verify every screen at the following widths, in this order:
+
+```
+360px → 390px → 412px → 430px → 768px → 1024px+
+```
+
+The mobile experience is the source design.
+Tablet and desktop are adaptations of the mobile design.
+
+This rule applies to the **ParkDrop operational application**.
+It does **not** automatically apply to any separate public marketing website.
+
+### Mobile Design Hierarchy
+
+```
+Mobile (360–430px)
+       ↓
+   Tablet (768px)
+       ↓
+  Desktop (1024px+)
+```
+
+Never design desktop first and shrink to mobile.
+
+### Key Mobile Standards (Summary)
+
+- Minimum touch target: **44 × 44px** (prefer 48 × 48px)
+- Primary buttons: **52–56px** tall on mobile, full-width
+- Bottom navigation: icon + label, safe-area-aware
+- All colors: ParkDrop Field Blue semantic tokens only
+- Offline is a normal operating state — never expose raw errors
+- Forms must account for keyboard-open state
+- No hover-dependent controls on mobile
+- Run the 10 Mobile QA Questions before shipping any screen
