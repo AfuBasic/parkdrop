@@ -76,7 +76,9 @@ class AuthChallengeController extends Controller
 
             // Create Sanctum session
             Auth::login($user);
-            $request->session()->regenerate();
+            if ($request->hasSession()) {
+                $request->session()->regenerate();
+            }
 
             // Load primary business membership
             $membership = $user->businessMemberships()->with('business.pickupPoints')->first();
