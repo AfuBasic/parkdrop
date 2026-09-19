@@ -19,15 +19,29 @@ export interface PendingUpload {
   createdAt: number;
 }
 
+export interface RememberedIdentity {
+  id?: number;
+  email: string;
+  name?: string;
+  business_name?: string;
+  last_used_at: number;
+}
+
 export class ParkDropDB extends Dexie {
   deviceMeta!: Table<DeviceMeta, number>;
   pendingUploads!: Table<PendingUpload, number>;
+  rememberedIdentities!: Table<RememberedIdentity, number>;
 
   constructor() {
     super('ParkDropDB');
     this.version(1).stores({
       deviceMeta: '++id, device_uuid, user_id, business_id',
       pendingUploads: '++id, hash, status, createdAt'
+    });
+    this.version(2).stores({
+      deviceMeta: '++id, device_uuid, user_id, business_id',
+      pendingUploads: '++id, hash, status, createdAt',
+      rememberedIdentities: '++id, &email, last_used_at'
     });
   }
 }
