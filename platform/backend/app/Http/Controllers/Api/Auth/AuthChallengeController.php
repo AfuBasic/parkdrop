@@ -68,42 +68,52 @@ class AuthChallengeController extends Controller
 
         RateLimiter::clear($verifyKey);
 
-        // Look up user by normalized email
+        // Look up or create user by normalized email
         $user = User::where('email_normalized', $normalizedEmail)
             ->orWhere('email', $normalizedEmail)
             ->first();
 
-        if ($user) {
-            // Update email_verified_at if null
+        $isNewUser = false;
+        if (! $user) {
+            $user = User::create([
+                'email' => $normalizedEmail,
+                'email_normalized' => $normalizedEmail,
+                'email_verified_at' => now(),
+                'status' => 'active',
+            ]);
+            $isNewUser = true;
+        } else {
             if (is_null($user->email_verified_at)) {
                 $user->email_verified_at = now();
                 $user->save();
             }
+        }
 
-            // Update user device if device_uuid was sent
-            if (! empty($validated['device_uuid'])) {
-                UserDevice::updateOrCreate(
-                    [
-                        'user_id' => $user->id,
-                        'device_uuid' => $validated['device_uuid'],
-                    ],
-                    [
-                        'authorized_at' => now(),
-                        'last_seen_at' => now(),
-                    ]
-                );
-            }
+        // Update user device if device_uuid was sent
+        if (! empty($validated['device_uuid'])) {
+            UserDevice::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'device_uuid' => $validated['device_uuid'],
+                ],
+                [
+                    'authorized_at' => now(),
+                    'last_seen_at' => now(),
+                ]
+            );
+        }
 
-            // Create Sanctum session
-            Auth::login($user);
-            if ($request->hasSession()) {
-                $request->session()->regenerate();
-            }
+        // Create Sanctum session
+        Auth::login($user);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
 
-            // Load primary business membership
-            $membership = $user->businessMemberships()->with('business.pickupPoints')->first();
-            $business = $membership?->business;
+        // Load primary business membership
+        $membership = $user->businessMemberships()->with('business.pickupPoints')->first();
+        $business = $membership?->business;
 
+        if ($business) {
             return response()->json([
                 'outcome' => 'authenticated',
                 'message' => 'Logged in successfully',
@@ -113,22 +123,28 @@ class AuthChallengeController extends Controller
                     'first_name' => $user->first_name,
                     'status' => $user->status,
                 ],
-                'business' => $business ? [
+                'business' => [
                     'id' => $business->id,
                     'public_id' => $business->public_id,
                     'name' => $business->name,
                     'pickup_points' => $business->pickupPoints,
-                ] : null,
+                ],
                 'role' => $membership?->role ?? 'owner',
             ]);
         }
 
-        // User does not exist yet -> new_user outcome
+        // User does not have a business yet -> onboarding outcome
         return response()->json([
             'outcome' => 'new_user',
             'message' => 'Code verified successfully',
             'challenge_id' => $challenge->id,
             'email' => $normalizedEmail,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'first_name' => $user->first_name,
+                'status' => $user->status,
+            ],
         ]);
     }
 
