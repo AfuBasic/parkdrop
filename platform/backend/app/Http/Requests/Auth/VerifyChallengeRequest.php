@@ -20,12 +20,19 @@ class VerifyChallengeRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('purpose') || empty($this->input('purpose'))) {
+            $this->merge(['purpose' => 'auth']);
+        }
+    }
+
     public function rules(): array
     {
         return [
             'email' => 'required|email|max:255',
             'code' => 'required|string|size:6',
-            'purpose' => 'required|in:login,registration,pin_reset,new_device',
+            'purpose' => 'sometimes|string|in:auth,login,registration,pin_reset,new_device',
             'device_uuid' => 'nullable|string|max:255',
         ];
     }
