@@ -6,6 +6,7 @@ export interface DeviceMeta {
   user_id: number;
   business_id: number;
   first_name: string;
+  email?: string;
   pin_hash?: string; // Stored securely
   pin_salt?: string;
   authorized: boolean;
