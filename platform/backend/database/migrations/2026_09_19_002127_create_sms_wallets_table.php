@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('sms_wallets', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('business_id')->unique()->constrained()->cascadeOnDelete();
+            $table->integer('balance')->default(0);
             $table->timestamps();
         });
     }
