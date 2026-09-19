@@ -9,17 +9,23 @@ import { ReadyScreen } from '../screens/ReadyScreen';
 import { authApi } from '../api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
+import { useAuth } from '../AuthContext';
 import { toast } from 'sonner';
 
 type Step = 'email' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
 
-export function AuthFlow() {
+interface AuthFlowProps {
+  initialEmail?: string;
+}
+
+export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
+  const { setAuthenticatedUser } = useAuth();
   const [step, setStep] = React.useState<Step>('email');
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState('');
   
   // Collected state
-  const [email, setEmail] = React.useState('');
+  const [email, setEmail] = React.useState(initialEmail);
   const [challengeId, setChallengeId] = React.useState<number | null>(null);
   const [firstName, setFirstName] = React.useState('');
   const [pin, setPin] = React.useState('');
@@ -28,15 +34,15 @@ export function AuthFlow() {
     setIsLoading(true);
     setError('');
     try {
-      await authApi.requestChallenge({
+      await authApi.requestCode({
         email: submittedEmail,
-        purpose: 'registration'
+        purpose: 'auth',
       });
       setEmail(submittedEmail);
       setStep('code');
     } catch (err: any) {
-      setError(err.message || 'Failed to send code');
-      toast.error(err.message || 'Failed to send code');
+      setError(err.message || 'Failed to send confirmation code');
+      toast.error(err.message || 'Failed to send confirmation code');
     } finally {
       setIsLoading(false);
     }
@@ -46,16 +52,25 @@ export function AuthFlow() {
     setIsLoading(true);
     setError('');
     try {
-      const res = await authApi.verifyChallenge({
+      const res = await authApi.verifyCode({
         email,
         code,
-        purpose: 'registration'
+        purpose: 'auth',
       });
-      setChallengeId(res.challenge_id);
-      setStep('name');
+
+      if (res.outcome === 'authenticated') {
+        toast.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
+        await setAuthenticatedUser(res.user, res.business);
+        return;
+      }
+
+      if (res.outcome === 'new_user') {
+        setChallengeId(res.challenge_id);
+        setStep('name');
+      }
     } catch (err: any) {
-      setError(err.message || 'Invalid code');
-      toast.error(err.message || 'Invalid code');
+      setError(err.message || 'Invalid or expired confirmation code');
+      toast.error(err.message || 'Invalid or expired confirmation code');
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +98,7 @@ export function AuthFlow() {
         park_name: parkName,
         challenge_id: challengeId,
         device_uuid: deviceUuid,
-        device_name: navigator.userAgent.substring(0, 255)
+        device_name: navigator.userAgent.substring(0, 255),
       });
 
       // Hash PIN and store in IndexedDB
@@ -97,9 +112,10 @@ export function AuthFlow() {
         first_name: res.user.first_name,
         pin_hash: hashedPin,
         pin_salt: salt,
-        authorized: true
+        authorized: true,
       });
 
+      await setAuthenticatedUser(res.user, res.business);
       setStep('ready');
     } catch (err: any) {
       toast.error(err.message || 'Onboarding failed');
@@ -121,11 +137,32 @@ export function AuthFlow() {
 
   return (
     <AuthLayout showBack={step !== 'email' && step !== 'ready'} onBack={goBack}>
-      {step === 'email' && <EmailScreen onContinue={handleEmailSubmit} isLoading={isLoading} />}
-      {step === 'code' && <CodeScreen email={email} onVerify={handleCodeSubmit} onResend={() => handleEmailSubmit(email)} isLoading={isLoading} error={error} />}
+      {step === 'email' && (
+        <EmailScreen 
+          initialEmail={email} 
+          onContinue={handleEmailSubmit} 
+          isLoading={isLoading} 
+        />
+      )}
+      {step === 'code' && (
+        <CodeScreen 
+          email={email} 
+          onVerify={handleCodeSubmit} 
+          onResend={() => handleEmailSubmit(email)} 
+          isLoading={isLoading} 
+          error={error}
+          onChangeEmail={() => setStep('email')}
+        />
+      )}
       {step === 'name' && <NameScreen onContinue={handleNameSubmit} />}
       {step === 'pin' && <PinSetupScreen onContinue={handlePinSubmit} />}
-      {step === 'pickup' && <PickupPointScreen firstName={firstName} onContinue={handlePickupSubmit} isLoading={isLoading} />}
+      {step === 'pickup' && (
+        <PickupPointScreen 
+          firstName={firstName} 
+          onContinue={handlePickupSubmit} 
+          isLoading={isLoading} 
+        />
+      )}
       {step === 'ready' && <ReadyScreen onComplete={() => window.location.href = '/'} />}
     </AuthLayout>
   );
