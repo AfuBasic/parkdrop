@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { AuthStrings } from '../strings';
 import { PinInput } from '../components/PinInput';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/design-system';
 
 interface CodeScreenProps {
   email: string;
@@ -38,8 +38,8 @@ export function CodeScreen({ email, onVerify, onResend, isLoading, error }: Code
   return (
     <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{AuthStrings.codeTitle}</h1>
-        <p className="text-muted-foreground text-lg">{AuthStrings.codeSubtitle(email)}</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.codeTitle}</h1>
+        <p className="text-text-secondary text-lg">{AuthStrings.codeSubtitle(email)}</p>
       </div>
 
       <div className="flex flex-col items-center flex-1 gap-8">
@@ -52,11 +52,11 @@ export function CodeScreen({ email, onVerify, onResend, isLoading, error }: Code
           error={!!error}
         />
         
-        {error && <p className="text-sm text-destructive font-medium">{error}</p>}
+        {error && <p className="text-sm text-status-danger font-medium">{error}</p>}
 
         <Button 
           variant="ghost" 
-          disabled={countdown > 0 || isLoading}
+          disabled={countdown > 0}
           onClick={handleResend}
           className="mt-4"
         >
@@ -67,10 +67,11 @@ export function CodeScreen({ email, onVerify, onResend, isLoading, error }: Code
           <Button 
             className="w-full" 
             size="lg" 
-            disabled={isLoading || code.length < 6}
+            disabled={code.length < 6}
+            loading={isLoading}
             onClick={() => onVerify(code)}
           >
-            {isLoading ? AuthStrings.processing : AuthStrings.continue}
+            {AuthStrings.continue}
           </Button>
         </div>
       </div>
