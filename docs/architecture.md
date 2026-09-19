@@ -33,3 +33,15 @@ Data integrity is enforced at the database level, not just the application level
 *   **TanStack Query:** Server state management and caching.
 *   **Tailwind CSS v4:** Design system utility layer.
 *   **Lucide React:** Iconography.
+
+## Media Architecture (Cloudinary)
+
+Cloudinary is the ParkDrop media provider for package photos.
+* **Direct Browser Uploads:** Uploads happen directly from React to Cloudinary to save backend bandwidth.
+* **Signed Uploads:** Laravel securely signs uploads. The Laravel API secret never reaches React.
+* **Idempotency:** The React client computes a SHA-256 hash of the image and requests a signature. Laravel checks if an asset with this hash already exists for the business. If yes, it skips upload entirely. If no, the `public_id` includes the hash.
+* **Security & Delivery:** Package photos use restricted/authenticated delivery.
+* **Offline-First Workflow:**
+  * Offline photos are stored locally in IndexedDB as a Blob.
+  * When connectivity returns, the client requests a fresh signature and uploads directly.
+* **Verification:** Laravel verifies Cloudinary upload metadata before persisting to the `package_media` database.
