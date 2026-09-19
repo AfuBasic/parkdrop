@@ -46,12 +46,14 @@ export interface AuthNewUserResponse {
   message: string;
   challenge_id: number;
   email: string;
+  user?: AuthUser;
 }
 
 export type AuthVerifyResponse = AuthAuthenticatedResponse | AuthNewUserResponse;
 
 export interface SessionResponse {
   authenticated: boolean;
+  needs_onboarding?: boolean;
   user: AuthUser | null;
   business: AuthBusiness | null;
   role?: string;
