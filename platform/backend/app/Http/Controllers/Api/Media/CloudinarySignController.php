@@ -22,7 +22,7 @@ class CloudinarySignController extends Controller
         $fileHash = $validated['file_hash'];
 
         // Verify the user is authenticated (middleware handles this usually, but double checking)
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
@@ -45,7 +45,7 @@ class CloudinarySignController extends Controller
         }
 
         // Generate folder path
-        $folder = sprintf("parkdrop/businesses/%d/pickup-points/%d/packages", $businessId, $pickupPointId);
+        $folder = sprintf('parkdrop/businesses/%d/pickup-points/%d/packages', $businessId, $pickupPointId);
 
         // We use the file hash as the Cloudinary public_id for idempotency on Cloudinary's side
         $publicId = $fileHash;
