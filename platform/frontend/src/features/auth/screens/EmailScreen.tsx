@@ -24,8 +24,8 @@ export function EmailScreen({ onContinue, isLoading }: EmailScreenProps) {
   return (
     <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">{AuthStrings.emailTitle}</h1>
-        <p className="text-muted-foreground text-lg">{AuthStrings.emailSubtitle}</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.emailTitle}</h1>
+        <p className="text-text-secondary text-lg">{AuthStrings.emailSubtitle}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1 gap-6">
