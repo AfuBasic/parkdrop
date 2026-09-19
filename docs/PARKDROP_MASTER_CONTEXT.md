@@ -9,12 +9,23 @@ Next build: TBD based on priorities (likely Offline Engine).
 ## Core Architecture Decisions
 
 ### 1. Authentication Model (Build 1)
-- **Primary Auth:** Email address + OTP code sent via email. 
-- **Session:** Sanctum SPA cookie/session acts as the online API authentication model. There are no long-lived bearer tokens stored in localStorage or IndexedDB.
-- **Local PIN:** A 4-digit PIN is used purely as an offline device unlock mechanism for the locally authorized workspace. It is **not** an API credential.
-- **Passwords:** There are no passwords. The `users` table has been simplified to rely entirely on email and OTP.
-- **Email Provider:** ZeptoMail is used for sending OTP emails. This cost is platform-funded and entirely separate from business customer SMS credits.
-- **Canonical Design Language:** ParkDrop Field Blue is the global design theme (see `docs/design-system.md`). All screens must consume semantic tokens from `@/design-system` and `index.css`.
+- **Universal Mental Model:** Enter Email → Enter OTP → ParkDrop Decides What Happens Next.
+  - No separate Login and Register flows.
+  - No asking the user whether they already have an account.
+  - No passwords. No "Don't have an account? Sign up" patterns.
+  - The user simply enters their email and continues.
+- **Backend Decision Engine:**
+  - `POST /api/v1/auth/code` sends a 6-digit confirmation code (expires in 15 minutes).
+  - `POST /api/v1/auth/code/verify` checks the code and inspects the database:
+    - If user exists: logs user into Sanctum session (`Auth::login($user)`) and returns `{ outcome: 'authenticated', user, business }`.
+    - If user does not exist: returns `{ outcome: 'new_user', challenge_id, email }`, leading seamlessly to Name and Pickup Point setup.
+- **Session & Identity Continuity:**
+  - **Online API Auth:** Laravel Sanctum SPA cookie/session (`withCredentials: 'include'`). No long-lived bearer tokens stored insecurely.
+  - **Remembered Identity:** Known emails and business profiles are cached locally in Dexie (`rememberedIdentities` table).
+  - **Expired Session Re-auth:** When a session cookie expires, ParkDrop shows a 1-tap confirmation screen with the remembered email/profile so returning owners don't have to retype their email.
+  - **Local PIN:** A 4-digit PIN is used for fast local device unlocking for authorized workspaces. It is an offline device security safeguard, not an API credential.
+- **Email Provider:** ZeptoMail is used for sending OTP verification emails. This operational cost is platform-funded and independent of customer SMS credit balances.
+- **Canonical Design Language:** ParkDrop Field Blue is the global design theme (see `docs/design-system.md`). All auth screens strictly consume semantic tokens (`--pd-*`) and provide dedicated support links (`Problem logging in?`).
 
 ### 2. Multi-Tenancy & Onboarding (Build 1)
 Multi-tenancy is centered around the `Business` model.
