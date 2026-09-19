@@ -18,17 +18,84 @@ interface AuthFlowProps {
   initialEmail?: string;
 }
 
+const DRAFT_STORAGE_KEY = 'parkdrop_onboarding_draft';
+
+interface OnboardingDraft {
+  step: Step;
+  email: string;
+  challengeId: number | null;
+  firstName: string;
+  pin: string;
+}
+
+function loadDraft(): OnboardingDraft | null {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(draft: OnboardingDraft) {
+  try {
+    sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+  } catch {
+    // Ignore
+  }
+}
+
 export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
-  const { setAuthenticatedUser } = useAuth();
-  const [step, setStep] = React.useState<Step>('email');
+  const { user: sessionUser, state: authState, setAuthenticatedUser } = useAuth();
+  const draft = React.useMemo(() => loadDraft(), []);
+
+  // Determine initial step
+  const initialStep = React.useMemo<Step>(() => {
+    if (draft && ['name', 'pin', 'pickup'].includes(draft.step)) {
+      return draft.step;
+    }
+    if (authState === 'onboarding') {
+      return 'name';
+    }
+    return 'email';
+  }, [draft, authState]);
+
+  const [step, setStep] = React.useState<Step>(initialStep);
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState('');
   
   // Collected state
-  const [email, setEmail] = React.useState(initialEmail);
-  const [challengeId, setChallengeId] = React.useState<number | null>(null);
-  const [firstName, setFirstName] = React.useState('');
-  const [pin, setPin] = React.useState('');
+  const [email, setEmail] = React.useState(
+    draft?.email || sessionUser?.email || initialEmail
+  );
+  const [challengeId, setChallengeId] = React.useState<number | null>(
+    draft?.challengeId ?? null
+  );
+  const [firstName, setFirstName] = React.useState(
+    draft?.firstName || sessionUser?.first_name || ''
+  );
+  const [pin, setPin] = React.useState(draft?.pin || '');
+
+  // Persist draft on state changes if in onboarding phase
+  React.useEffect(() => {
+    if (['name', 'pin', 'pickup'].includes(step)) {
+      saveDraft({
+        step,
+        email,
+        challengeId,
+        firstName,
+        pin,
+      });
+    }
+  }, [step, email, challengeId, firstName, pin]);
 
   const handleEmailSubmit = async (submittedEmail: string) => {
     setIsLoading(true);
@@ -59,6 +126,7 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
       });
 
       if (res.outcome === 'authenticated') {
+        clearDraft();
         notify.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
         await setAuthenticatedUser(res.user, res.business);
         return;
@@ -66,6 +134,9 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
 
       if (res.outcome === 'new_user') {
         setChallengeId(res.challenge_id);
+        if (res.user?.first_name) {
+          setFirstName(res.user.first_name);
+        }
         setStep('name');
       }
     } catch (err: any) {
@@ -87,7 +158,6 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
   };
 
   const handlePickupSubmit = async (locationName: string, parkName?: string) => {
-    if (!challengeId) return;
     setIsLoading(true);
     try {
       const deviceUuid = crypto.randomUUID();
@@ -96,7 +166,7 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
         first_name: firstName,
         pickup_point_name: locationName,
         park_name: parkName,
-        challenge_id: challengeId,
+        challenge_id: challengeId ?? 0,
         device_uuid: deviceUuid,
         device_name: navigator.userAgent.substring(0, 255),
       });
@@ -110,11 +180,13 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
         user_id: res.user.id,
         business_id: res.business.id,
         first_name: res.user.first_name,
+        email: res.user.email || email,
         pin_hash: hashedPin,
         pin_salt: salt,
         authorized: true,
       });
 
+      clearDraft();
       await setAuthenticatedUser(res.user, res.business);
       setStep('ready');
     } catch (err: any) {
@@ -135,6 +207,11 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
     setError('');
   };
 
+  const handleResetToEmail = () => {
+    clearDraft();
+    setStep('email');
+  };
+
   return (
     <AuthLayout showBack={step !== 'email' && step !== 'ready'} onBack={goBack}>
       {step === 'email' && (
@@ -151,10 +228,15 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
           onResend={() => handleEmailSubmit(email)} 
           isLoading={isLoading} 
           error={error}
-          onChangeEmail={() => setStep('email')}
+          onChangeEmail={handleResetToEmail}
         />
       )}
-      {step === 'name' && <NameScreen onContinue={handleNameSubmit} />}
+      {step === 'name' && (
+        <NameScreen 
+          initialName={firstName} 
+          onContinue={handleNameSubmit} 
+        />
+      )}
       {step === 'pin' && <PinSetupScreen onContinue={handlePinSubmit} />}
       {step === 'pickup' && (
         <PickupPointScreen 
