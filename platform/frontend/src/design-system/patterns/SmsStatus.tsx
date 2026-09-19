@@ -12,11 +12,11 @@ interface SmsStatusProps extends React.HTMLAttributes<HTMLDivElement> {
 export function SmsStatus({ status, time, className, ...props }: SmsStatusProps) {
   const config = {
     NOT_SENT: { icon: Clock, label: "Not sent", color: "text-text-secondary" },
-    QUEUED: { icon: Clock, label: "SMS queued", color: "text-status-info" },
-    SENDING: { icon: Send, label: "Sending SMS", color: "text-status-info" },
-    SENT: { icon: Check, label: "SMS sent", color: "text-status-success" },
-    DELIVERED: { icon: CheckCircle2, label: "SMS delivered", color: "text-status-success" },
-    FAILED: { icon: XCircle, label: "SMS failed", color: "text-status-danger" },
+    QUEUED: { icon: Clock, label: "SMS queued", color: "text-status-info-text" },
+    SENDING: { icon: Send, label: "Sending SMS", color: "text-status-info-text" },
+    SENT: { icon: Check, label: "SMS sent", color: "text-status-info-text" },
+    DELIVERED: { icon: CheckCircle2, label: "SMS delivered", color: "text-status-success-text" },
+    FAILED: { icon: XCircle, label: "SMS failed", color: "text-status-danger-text" },
   }
 
   const { icon: Icon, label, color } = config[status]

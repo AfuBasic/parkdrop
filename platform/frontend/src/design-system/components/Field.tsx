@@ -1,4 +1,5 @@
 import * as React from "react"
+import { AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface FieldProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -30,7 +31,10 @@ export function Field({
       </label>
       {children}
       {error && (
-        <p className="text-[var(--text-caption)] text-status-danger">{error}</p>
+        <p className="flex items-center gap-1.5 text-[var(--text-caption)] text-status-danger-text">
+          <AlertCircle className="h-3.5 w-3.5" />
+          {error}
+        </p>
       )}
       {helperText && !error && (
         <p className="text-[var(--text-caption)] text-text-secondary">{helperText}</p>

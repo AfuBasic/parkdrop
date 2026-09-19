@@ -8,10 +8,10 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        info: "bg-status-info/10 text-status-info",
-        success: "bg-status-success/10 text-status-success",
-        warning: "bg-status-warning/10 text-status-warning",
-        danger: "bg-status-danger/10 text-status-danger",
+        info: "bg-status-info-bg text-status-info-text border border-status-info-border",
+        success: "bg-status-success-bg text-status-success-text border border-status-success-border",
+        warning: "bg-status-warning-bg text-status-warning-text border border-status-warning-border",
+        danger: "bg-status-danger-bg text-status-danger-text border border-status-danger-border",
       },
     },
     defaultVariants: {

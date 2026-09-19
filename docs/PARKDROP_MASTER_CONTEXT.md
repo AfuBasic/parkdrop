@@ -25,7 +25,8 @@ Next build: TBD based on priorities (likely Offline Engine).
   - **Expired Session Re-auth:** When a session cookie expires, ParkDrop shows a 1-tap confirmation screen with the remembered email/profile so returning owners don't have to retype their email.
   - **Local PIN:** A 4-digit PIN is used for fast local device unlocking for authorized workspaces. It is an offline device security safeguard, not an API credential.
 - **Email Provider:** ZeptoMail is used for sending OTP verification emails. This operational cost is platform-funded and independent of customer SMS credit balances.
-- **Canonical Design Language:** ParkDrop Field Blue is the global design theme (see `docs/design-system.md`). All auth screens strictly consume semantic tokens (`--pd-*`) and provide dedicated support links (`Problem logging in?`).
+- **Canonical Design Language:** ParkDrop Field Blue is the global design theme (see `docs/design-system.md`). All auth screens strictly consume semantic tokens (`--pd-*`) and provide dedicated support links (`Problem logging in?`). 
+  - **MANDATORY SEMANTIC COLORS**: Feature code must **never** invent state colors or use raw hex/Tailwind colors (e.g. `bg-red-500`, `black`, `burgundy`) for visual states. The shared design system strictly owns error, success, warning, info, and neutral styling across the entire application.
 
 ### 2. Multi-Tenancy & Onboarding (Build 1)
 Multi-tenancy is centered around the `Business` model.

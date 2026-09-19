@@ -35,9 +35,19 @@ Status indicators and toasts pair soft background fills, subtle border framing, 
 | Status | Background | Border | Left Accent | Text |
 |---|---|---|---|---|
 | **Success** | `status-success-bg` (`#F0FDF4`) | `status-success-border` (`#BBF7D0`) | `#16A34A` | `status-success-text` (`#166534`) |
-| **Danger / Error** | `status-danger-bg` (`#FEF2F2`) | `status-danger-border` (`#FECACA`) | `#DC2626` | `status-danger-text` (`#B91C1C`) |
+| **Danger / Error** | `status-danger-bg` (`#FEF2F2`) | `status-danger-border` (`#FECACA`) | `#DC2626` | `status-danger-text` (`#7F1D1D`) / `status-danger-text-strong` (`#991B1B`) |
 | **Warning** | `status-warning-bg` (`#FFFBEB`) | `status-warning-border` (`#FDE68A`) | `#D97706` | `status-warning-text` (`#92400E`) |
 | **Info / Logistics** | `status-info-bg` (`#EFF6FF`) | `status-info-border` (`#BFDBFE`) | `#2563EB` | `status-info-text` (`#1D4ED8`) |
+| **Neutral** | `surface-subtle` (`#F1F5F9`) | `border-default` (`#E2E8F0`) | `text-secondary` (`#475569`) | `text-secondary` (`#475569`) |
+
+### 4. Component Rules
+- **No Hardcoded Colors**: Feature code must not use arbitrary Tailwind colors (e.g. `bg-red-50`, `text-green-700`, `black`, `burgundy`) for states. Always map the state (Success, Warning, Danger, Info, Neutral) and use the semantic tokens defined in the design system.
+- **Disabled States**: Do not implement disabled states with `opacity: 0.2` alone. Use `disabled:bg-surface-disabled`, `disabled:text-text-disabled`, and `disabled:border-border-disabled` to maintain readability.
+- **Status Mapping**:
+  - *Packages*: Waiting -> Neutral, Collected -> Success, Returned -> Warning, Cancelled -> Danger.
+  - *Payments*: Unpaid -> Warning Muted, Part paid -> Warning, Paid -> Success.
+  - *SMS*: Not sent -> Neutral, Queued/Sending -> Info, Sent -> Info/Success Muted, Delivered -> Success, Failed -> Danger.
+  - *Syncing*: Saved locally -> Info, Syncing -> Info, Synced -> Success Muted, Offline/Needs attention -> Warning, Conflict -> Danger.
 
 ---
 

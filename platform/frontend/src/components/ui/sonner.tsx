@@ -15,14 +15,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
           toast:
             "group toast group-[.toaster]:bg-surface-default group-[.toaster]:text-text-primary group-[.toaster]:border-border-default group-[.toaster]:shadow-lg group-[.toaster]:rounded-xl font-sans",
           error: 
-            "group toast group-[.toaster]:bg-status-danger-bg group-[.toaster]:text-status-danger-text group-[.toaster]:border-status-danger-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-danger group-[.toaster]:shadow-lg",
+            "group toast group-[.toaster]:bg-status-danger-bg group-[.toaster]:text-status-danger-text-strong group-[.toaster]:border-status-danger-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-danger group-[.toaster]:shadow-lg [&_[data-description]]:text-status-danger-text",
           success:
-            "group toast group-[.toaster]:bg-status-success-bg group-[.toaster]:text-status-success-text group-[.toaster]:border-status-success-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-success group-[.toaster]:shadow-lg",
+            "group toast group-[.toaster]:bg-status-success-bg group-[.toaster]:text-status-success-text group-[.toaster]:border-status-success-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-success group-[.toaster]:shadow-lg [&_[data-description]]:text-status-success-text",
           warning:
-            "group toast group-[.toaster]:bg-status-warning-bg group-[.toaster]:text-status-warning-text group-[.toaster]:border-status-warning-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-warning group-[.toaster]:shadow-lg",
+            "group toast group-[.toaster]:bg-status-warning-bg group-[.toaster]:text-status-warning-text group-[.toaster]:border-status-warning-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-warning group-[.toaster]:shadow-lg [&_[data-description]]:text-status-warning-text",
           info:
-            "group toast group-[.toaster]:bg-status-info-bg group-[.toaster]:text-status-info-text group-[.toaster]:border-status-info-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-info group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-text-secondary text-sm",
+            "group toast group-[.toaster]:bg-status-info-bg group-[.toaster]:text-status-info-text group-[.toaster]:border-status-info-border group-[.toaster]:border-l-[6px] group-[.toaster]:border-l-status-info group-[.toaster]:shadow-lg [&_[data-description]]:text-status-info-text",
+          title: "font-semibold",
+          description: "text-sm",
           actionButton:
             "group-[.toast]:bg-action-primary group-[.toast]:text-text-inverse font-medium rounded-md",
           cancelButton:

@@ -35,7 +35,7 @@ export function PackageListItem({
   }
 
   const paymentConfig = {
-    UNPAID: { label: "Unpaid", variant: "danger" as const },
+    UNPAID: { label: "Unpaid", variant: "warning-muted" as const },
     PART_PAID: { label: "Part paid", variant: "warning" as const },
     PAID: { label: "Paid", variant: "success" as const },
   }

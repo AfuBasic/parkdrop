@@ -67,7 +67,8 @@
   --color-status-success-border: #BBF7D0;
 
   --color-status-danger: #DC2626;
-  --color-status-danger-text: #B91C1C;
+  --color-status-danger-text-strong: #991B1B;
+  --color-status-danger-text: #7F1D1D;
   --color-status-danger-bg: #FEF2F2;
   --color-status-danger-border: #FECACA;
 
@@ -172,6 +173,7 @@
 
     --pd-status-danger: var(--color-status-danger);
     --pd-status-danger-text: var(--color-status-danger-text);
+    --pd-status-danger-text-strong: var(--color-status-danger-text-strong);
     --pd-status-danger-bg: var(--color-status-danger-bg);
     --pd-status-danger-border: var(--color-status-danger-border);
 
