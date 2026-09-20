@@ -25,6 +25,10 @@ export class ParkDropDatabase extends Dexie {
       customers: 'id, business_id, phone_normalized, [business_id+phone_normalized]',
       entityAliases: 'local_id'
     });
+
+    this.version(3).stores({
+      packages: 'id, business_id, pickup_point_id, customer_id, public_package_id, pickup_code, status, client_created_at, [business_id+status], [business_id+pickup_point_id+status], [business_id+created_at], [business_id+public_package_id], [business_id+pickup_code], [customer_id+client_created_at]'
+    });
   }
 }
 

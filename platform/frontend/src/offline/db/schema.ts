@@ -48,16 +48,17 @@ export interface LocalAuthorization {
 }
 
 export interface LocalPackage {
-  id: string; // public_package_id or uuid
+  id: string; // uuid
   business_id: number;
   pickup_point_id: number | null;
-  customer_name: string;
-  customer_phone: string;
-  pickup_code: string | null;
-  amount_due: number; // minor units
+  customer_id: string;
+  public_package_id: string;
+  pickup_code: string;
+  amount_due_minor: number;
   status: 'WAITING' | 'COLLECTED' | 'RETURNED' | 'CANCELLED';
-  created_at: string;
-  collected_at: string | null;
+  client_created_at: string;
+  server_received_at: string | null;
+  version: number;
   sync_status: 'SYNCED' | 'PENDING_CREATE' | 'PENDING_UPDATE';
 }
 
