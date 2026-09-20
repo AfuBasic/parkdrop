@@ -60,3 +60,20 @@ export interface LocalPackage {
   collected_at: string | null;
   sync_status: 'SYNCED' | 'PENDING_CREATE' | 'PENDING_UPDATE';
 }
+
+export interface LocalCustomer {
+  id: string; // uuid
+  business_id: number;
+  name: string;
+  phone_display: string;
+  phone_normalized: string;
+  version: number;
+  sync_status: 'SYNCED' | 'PENDING_CREATE' | 'PENDING_UPDATE';
+}
+
+export interface LocalEntityAlias {
+  local_id: string; // The offline-generated ID
+  canonical_id: string; // The canonical server ID
+  entity_type: string;
+  resolved_at: string;
+}
