@@ -32,4 +32,8 @@ Route::prefix('v1/auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/media/cloudinary/sign', [CloudinarySignController::class, 'sign']);
+
+    // Sync endpoints
+    Route::post('/v1/sync/push', [\App\Http\Controllers\Api\V1\Sync\SyncController::class, 'push']);
+    Route::get('/v1/sync/pull', [\App\Http\Controllers\Api\V1\Sync\SyncController::class, 'pull']);
 });
