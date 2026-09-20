@@ -5,6 +5,7 @@ import { authApi } from './api';
 import { getMostRecentRememberedIdentity, saveRememberedIdentity, clearAllRememberedIdentities } from './lib/rememberedIdentity';
 import type { AuthUser, AuthBusiness } from './types';
 import { ApiError } from '@/lib/api';
+import { saveOfflineAuthorization, clearOfflineAuthorization, getValidOfflineAuthorization } from '@/offline/device/device-identity';
 
 export type AuthState = 
   | 'booting'              // Initial state while resolving session/storage
@@ -40,17 +41,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setState('booting');
     try {
       // ─── Phase 1: Resolve from local IndexedDB immediately (no network) ───────
-      // This resolves state instantly without any spinner delay.
       const meta = await db.deviceMeta.toCollection().first();
       setDeviceMeta(meta || null);
 
       const recentIdentity = await getMostRecentRememberedIdentity();
       setRememberedIdentity(recentIdentity);
 
+      const offlineAuth = await getValidOfflineAuthorization();
+
       // Determine local-only state and render immediately
       let localState: typeof state;
       if (meta?.pin_hash) {
         localState = 'locked';
+      } else if (offlineAuth) {
+        localState = 'authenticated';
+        // In a real app we might populate user/business partially from the lease here 
+        // to render shell correctly immediately before network responds.
       } else if (recentIdentity || meta?.first_name) {
         localState = 'remembered_expired';
       } else {
@@ -59,30 +65,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState(localState);
 
       // ─── Phase 2: Validate against server session in background ──────────────
-      // Do NOT block the UI. This silently upgrades or downgrades state if needed.
       authApi.getSession().then((res) => {
         if (!res.authenticated || !res.user) return; // no upgrade possible
 
         setUser(res.user);
         setBusiness(res.business);
 
+        if (res.business) {
+           saveOfflineAuthorization(res.user.id, res.business.id, res.business.name, null).catch(console.error);
+        }
+
         if (res.needs_onboarding || !res.business) {
           setState('onboarding');
           return;
         }
 
-        // Server confirms session is live — upgrade from local state
+        // Server confirms session is live
         if (meta?.pin_hash) {
-          // Device still locked; keep showing PIN screen even with live session
           setState('locked');
         } else {
           setState('authenticated');
         }
-      }).catch((err) => {
-        // 401 means session truly expired — local state already set correctly, nothing to do.
-        // Network failure? Local state is already appropriate; don't touch it.
+      }).catch(async (err) => {
         if (err instanceof ApiError && err.status === 401) {
-          // Already set to correct degraded state in Phase 1
+          // 401 means session truly expired, revoke offline authorization.
+          await clearOfflineAuthorization();
+          setState(recentIdentity ? 'remembered_expired' : 'unknown');
         } else {
           console.warn('Background session check failed, keeping local state:', err);
         }
@@ -109,10 +117,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       business_name: authBusiness?.name,
     });
 
+    if (authBusiness) {
+      await saveOfflineAuthorization(authUser.id, authBusiness.id, authBusiness.name, null);
+    }
+
     const recent = await getMostRecentRememberedIdentity();
     setRememberedIdentity(recent);
 
-    // If local PIN exists, lock; else go straight to authenticated
     const meta = await db.deviceMeta.toCollection().first();
     if (meta?.pin_hash) {
       setState('locked');
@@ -134,8 +145,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(null);
     setBusiness(null);
+    await clearOfflineAuthorization();
     
-    // Check if we have a remembered identity to fall back to
     const recent = await getMostRecentRememberedIdentity();
     if (recent) {
       setState('remembered_expired');
@@ -147,6 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const forgetRememberedIdentity = async () => {
     await clearAllRememberedIdentities();
     await db.deviceMeta.clear();
+    await clearOfflineAuthorization();
     setRememberedIdentity(null);
     setDeviceMeta(null);
     setUser(null);
