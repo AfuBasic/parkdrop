@@ -56,18 +56,18 @@ export class CustomerRepository {
 
       await db.customers.add(localCustomer);
 
-      await MutationQueue.enqueue({
+      await MutationQueue.enqueue(
         businessId,
-        pickupPointId,
-        operation: 'CREATE_CUSTOMER',
-        entityId: customerId,
-        baseVersion: null,
-        payload: {
+        'CREATE_CUSTOMER',
+        {
           customer_id: customerId,
           name,
           phone_display: phoneDisplay,
         },
-      });
+        pickupPointId,
+        customerId,
+        null
+      );
 
       return localCustomer;
     });

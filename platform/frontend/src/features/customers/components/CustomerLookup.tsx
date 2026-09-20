@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle2, Search, UserPlus } from 'lucide-react';
 import { normalizePhone, formatPhoneForDisplay } from '../../../offline/helpers/phoneNormalizer';
 import { CustomerRepository } from '../../../offline/repositories/CustomerRepository';
