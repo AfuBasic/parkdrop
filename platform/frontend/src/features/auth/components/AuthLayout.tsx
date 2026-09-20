@@ -131,9 +131,9 @@ export function AuthLayout({
 
         {/* Sheet Content */}
         <div className="relative z-[3] flex-1 min-h-0 -mt-7 bg-white rounded-t-[28px] flex flex-col overflow-hidden">
-          <section className="flex-1 min-h-0 flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
+          <div className="flex-1 min-h-0 overflow-y-auto px-5 pt-6 pb-6 flex flex-col">
             {children}
-          </section>
+          </div>
         </div>
 
       </div>
