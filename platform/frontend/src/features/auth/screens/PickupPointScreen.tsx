@@ -20,13 +20,13 @@ export function PickupPointScreen({ firstName, onContinue, isLoading }: PickupPo
   };
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.pickupPointTitle}</h1>
-        <p className="text-text-secondary text-lg">{AuthStrings.pickupPointSubtitle}</p>
+    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="mb-5">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-text-primary">{AuthStrings.pickupPointTitle}</h1>
+        <p className="text-sm font-medium text-text-secondary m-0">{AuthStrings.pickupPointSubtitle}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1 gap-6">
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1">
         <div className="space-y-4">
           <Field label={AuthStrings.pickupPointLabel} htmlFor="locationName">
             <Input
@@ -36,6 +36,7 @@ export function PickupPointScreen({ firstName, onContinue, isLoading }: PickupPo
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
               disabled={isLoading}
+              className="h-12 text-base font-medium rounded-xl"
             />
           </Field>
 
@@ -46,14 +47,15 @@ export function PickupPointScreen({ firstName, onContinue, isLoading }: PickupPo
               value={parkName}
               onChange={(e) => setParkName(e.target.value)}
               disabled={isLoading}
+              className="h-12 text-base font-medium rounded-xl"
             />
           </Field>
         </div>
 
         {locationName && (
-          <div className="mt-4 p-4 bg-surface-subtle rounded-xl border border-border-default animate-in fade-in">
-            <span className="text-xs uppercase text-text-muted mb-2 block font-semibold">{AuthStrings.smsPreviewTitle}</span>
-            <p className="text-sm font-medium text-text-primary">
+          <div className="mt-4 p-3.5 bg-surface-subtle rounded-xl border border-border-default animate-in fade-in">
+            <span className="text-[11px] uppercase tracking-wider text-text-muted mb-1.5 block font-bold">{AuthStrings.smsPreviewTitle}</span>
+            <p className="text-xs font-medium leading-relaxed text-text-primary">
               {AuthStrings.smsPreviewText(firstName, locationName, parkName)}
             </p>
           </div>
