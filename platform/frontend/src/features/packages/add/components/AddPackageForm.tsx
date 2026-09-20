@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { Camera, Image as ImageIcon } from 'lucide-react';
 import { Switch } from '@/design-system/components/Switch';
-import { PackagePhotoField } from '../../package-media/components/PackagePhotoField';
+import { PackagePhotoField } from '@/features/package-media/components/PackagePhotoField';
 
 interface AddPackageFormProps {
   customerName: string;
