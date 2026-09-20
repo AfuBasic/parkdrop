@@ -20,17 +20,18 @@ export function AddPackageScreen() {
   // Pickup points aren't fully implemented yet, use null for now
   const pickupPointId = null;
 
-  const handleSave = async (amountDueMinor: number, sendSms: boolean) => {
+  const handleSave = async (amountDueMinor: number, sendSms: boolean, photoBlob: Blob | null) => {
     if (!customer || !businessId) return;
 
-    const pkg = await PackageRepository.createLocal(
+    const result = await PackageRepository.createLocal(
       businessId,
       pickupPointId,
       customer.customerId,
       amountDueMinor,
-      sendSms
+      sendSms,
+      photoBlob
     );
-    setSavedPackage(pkg);
+    setSavedPackage(result.package);
   };
 
   const resetForm = useCallback(() => {
