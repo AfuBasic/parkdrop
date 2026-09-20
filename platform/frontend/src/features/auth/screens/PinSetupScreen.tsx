@@ -32,10 +32,10 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
 
   if (step === 'setup') {
     return (
-      <div key="setup" className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
-        <div className="mb-[22px]">
-          <h1 className="text-2xl sm:text-[26px] font-[800] tracking-tight text-text-primary mb-1">{AuthStrings.pinSetupTitle}</h1>
-          <p className="text-base font-[600] text-text-secondary m-0">{AuthStrings.pinSetupSubtitle}</p>
+      <div key="setup" className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="mb-5">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary mb-1">{AuthStrings.pinSetupTitle}</h1>
+          <p className="text-sm font-medium text-text-secondary m-0">{AuthStrings.pinSetupSubtitle}</p>
         </div>
         <div className="flex flex-col items-center flex-1 pt-4">
           <PinInput length={4} value={pin} onChange={setPin} onComplete={handleSetupComplete} secure />
@@ -45,10 +45,10 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
   }
 
   return (
-    <div key="confirm" className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="mb-[22px]">
-        <h1 className="text-2xl sm:text-[26px] font-[800] tracking-tight text-text-primary mb-1">{AuthStrings.pinConfirmTitle}</h1>
-        <p className="text-base font-[600] text-text-secondary m-0">{AuthStrings.pinConfirmSubtitle}</p>
+    <div key="confirm" className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="mb-5">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary mb-1">{AuthStrings.pinConfirmTitle}</h1>
+        <p className="text-sm font-medium text-text-secondary m-0">{AuthStrings.pinConfirmSubtitle}</p>
       </div>
       <div className="flex flex-col items-center flex-1 pt-4">
         <PinInput 
@@ -62,7 +62,7 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
           secure 
           error={!!error}
         />
-        {error && <p className="text-sm text-status-danger font-medium mt-4">{error}</p>}
+        {error && <p className="text-xs text-status-danger font-semibold mt-3">{error}</p>}
       </div>
     </div>
   );
