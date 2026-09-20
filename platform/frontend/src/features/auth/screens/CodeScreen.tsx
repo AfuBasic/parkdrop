@@ -79,10 +79,10 @@ export function CodeScreen({
   return (
     <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-right-4 duration-200">
       <div className="mb-[22px]">
-        <h1 className="text-[30px] leading-[1.14] font-[800] tracking-[-0.025em] text-text-primary mb-1">
+        <h1 className="text-2xl sm:text-[26px] font-[800] tracking-tight text-text-primary mb-1">
           Enter the code
         </h1>
-        <p className="text-[18px] font-[600] text-text-secondary m-0">
+        <p className="text-base font-[600] text-text-secondary m-0">
           Sent to {email}
         </p>
       </div>
@@ -124,11 +124,11 @@ export function CodeScreen({
           </svg>
           <div className="flex-1 min-w-0">
             {countdown > 0 ? (
-              <p className="m-0 text-[16px] text-[var(--color-proto-muted)]">
+              <p className="m-0 text-[15px] text-[var(--color-proto-muted)]">
                 Resend code in <b className="text-[var(--color-proto-ink)] font-[800] tabular-nums">{formatTime(countdown)}</b>
               </p>
             ) : (
-              <p className="m-0 text-[16px] text-[var(--color-proto-muted)]">
+              <p className="m-0 text-[15px] text-[var(--color-proto-muted)]">
                 Didn't get the code?
               </p>
             )}
@@ -137,7 +137,7 @@ export function CodeScreen({
               onClick={handleResend}
               disabled={countdown > 0 || isLoading}
               className={cn(
-                "inline-block p-0 bg-transparent border-0 font-inherit text-[16px] font-[800] text-[var(--color-proto-blue-d)] underline underline-offset-3 cursor-pointer",
+                "inline-block p-0 bg-transparent border-0 font-inherit text-[15px] font-[800] text-[var(--color-proto-blue-d)] underline underline-offset-3 cursor-pointer",
                 (countdown > 0 || isLoading) && "text-[var(--color-proto-muted)] no-underline opacity-50 cursor-default"
               )}
             >
@@ -149,7 +149,7 @@ export function CodeScreen({
         <div className="mt-auto pt-6 flex flex-col gap-4 items-center">
           <Button
             type="submit"
-            size="default"
+            size="lg"
             disabled={code.length < 6 || isLoading}
             loading={isLoading}
             className="w-full"
