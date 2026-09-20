@@ -12,8 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('customers', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
+            $table->foreignId('business_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->string('phone_display');
+            $table->string('phone_normalized');
+            $table->unsignedInteger('version')->default(1);
             $table->timestamps();
+
+            $table->unique(['business_id', 'phone_normalized']);
+            $table->index(['business_id', 'name']);
         });
     }
 
