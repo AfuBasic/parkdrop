@@ -23,6 +23,8 @@ class PaymentWebhookController extends Controller
     ): JsonResponse {
         $rawPayload = $request->getContent();
         $signatureHeader = (string) (
+            $request->header('verif-hash') ??
+            $request->header('Verif-Hash') ??
             $request->header('x-paystack-signature') ??
             $request->header('X-Paystack-Signature') ??
             $request->header('x-webhook-signature') ??
