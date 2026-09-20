@@ -42,23 +42,23 @@ export function AuthLayout({
           isKeyboardOpen && "min-h-0 pb-[38px]"
         )}>
           {/* Top Bar */}
-          <div className="relative z-10 flex items-center justify-between gap-2.5 min-h-[48px]">
+          <div className="relative z-10 flex items-center justify-between gap-2 min-h-[44px]">
             {showBack && onBack ? (
               <button 
                 onClick={onBack}
-                className="inline-flex items-center gap-2 h-12 px-3.5 pr-4 rounded-full bg-white/20 text-white text-base font-bold hover:bg-white/30 transition-colors"
+                className="inline-flex items-center gap-1.5 h-10 px-3 rounded-full bg-white/20 text-white text-sm font-semibold hover:bg-white/30 transition-colors"
               >
-                <ArrowLeft className="w-5 h-5" strokeWidth={2.5} />
+                <ArrowLeft className="w-4 h-4" strokeWidth={2.5} />
                 Back
               </button>
             ) : (
-              <div className="w-[100px]" />
+              <div className="w-20" />
             )}
 
             {heroState !== 'compact' && (
-              <div className="flex items-center gap-2.5 text-[22px] font-extrabold tracking-[-0.02em]">
-                <span className="grid place-items-center w-[38px] h-[38px] rounded-[11px] bg-white text-action-primary overflow-hidden">
-                  <img src="/parkdrop-icon-only.png" alt="ParkDrop Logo" className="w-[26px] h-[26px] object-contain" />
+              <div className="flex items-center gap-2 text-lg font-bold tracking-tight">
+                <span className="grid place-items-center w-8 h-8 rounded-lg bg-white text-action-primary overflow-hidden">
+                  <img src="/parkdrop-icon-only.png" alt="ParkDrop Logo" className="w-5 h-5 object-contain" />
                 </span>
                 ParkDrop
               </div>
@@ -66,16 +66,16 @@ export function AuthLayout({
 
             <button 
               onClick={onHelp}
-              className="inline-flex items-center gap-2 h-12 px-3.5 pr-4 rounded-full bg-white/20 text-white text-base font-bold hover:bg-white/30 transition-colors"
+              className="inline-flex items-center gap-1.5 h-10 px-3 rounded-full bg-white/20 text-white text-sm font-semibold hover:bg-white/30 transition-colors"
             >
-              <MessageSquare className="w-5 h-5" strokeWidth={2.5} />
-              <span className="sr-only sm:not-sr-only">Need help?</span>
+              <MessageSquare className="w-4 h-4" strokeWidth={2.5} />
+              <span className="sr-only sm:not-sr-only">Help</span>
             </button>
           </div>
 
           {/* Tagline (Phone screen) */}
           {heroState === 'big' && !isKeyboardOpen && (
-            <p className="relative z-10 mt-4 text-[clamp(24px,3.7vh,30px)] leading-[1.12] font-extrabold tracking-[-0.025em]">
+            <p className="relative z-10 mt-3 text-[clamp(20px,2.8vh,24px)] leading-[1.18] font-bold tracking-tight">
               Record parcels.<br/>Find them fast.
             </p>
           )}
