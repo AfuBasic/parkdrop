@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Business extends Model
 {
@@ -11,6 +14,17 @@ class Business extends Model
         'name',
         'status',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($business) {
+            if (empty($business->public_id)) {
+                $business->public_id = (string) Str::uuid();
+            }
+        });
+    }
 
     public function memberships()
     {
