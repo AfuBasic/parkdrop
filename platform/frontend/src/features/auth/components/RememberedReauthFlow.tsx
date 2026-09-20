@@ -7,6 +7,8 @@ import { useAuth } from '../AuthContext';
 import { notify } from '@/lib/notify';
 import type { RememberedIdentity } from '@/lib/db';
 
+import { ProblemLoggingInDialog } from './ProblemLoggingInDialog';
+
 interface RememberedReauthFlowProps {
   identity: RememberedIdentity;
   onSwitchToEmail: () => void;
@@ -19,6 +21,7 @@ export function RememberedReauthFlow({ identity, onSwitchToEmail }: RememberedRe
   const [step, setStep] = React.useState<Step>('prompt');
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [showProblemHelp, setShowProblemHelp] = React.useState(false);
 
   const handleSendCode = async (targetEmail: string) => {
     setIsLoading(true);
@@ -64,31 +67,40 @@ export function RememberedReauthFlow({ identity, onSwitchToEmail }: RememberedRe
   };
 
   return (
-    <AuthLayout 
-      showBack={step === 'code'} 
-      onBack={() => {
-        setStep('prompt');
-        setError('');
-      }}
-    >
-      {step === 'prompt' && (
-        <RememberedReauthScreen
-          identity={identity}
-          onContinue={handleSendCode}
-          onSwitchAccount={onSwitchToEmail}
-          isLoading={isLoading}
-        />
-      )}
-      {step === 'code' && (
-        <CodeScreen
-          email={identity.email}
-          onVerify={handleVerifyCode}
-          onResend={() => handleSendCode(identity.email)}
-          isLoading={isLoading}
-          error={error}
-          onChangeEmail={onSwitchToEmail}
-        />
-      )}
-    </AuthLayout>
+    <>
+      <AuthLayout 
+        showBack={step === 'code'} 
+        onBack={() => {
+          setStep('prompt');
+          setError('');
+        }}
+      >
+        {step === 'prompt' && (
+          <RememberedReauthScreen
+            identity={identity}
+            onContinue={handleSendCode}
+            onSwitchAccount={onSwitchToEmail}
+            isLoading={isLoading}
+          />
+        )}
+        {step === 'code' && (
+          <CodeScreen
+            email={identity.email}
+            onVerify={handleVerifyCode}
+            onResend={() => handleSendCode(identity.email)}
+            onProblemLoggingIn={() => setShowProblemHelp(true)}
+            isLoading={isLoading}
+            error={error}
+            onChangeEmail={onSwitchToEmail}
+          />
+        )}
+      </AuthLayout>
+
+      <ProblemLoggingInDialog
+        open={showProblemHelp}
+        onOpenChange={setShowProblemHelp}
+        email={identity.email}
+      />
+    </>
   );
 }
