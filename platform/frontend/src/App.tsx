@@ -11,6 +11,7 @@ import { HomeScreen } from '@/features/home/HomeScreen';
 
 import { AddPackageScreen } from '@/features/packages/add/AddPackageScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
+import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
 import { MessageSquare, ChevronRight } from 'lucide-react';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -131,7 +132,17 @@ function AppContent() {
       {currentPath === '/packages/search' && renderPlaceholder('Search Packages', 'Full package search capabilities will be built in a future milestone.')}
       
       {currentPath === '/more/sms-credits' && (
-        <SmsCreditsScreen onBack={() => setCurrentPath('/more')} />
+        <SmsCreditsScreen 
+          onBack={() => setCurrentPath('/more')} 
+          onNavigateToBuy={() => setCurrentPath('/more/sms-credits/buy')}
+        />
+      )}
+
+      {currentPath === '/more/sms-credits/buy' && (
+        <BuySmsCreditsScreen 
+          onBack={() => setCurrentPath('/more/sms-credits')}
+          onSuccessDone={() => setCurrentPath('/more/sms-credits')}
+        />
       )}
 
       {currentPath === '/more' && (
