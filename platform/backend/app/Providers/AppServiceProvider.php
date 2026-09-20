@@ -28,10 +28,14 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(\App\Contracts\Payments\PaymentGateway::class, function ($app) {
-            $provider = config('payments.default_provider', 'paystack');
+            $provider = config('payments.default_provider', 'flutterwave');
 
             if ($app->environment('testing') || $provider === 'fake') {
                 return new \App\Services\Payments\FakePaymentGateway();
+            }
+
+            if ($provider === 'flutterwave') {
+                return new \App\Services\Payments\FlutterwavePaymentGateway();
             }
 
             return new \App\Services\Payments\PaystackPaymentGateway();
