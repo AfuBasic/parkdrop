@@ -2,6 +2,17 @@
 
 namespace App\Providers;
 
+use App\Contracts\Payments\PaymentGateway;
+use App\Contracts\Sms\SmsProvider;
+use App\Services\Payments\FakePaymentGateway;
+use App\Services\Payments\FlutterwavePaymentGateway;
+use App\Services\Payments\PaystackPaymentGateway;
+use App\Services\Sms\FakeSmsProvider;
+use App\Services\Sms\TermiiSmsProvider;
+use App\Services\Sync\Handlers\CreateCustomerMutationHandler;
+use App\Services\Sync\Handlers\CreatePackageMutationHandler;
+use App\Services\Sync\Handlers\TestOnlyMutationHandler;
+use App\Services\Sync\MutationRegistry;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -14,41 +25,41 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(\App\Services\Sync\MutationRegistry::class, function ($app) {
-            $registry = new \App\Services\Sync\MutationRegistry();
+        $this->app->singleton(MutationRegistry::class, function ($app) {
+            $registry = new MutationRegistry;
 
             if ($app->environment('testing')) {
-                $registry->register(new \App\Services\Sync\Handlers\TestOnlyMutationHandler());
+                $registry->register(new TestOnlyMutationHandler);
             }
 
-            $registry->register(new \App\Services\Sync\Handlers\CreateCustomerMutationHandler());
-            $registry->register(new \App\Services\Sync\Handlers\CreatePackageMutationHandler());
+            $registry->register(new CreateCustomerMutationHandler);
+            $registry->register(new CreatePackageMutationHandler);
 
             return $registry;
         });
 
-        $this->app->singleton(\App\Contracts\Payments\PaymentGateway::class, function ($app) {
+        $this->app->singleton(PaymentGateway::class, function ($app) {
             $provider = config('payments.default_provider', 'flutterwave');
 
             if ($app->environment('testing') || $provider === 'fake') {
-                return new \App\Services\Payments\FakePaymentGateway();
+                return new FakePaymentGateway;
             }
 
             if ($provider === 'flutterwave') {
-                return new \App\Services\Payments\FlutterwavePaymentGateway();
+                return new FlutterwavePaymentGateway;
             }
 
-            return new \App\Services\Payments\PaystackPaymentGateway();
+            return new PaystackPaymentGateway;
         });
 
-        $this->app->singleton(\App\Contracts\Sms\SmsProvider::class, function ($app) {
+        $this->app->singleton(SmsProvider::class, function ($app) {
             $provider = env('SMS_PROVIDER', 'termii');
 
             if ($app->environment('testing') || $provider === 'fake') {
-                return new \App\Services\Sms\FakeSmsProvider();
+                return new FakeSmsProvider;
             }
 
-            return new \App\Services\Sms\TermiiSmsProvider();
+            return new TermiiSmsProvider;
         });
     }
 
