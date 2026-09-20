@@ -8,7 +8,6 @@ use App\Models\BusinessMembership;
 use App\Models\SmsCreditPurchase;
 use App\Models\SmsCreditTransaction;
 use App\Models\SmsWallet;
-use App\Models\SyncChange;
 use App\Models\User;
 use App\Services\Payments\FakePaymentGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,7 +23,7 @@ class SmsCreditPurchaseTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->fakeGateway = new FakePaymentGateway();
+        $this->fakeGateway = new FakePaymentGateway;
         $this->app->instance(PaymentGateway::class, $this->fakeGateway);
     }
 
