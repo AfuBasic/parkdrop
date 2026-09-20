@@ -32,12 +32,12 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
 
   if (step === 'setup') {
     return (
-      <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
-        <div className="mb-10 text-center">
-          <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.pinSetupTitle}</h1>
-          <p className="text-text-secondary text-lg">{AuthStrings.pinSetupSubtitle}</p>
+      <div key="setup" className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
+        <div className="mb-[22px]">
+          <h1 className="text-2xl sm:text-[26px] font-[800] tracking-tight text-text-primary mb-1">{AuthStrings.pinSetupTitle}</h1>
+          <p className="text-base font-[600] text-text-secondary m-0">{AuthStrings.pinSetupSubtitle}</p>
         </div>
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1 pt-4">
           <PinInput length={4} value={pin} onChange={setPin} onComplete={handleSetupComplete} secure />
         </div>
       </div>
@@ -45,12 +45,12 @@ export function PinSetupScreen({ onContinue }: PinSetupScreenProps) {
   }
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="mb-10 text-center">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.pinConfirmTitle}</h1>
-        <p className="text-text-secondary text-lg">{AuthStrings.pinConfirmSubtitle}</p>
+    <div key="confirm" className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
+      <div className="mb-[22px]">
+        <h1 className="text-2xl sm:text-[26px] font-[800] tracking-tight text-text-primary mb-1">{AuthStrings.pinConfirmTitle}</h1>
+        <p className="text-base font-[600] text-text-secondary m-0">{AuthStrings.pinConfirmSubtitle}</p>
       </div>
-      <div className="flex flex-col items-center flex-1">
+      <div className="flex flex-col items-center flex-1 pt-4">
         <PinInput 
           length={4} 
           value={confirmPin} 
