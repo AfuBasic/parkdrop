@@ -5,12 +5,15 @@ import { PackageSaved } from './components/PackageSaved';
 import { PackageRepository } from '@/offline/repositories/PackageRepository';
 import { useAuth } from '@/features/auth/AuthContext';
 import { ChevronLeft } from 'lucide-react';
-import { useNavigate } from '@tanstack/react-router';
 import type { LocalPackage } from '@/offline/db/schema';
 
-export function AddPackageScreen() {
+interface AddPackageScreenProps {
+  onNavigate?: (path: string) => void;
+  onBack?: () => void;
+}
+
+export function AddPackageScreen({ onNavigate, onBack }: AddPackageScreenProps) {
   const { business } = useAuth();
-  const navigate = useNavigate();
 
   const [customer, setCustomer] = useState<CustomerSelection | null>(null);
   const [savedPackage, setSavedPackage] = useState<LocalPackage | null>(null);
@@ -42,10 +45,12 @@ export function AddPackageScreen() {
   const handleBack = () => {
     if (customer && !savedPackage) {
       if (confirm('Discard this package? Your entered details haven\'t been saved.')) {
-        navigate({ to: '/' });
+        if (onBack) onBack();
+        else if (onNavigate) onNavigate('/');
       }
     } else {
-      navigate({ to: '/' });
+      if (onBack) onBack();
+      else if (onNavigate) onNavigate('/');
     }
   };
 
@@ -57,6 +62,9 @@ export function AddPackageScreen() {
           pickupCode={savedPackage.pickup_code}
           publicPackageId={savedPackage.public_package_id}
           onAddAnother={resetForm}
+          onViewPackage={() => {
+            if (onNavigate) onNavigate('/packages');
+          }}
         />
       </div>
     );
