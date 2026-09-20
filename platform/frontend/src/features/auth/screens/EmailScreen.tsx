@@ -48,7 +48,7 @@ export function EmailScreen({ initialEmail = '', onContinue, onProblemLoggingIn,
   return (
     <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-right-4 duration-200">
       <div className="mb-6">
-        <h1 className="text-[30px] leading-[1.14] font-[800] tracking-[-0.025em] text-text-primary mb-2 text-balance">
+        <h1 className="text-2xl sm:text-[26px] font-[800] tracking-tight text-text-primary mb-2 text-balance">
           What is your email address?
         </h1>
       </div>
@@ -76,7 +76,7 @@ export function EmailScreen({ initialEmail = '', onContinue, onProblemLoggingIn,
             }}
             disabled={isLoading}
             error={!!error}
-            className="text-[22px] font-[700] pr-14"
+            className="h-14 text-lg font-semibold pr-14 rounded-xl"
           />
           {email && !isLoading && (
             <button 
@@ -94,14 +94,14 @@ export function EmailScreen({ initialEmail = '', onContinue, onProblemLoggingIn,
           <button 
             type="button" 
             onClick={() => appendDomain('@gmail.com')}
-            className="h-12 px-4 border-2 border-[var(--color-proto-tint2)] rounded-[14px] bg-[var(--color-proto-tint)] text-[var(--color-proto-blue-d)] text-[17px] font-[800]"
+            className="h-10 px-4 border border-[var(--color-proto-tint2)] rounded-lg bg-[var(--color-proto-tint)] text-[var(--color-proto-blue-d)] text-sm font-bold"
           >
             @gmail.com
           </button>
           <button 
             type="button" 
             onClick={() => appendDomain('@yahoo.com')}
-            className="h-12 px-4 border-2 border-[var(--color-proto-tint2)] rounded-[14px] bg-[var(--color-proto-tint)] text-[var(--color-proto-blue-d)] text-[17px] font-[800]"
+            className="h-10 px-4 border border-[var(--color-proto-tint2)] rounded-lg bg-[var(--color-proto-tint)] text-[var(--color-proto-blue-d)] text-sm font-bold"
           >
             @yahoo.com
           </button>
@@ -138,7 +138,7 @@ export function EmailScreen({ initialEmail = '', onContinue, onProblemLoggingIn,
         <div className="mt-auto pt-6 flex flex-col gap-4 items-center">
           <Button 
             type="submit" 
-            size="default" 
+            size="lg" 
             disabled={!email.trim() || isLoading} 
             loading={isLoading}
             className="w-full"

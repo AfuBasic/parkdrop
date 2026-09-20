@@ -57,8 +57,8 @@ export function AuthLayout({
 
             {heroState !== 'compact' && (
               <div className="flex items-center gap-2.5 text-[22px] font-extrabold tracking-[-0.02em]">
-                <span className="grid place-items-center w-[38px] h-[38px] rounded-[11px] bg-white text-action-primary">
-                  <Package className="w-6 h-6" strokeWidth={2.25} />
+                <span className="grid place-items-center w-[38px] h-[38px] rounded-[11px] bg-white text-action-primary overflow-hidden">
+                  <img src="/parkdrop-icon-only.png" alt="ParkDrop Logo" className="w-[26px] h-[26px] object-contain" />
                 </span>
                 ParkDrop
               </div>
