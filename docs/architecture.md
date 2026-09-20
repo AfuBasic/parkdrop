@@ -50,6 +50,20 @@ Data integrity is enforced at the database level, not just the application level
     *   `unknown` → first-time visitor or explicitly switched account.
 *   **Offline Tolerance:** Network failure during session check does not log out an authorized offline workspace.
 
+## Offline-First Architecture
+
+ParkDrop is designed to operate reliably in environments with intermittent connectivity.
+
+* **IndexedDB as Durable Working Copy**: We use Dexie to manage local data. `ParkDropLocalDB` stores `mutations`, `syncState`, `conflicts`, and a 24-hour `authorization` lease. Local data is strictly scoped by `business_id`.
+* **Server as Canonical Truth**: MySQL remains the authoritative database. The client pushes pending mutations to Laravel, which validates, authorizes, and executes them idempotently, generating a receipt.
+* **Mutation Queue**: Business operations (e.g. `CREATE_PACKAGE`) are locally queued with a `mutation_id` (UUID) and `device_sequence`. They are pushed in order.
+* **Synchronization Protocol**: 
+  * **Push**: Client sends pending operations. Server executes idempotently, records a `SyncMutationReceipt`, and returns status (`APPLIED`, `REJECTED`, `RETRYABLE`, `CONFLICT`).
+  * **Pull**: Client fetches canonical `SyncChange` records using an incremental cursor.
+* **Device Identity**: A `device_uuid` is generated once per browser profile. It tracks mutation origins but is **not** an authentication credential.
+* **Offline Authorization**: A successful online bootstrap creates a 24-hour offline authorization lease. A true HTTP 401 instantly revokes this lease, while a network failure preserves it.
+* **Realtime Sync Hints**: Reverb broadcasts lightweight `SyncHint` events on private business channels when server state changes, prompting online clients to pull changes immediately without waiting for a periodic interval.
+
 ## Frontend Architecture (React)
 
 *   **Vite & TypeScript:** Fast, strict foundation.
