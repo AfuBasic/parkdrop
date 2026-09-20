@@ -1,20 +1,22 @@
 import { db } from '../db/database';
 import { MutationQueue } from '../mutations/mutation-queue';
 import { generatePublicPackageId, generatePickupCode } from '../../features/packages/domain/PackageCodeGenerator';
-import type { LocalPackage } from '../db/schema';
+import type { LocalPackage, LocalPackageMedia } from '../db/schema';
 
 export class PackageRepository {
   /**
    * Creates a package locally and queues the CREATE_PACKAGE mutation.
    * If sendSms is true, it queues an arrival SMS intent flag in the payload.
+   * If photoBlob is provided, it creates a LocalPackageMedia.
    */
   static async createLocal(
     businessId: number,
     pickupPointId: number | null,
     customerId: string,
     amountDueMinor: number,
-    sendSms: boolean
-  ): Promise<LocalPackage> {
+    sendSms: boolean,
+    photoBlob: Blob | null = null
+  ): Promise<{ package: LocalPackage; media: LocalPackageMedia | null }> {
     const packageId = crypto.randomUUID();
     const publicPackageId = generatePublicPackageId();
     const pickupCode = generatePickupCode();
@@ -35,9 +37,28 @@ export class PackageRepository {
       sync_status: 'PENDING_CREATE',
     };
 
-    return db.transaction('rw', db.packages, db.mutations, async () => {
+    let localMedia: LocalPackageMedia | null = null;
+    
+    if (photoBlob) {
+      localMedia = {
+        id: crypto.randomUUID(),
+        business_id: businessId,
+        package_id: packageId,
+        local_blob: photoBlob,
+        status: 'PENDING_UPLOAD', // It's ready to upload once package is synced
+        attempt_count: 0,
+        created_at: now,
+      };
+    }
+
+    await db.transaction('rw', db.packages, db.mutations, db.packageMedia, async () => {
       // 1. Save local record
       await db.packages.add(localPackage);
+
+      // 1.5 Save local media if exists
+      if (localMedia) {
+        await db.packageMedia.add(localMedia);
+      }
 
       // 2. Queue mutation
       const payload: Record<string, unknown> = {
@@ -62,9 +83,9 @@ export class PackageRepository {
         packageId,
         null
       );
-
-      return localPackage;
     });
+
+    return { package: localPackage, media: localMedia };
   }
 
   static async getWaitingCount(businessId: number, pickupPointId: number | null): Promise<number> {
