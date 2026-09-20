@@ -9,6 +9,7 @@ import { ThemeDemo } from '@/routes/theme-demo';
 import { AppShell } from '@/design-system/shell/AppShell';
 import { HomeScreen } from '@/features/home/HomeScreen';
 
+import { AddPackageScreen } from '@/features/packages/add/AddPackageScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
 import { MessageSquare, ChevronRight } from 'lucide-react';
 import { db } from '@/offline/db/database';
@@ -120,7 +121,12 @@ function AppContent() {
       )}
       
       {currentPath === '/packages' && renderPlaceholder('Packages', 'Package list and management will be built in a future milestone.')}
-      {currentPath === '/add' && renderPlaceholder('Add Package', 'The offline package creation flow will be built next.')}
+      {currentPath === '/add' && (
+        <AddPackageScreen 
+          onNavigate={setCurrentPath}
+          onBack={() => setCurrentPath('/')}
+        />
+      )}
       {currentPath === '/customers' && renderPlaceholder('Customers', 'Customer directory and lookup will be built in a future milestone.')}
       {currentPath === '/packages/search' && renderPlaceholder('Search Packages', 'Full package search capabilities will be built in a future milestone.')}
       
