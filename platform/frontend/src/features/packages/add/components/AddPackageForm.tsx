@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { Camera, Image as ImageIcon } from 'lucide-react';
 import { Switch } from '@/design-system/components/Switch';
+import { PackagePhotoField } from '../../package-media/components/PackagePhotoField';
 
 interface AddPackageFormProps {
   customerName: string;
   customerPhone: string;
   onChangeCustomer: () => void;
-  onSave: (amountDueMinor: number, sendSms: boolean) => Promise<void>;
+  onSave: (amountDueMinor: number, sendSms: boolean, photoBlob: Blob | null) => Promise<void>;
 }
 
 export function AddPackageForm({ customerName, customerPhone, onChangeCustomer, onSave }: AddPackageFormProps) {
   const [amountRaw, setAmountRaw] = useState<string>('');
   const [sendSms, setSendSms] = useState(true);
+  const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +27,7 @@ export function AddPackageForm({ customerName, customerPhone, onChangeCustomer, 
     try {
       // Convert to minor units (assuming Kobo, * 100)
       const amountDueMinor = Math.round(Number(amountRaw) * 100);
-      await onSave(amountDueMinor, sendSms);
+      await onSave(amountDueMinor, sendSms, photoBlob);
     } catch (err) {
       console.error(err);
       setError('Could not save package. Please try again.');
@@ -81,18 +83,7 @@ export function AddPackageForm({ customerName, customerPhone, onChangeCustomer, 
 
       {/* Photo Section (Optional/Placeholder for Build 6) */}
       <section className="bg-white px-4 py-5 mb-2 border-y border-slate-100 shadow-sm">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-sm font-medium text-slate-500 uppercase tracking-wider">Package photo</h2>
-          <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">Optional</span>
-        </div>
-        
-        <button className="w-full flex flex-col items-center justify-center py-6 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 active:bg-slate-100 transition-colors">
-          <div className="flex gap-4 mb-2 text-slate-400">
-            <Camera className="w-8 h-8" />
-            <ImageIcon className="w-8 h-8" />
-          </div>
-          <span className="font-medium text-slate-600">Take or add photo</span>
-        </button>
+        <PackagePhotoField onPhotoSelected={setPhotoBlob} />
       </section>
 
       {/* SMS Section */}
