@@ -6,10 +6,10 @@ return [
     | Default Payment Provider
     |--------------------------------------------------------------------------
     |
-    | Supported: "paystack", "fake"
+    | Supported: "flutterwave", "paystack", "fake"
     |
     */
-    'default_provider' => env('PAYMENT_PROVIDER', 'paystack'),
+    'default_provider' => env('PAYMENT_PROVIDER', 'flutterwave'),
 
     /*
     |--------------------------------------------------------------------------
@@ -27,6 +27,13 @@ return [
     |--------------------------------------------------------------------------
     */
     'providers' => [
+        'flutterwave' => [
+            'public_key' => env('FLW_PUBLIC_KEY', env('FLUTTERWAVE_PUBLIC_KEY')),
+            'secret_key' => env('FLW_SECRET_KEY', env('FLUTTERWAVE_SECRET_KEY')),
+            'secret_hash' => env('FLW_SECRET_HASH', env('FLUTTERWAVE_SECRET_HASH')),
+            'base_url' => env('FLW_BASE_URL', 'https://api.flutterwave.com/v3'),
+        ],
+
         'paystack' => [
             'public_key' => env('PAYSTACK_PUBLIC_KEY'),
             'secret_key' => env('PAYSTACK_SECRET_KEY'),
