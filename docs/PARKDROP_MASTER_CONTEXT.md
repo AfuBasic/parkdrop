@@ -9,8 +9,9 @@
 **Build 8 — Arrival SMS: COMPLETED**
 **Build 9 — SMS Credit Wallet: COMPLETED**
 **Build 10 — Buy SMS Credits: COMPLETED**
+**Build 11 — Package Search (Local-First Operational Package Retrieval): COMPLETED**
 
-Next build: Build 11.
+Next build: Build 12 (Packages List).
 
 ## Core Architecture Decisions
 
@@ -62,6 +63,18 @@ Domain events use the outbox pattern.
 
 ### 5. Frontend Stack
 React, TypeScript, Vite, TanStack Router, TanStack Query, Tailwind CSS v4, Lucide React, Dexie (IndexedDB) for offline storage.
+
+### 6. Local-First Operational Package Search (Build 11)
+- **Primary Goal:** Attendants find packages in seconds from local synchronized data without waiting for network or API roundtrips.
+- **Search Architecture:**
+  - Single operational input: `"Search name, phone, pickup code or package ID"`.
+  - In-memory query classifier (`classifyQuery`) distinguishes `PUBLIC_PACKAGE_ID` (`PD-XXXXX`), `PICKUP_CODE` (7 characters from safe alphabet `23456789ABCDEFGHJKMNPQRSTUVWXYZ`), `PHONE` (normalized Nigerian MSISDN via `normalizePhone`), and `NAME_OR_TEXT` (case-folded tokens).
+  - Queries `PackageSearchRepository` directly against local IndexedDB (Dexie `packages` and `customers` tables) using composite indexes (`[business_id+public_package_id]`, `[business_id+pickup_code]`, `[business_id+phone_normalized]`).
+  - Scoping: Strict isolation by `business_id`. Active pickup point is prioritized with +20 score boost; cross-pickup-point packages within the same business are clearly labeled.
+  - Deterministic ranking: Exact pickup code (1000) > Exact public ID (950) > Exact phone (900) > Customer name exact/prefix/tokens (800-600) > Partial matches (400). Tie-breakers: `WAITING` > `COLLECTED` > `RETURNED` > `CANCELLED`, followed by newest `client_created_at` timestamp.
+  - Reactive live queries: Dexie `useLiveQuery` automatically updates results when local records change without page reload.
+  - Unsynced local packages (`sync_status: 'PENDING_CREATE'`) appear immediately in search with a subtle `Local` badge.
+  - Truthful offline copy: Communicates device limitations gracefully when offline without falsely asserting that a package does not exist globally.
 
 ---
 

@@ -72,6 +72,27 @@ ParkDrop is designed to operate reliably in environments with intermittent conne
 *   **Tailwind CSS v4:** Design system utility layer.
 *   **Lucide React:** Iconography.
 
+### Package Search (Local-First Operational Retrieval)
+```
+Find a package entry
+        ↓
+PackageSearchScreen
+        ↓
+usePackageSearch(businessId, activePickupPointId, query)
+        ↓
+classifyQuery(query)
+        ↓
+PackageSearchRepository
+        ↓
+Dexie IndexedDB (packages & customers stores with composite indexes)
+        ↓
+rankAndSortResults(matches)
+        ↓
+PackageSearchResult[] (immediate <100ms response, reactive to sync updates)
+```
+When server changes occur, Reverb broadcasts a `SyncHint` to trigger the `SyncEngine` pull, which updates Dexie, reactively refreshing search results via `useLiveQuery`. Search has zero hard runtime dependency on an online `/api/search` endpoint.
+
+
 ## Media Architecture (Cloudinary)
 
 Cloudinary is the ParkDrop media provider for package photos.
