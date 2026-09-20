@@ -118,4 +118,49 @@ class OtpRateLimitTest extends TestCase
             'purpose' => 'auth',
         ])->assertStatus(429);
     }
+
+    public function test_rate_limiter_clears_on_successful_verification()
+    {
+        Mail::fake();
+        $email = 'verified_user@example.com';
+
+        // 1. Request code
+        $this->postJson('/api/v1/auth/code', [
+            'email' => $email,
+            'purpose' => 'auth',
+        ])->assertStatus(200);
+
+        // Immediate subsequent request is blocked by cooldown
+        $this->postJson('/api/v1/auth/code', [
+            'email' => $email,
+            'purpose' => 'auth',
+        ])->assertStatus(429);
+
+        // Retrieve generated challenge code
+        $challenge = \App\Models\AuthChallenge::where('email', $email)->first();
+        $this->assertNotNull($challenge);
+
+        // 2. Successfully verify with the challenge (simulate correct code verification)
+        \App\Models\AuthChallenge::where('email', $email)->delete();
+
+        $knownChallenge = \App\Models\AuthChallenge::create([
+            'email' => $email,
+            'code_hash' => \Illuminate\Support\Facades\Hash::make('654321'),
+            'purpose' => 'auth',
+            'expires_at' => now()->addMinutes(10),
+            'max_attempts' => 5,
+        ]);
+
+        $this->postJson('/api/v1/auth/code/verify', [
+            'email' => $email,
+            'code' => '654321',
+            'purpose' => 'auth',
+        ])->assertStatus(200);
+
+        // 3. Immediately request code again: cooldown and rate limiter were cleared on success!
+        $this->postJson('/api/v1/auth/code', [
+            'email' => $email,
+            'purpose' => 'auth',
+        ])->assertStatus(200);
+    }
 }
