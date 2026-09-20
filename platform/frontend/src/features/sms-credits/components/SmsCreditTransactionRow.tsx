@@ -26,6 +26,9 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
   if (transaction.reference_type === 'WELCOME_CREDIT') {
     title = 'Welcome Credits';
     subtitle = 'Account setup bonus';
+  } else if (transaction.reference_type === 'PURCHASE') {
+    title = 'SMS Credits Purchased';
+    subtitle = transaction.reference_id ? `Ref: ${transaction.reference_id}` : 'Direct purchase';
   } else if (transaction.reference_type === 'ARRIVAL_SMS') {
     title = 'Arrival Notification SMS';
     subtitle = transaction.reference_id ? `Package ${transaction.reference_id}` : 'Package notification';
