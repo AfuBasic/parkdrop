@@ -61,8 +61,14 @@ export function PickupPointScreen({ firstName, onContinue, isLoading }: PickupPo
           </div>
         )}
 
-        <div className="mt-auto">
-          <Button type="submit" className="w-full" size="lg" disabled={!locationName.trim()} loading={isLoading}>
+        <div className="mt-auto pt-6">
+          <Button 
+            type="submit" 
+            className="w-full h-12 text-base font-bold" 
+            size="lg" 
+            disabled={!locationName.trim()} 
+            loading={isLoading}
+          >
             {AuthStrings.continue}
           </Button>
         </div>
