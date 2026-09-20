@@ -9,6 +9,7 @@ import { ReadyScreen } from '../screens/ReadyScreen';
 import { authApi } from '../api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
+import { ProblemLoggingInDialog } from './ProblemLoggingInDialog';
 import { useAuth } from '../AuthContext';
 import { notify } from '@/lib/notify';
 
@@ -207,45 +208,57 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
     setError('');
   };
 
+  const [showProblemHelp, setShowProblemHelp] = React.useState(false);
+
   const handleResetToEmail = () => {
     clearDraft();
     setStep('email');
   };
 
   return (
-    <AuthLayout showBack={step !== 'email' && step !== 'ready'} onBack={goBack}>
-      {step === 'email' && (
-        <EmailScreen 
-          initialEmail={email} 
-          onContinue={handleEmailSubmit} 
-          isLoading={isLoading} 
-        />
-      )}
-      {step === 'code' && (
-        <CodeScreen 
-          email={email} 
-          onVerify={handleCodeSubmit} 
-          onResend={() => handleEmailSubmit(email)} 
-          isLoading={isLoading} 
-          error={error}
-          onChangeEmail={handleResetToEmail}
-        />
-      )}
-      {step === 'name' && (
-        <NameScreen 
-          initialName={firstName} 
-          onContinue={handleNameSubmit} 
-        />
-      )}
-      {step === 'pin' && <PinSetupScreen onContinue={handlePinSubmit} />}
-      {step === 'pickup' && (
-        <PickupPointScreen 
-          firstName={firstName} 
-          onContinue={handlePickupSubmit} 
-          isLoading={isLoading} 
-        />
-      )}
-      {step === 'ready' && <ReadyScreen onComplete={() => window.location.href = '/'} />}
-    </AuthLayout>
+    <>
+      <AuthLayout showBack={step !== 'email' && step !== 'ready'} onBack={goBack}>
+        {step === 'email' && (
+          <EmailScreen 
+            initialEmail={email} 
+            onContinue={handleEmailSubmit} 
+            onProblemLoggingIn={() => setShowProblemHelp(true)}
+            isLoading={isLoading} 
+          />
+        )}
+        {step === 'code' && (
+          <CodeScreen 
+            email={email} 
+            onVerify={handleCodeSubmit} 
+            onResend={() => handleEmailSubmit(email)} 
+            onProblemLoggingIn={() => setShowProblemHelp(true)}
+            isLoading={isLoading} 
+            error={error}
+            onChangeEmail={handleResetToEmail}
+          />
+        )}
+        {step === 'name' && (
+          <NameScreen 
+            initialName={firstName} 
+            onContinue={handleNameSubmit} 
+          />
+        )}
+        {step === 'pin' && <PinSetupScreen onContinue={handlePinSubmit} />}
+        {step === 'pickup' && (
+          <PickupPointScreen 
+            firstName={firstName} 
+            onContinue={handlePickupSubmit} 
+            isLoading={isLoading} 
+          />
+        )}
+        {step === 'ready' && <ReadyScreen onComplete={() => window.location.href = '/'} />}
+      </AuthLayout>
+
+      <ProblemLoggingInDialog
+        open={showProblemHelp}
+        onOpenChange={setShowProblemHelp}
+        email={email}
+      />
+    </>
   );
 }
