@@ -46,3 +46,17 @@ export interface LocalAuthorization {
   authorized_at: string;
   expires_at: string;
 }
+
+export interface LocalPackage {
+  id: string; // public_package_id or uuid
+  business_id: number;
+  pickup_point_id: number | null;
+  customer_name: string;
+  customer_phone: string;
+  pickup_code: string | null;
+  amount_due: number; // minor units
+  status: 'WAITING' | 'COLLECTED' | 'RETURNED' | 'CANCELLED';
+  created_at: string;
+  collected_at: string | null;
+  sync_status: 'SYNCED' | 'PENDING_CREATE' | 'PENDING_UPDATE';
+}
