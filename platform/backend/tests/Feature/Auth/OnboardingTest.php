@@ -2,11 +2,13 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Mail\WelcomeMail;
 use App\Models\AuthChallenge;
 use App\Models\Business;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class OnboardingTest extends TestCase
@@ -15,6 +17,8 @@ class OnboardingTest extends TestCase
 
     public function test_can_complete_owner_onboarding_with_a_valid_challenge()
     {
+        Mail::fake();
+
         // 1. Create a verified challenge
         $challenge = AuthChallenge::create([
             'email' => 'owner@example.com',
@@ -79,5 +83,12 @@ class OnboardingTest extends TestCase
 
         // Assert Session is authenticated
         $this->assertAuthenticatedAs($user);
+
+        // Assert Welcome Email is queued
+        Mail::assertQueued(WelcomeMail::class, function ($mail) {
+            return $mail->hasTo('owner@example.com') &&
+                $mail->user->first_name === 'John' &&
+                $mail->pickupPoint?->name === 'Main Gate';
+        });
     }
 }
