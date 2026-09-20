@@ -26,6 +26,16 @@ class AppServiceProvider extends ServiceProvider
 
             return $registry;
         });
+
+        $this->app->singleton(\App\Contracts\Payments\PaymentGateway::class, function ($app) {
+            $provider = config('payments.default_provider', 'paystack');
+
+            if ($app->environment('testing') || $provider === 'fake') {
+                return new \App\Services\Payments\FakePaymentGateway();
+            }
+
+            return new \App\Services\Payments\PaystackPaymentGateway();
+        });
     }
 
     /**
