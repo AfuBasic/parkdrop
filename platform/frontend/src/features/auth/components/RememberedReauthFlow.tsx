@@ -7,7 +7,7 @@ import { useAuth } from '../AuthContext';
 import { notify } from '@/lib/notify';
 import type { RememberedIdentity } from '@/lib/db';
 
-import { ProblemLoggingInDialog } from './ProblemLoggingInDialog';
+import { ProblemLoggingInSheet } from './ProblemLoggingInSheet';
 
 interface RememberedReauthFlowProps {
   identity: RememberedIdentity;
@@ -96,7 +96,7 @@ export function RememberedReauthFlow({ identity, onSwitchToEmail }: RememberedRe
         )}
       </AuthLayout>
 
-      <ProblemLoggingInDialog
+      <ProblemLoggingInSheet
         open={showProblemHelp}
         onOpenChange={setShowProblemHelp}
         email={identity.email}

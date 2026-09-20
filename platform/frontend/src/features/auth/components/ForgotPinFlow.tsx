@@ -6,7 +6,7 @@ import { useAuth } from '../AuthContext';
 import { notify } from '@/lib/notify';
 import { db, type DeviceMeta, type RememberedIdentity } from '@/lib/db';
 
-import { ProblemLoggingInDialog } from './ProblemLoggingInDialog';
+import { ProblemLoggingInSheet } from './ProblemLoggingInSheet';
 
 interface ForgotPinFlowProps {
   deviceMeta: DeviceMeta;
@@ -106,7 +106,7 @@ export function ForgotPinFlow({ deviceMeta, rememberedIdentity, onCancel }: Forg
         />
       </AuthLayout>
 
-      <ProblemLoggingInDialog
+      <ProblemLoggingInSheet
         open={showProblemHelp}
         onOpenChange={setShowProblemHelp}
         email={email}

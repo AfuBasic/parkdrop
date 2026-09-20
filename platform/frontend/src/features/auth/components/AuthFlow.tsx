@@ -9,7 +9,7 @@ import { ReadyScreen } from '../screens/ReadyScreen';
 import { authApi } from '../api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
-import { ProblemLoggingInDialog } from './ProblemLoggingInDialog';
+import { ProblemLoggingInSheet } from './ProblemLoggingInSheet';
 import { useAuth } from '../AuthContext';
 import { notify } from '@/lib/notify';
 
@@ -254,7 +254,7 @@ export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
         {step === 'ready' && <ReadyScreen onComplete={() => window.location.href = '/'} />}
       </AuthLayout>
 
-      <ProblemLoggingInDialog
+      <ProblemLoggingInSheet
         open={showProblemHelp}
         onOpenChange={setShowProblemHelp}
         email={email}
