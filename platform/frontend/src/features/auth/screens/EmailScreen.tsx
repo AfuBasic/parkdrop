@@ -5,10 +5,11 @@ import { Field, Input, Button } from '@/design-system';
 interface EmailScreenProps {
   initialEmail?: string;
   onContinue: (email: string) => void;
+  onProblemLoggingIn?: () => void;
   isLoading?: boolean;
 }
 
-export function EmailScreen({ initialEmail = '', onContinue, isLoading }: EmailScreenProps) {
+export function EmailScreen({ initialEmail = '', onContinue, onProblemLoggingIn, isLoading }: EmailScreenProps) {
   const [email, setEmail] = React.useState(initialEmail);
   const [error, setError] = React.useState('');
 
@@ -50,6 +51,9 @@ export function EmailScreen({ initialEmail = '', onContinue, isLoading }: EmailS
             autoCapitalize="none"
             autoCorrect="off"
             spellCheck="false"
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-form-type="other"
             autoFocus
             placeholder={AuthStrings.emailPlaceholder}
             value={email}
@@ -74,12 +78,22 @@ export function EmailScreen({ initialEmail = '', onContinue, isLoading }: EmailS
             {AuthStrings.continue}
           </Button>
 
-          <a 
-            href="mailto:support@parkdrop.com.ng?subject=ParkDrop%20Login%20Assistance" 
-            className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded"
-          >
-            {AuthStrings.problemLoggingIn}
-          </a>
+          {onProblemLoggingIn ? (
+            <button
+              type="button"
+              onClick={onProblemLoggingIn}
+              className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded cursor-pointer"
+            >
+              {AuthStrings.problemLoggingIn}
+            </button>
+          ) : (
+            <a 
+              href="mailto:support@parkdrop.com.ng?subject=ParkDrop%20Login%20Assistance" 
+              className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded"
+            >
+              {AuthStrings.problemLoggingIn}
+            </a>
+          )}
         </div>
       </form>
     </div>
