@@ -41,6 +41,10 @@ export class ParkDropDatabase extends Dexie {
       smsWallets: 'id, business_id',
       smsCreditTransactions: 'id, sms_wallet_id, created_at, [sms_wallet_id+created_at]'
     });
+
+    this.version(6).stores({
+      customers: 'id, business_id, name, phone_normalized, [business_id+phone_normalized], [business_id+name]'
+    });
   }
 }
 
