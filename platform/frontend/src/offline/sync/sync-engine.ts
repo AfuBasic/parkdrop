@@ -97,6 +97,9 @@ export class SyncEngine {
 
       const data = await response.json();
       const changes = data.changes || [];
+      if (changes.length > 0) {
+        console.log(`[SyncEngine] Received ${changes.length} changes from server`);
+      }
       
       // Apply changes transactionally here in a real implementation
       // e.g., using a handler registry for entity types
