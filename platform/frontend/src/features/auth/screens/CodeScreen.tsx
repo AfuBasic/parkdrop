@@ -2,6 +2,7 @@ import * as React from 'react';
 import { AuthStrings } from '../strings';
 import { Button } from '@/design-system';
 import { AuthCodeField } from '../components/AuthCodeField';
+import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CodeScreenProps {
@@ -65,105 +66,107 @@ export function CodeScreen({
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const radius = 20;
+  const circumference = 2 * Math.PI * radius;
+  const dashoffset = circumference - (countdown / 30) * circumference;
+
   return (
-    <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-bottom-3 duration-300">
-      <div className="mb-8 text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 text-text-primary">
-          {AuthStrings.codeTitle}
+    <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-right-4 duration-200">
+      <div className="mb-[22px]">
+        <h1 className="text-[30px] leading-[1.14] font-[800] tracking-[-0.025em] text-text-primary mb-1">
+          Enter the code
         </h1>
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <p className="text-text-secondary text-[15px] sm:text-base leading-snug">
-            We sent a 6-digit code to <span className="font-medium text-text-primary block sm:inline">{email}</span>
-          </p>
-          {onChangeEmail && (
-            <button
-              type="button"
-              onClick={onChangeEmail}
-              className="text-[15px] sm:text-base font-semibold text-action-primary hover:text-action-primary-hover hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded cursor-pointer min-h-[44px] sm:min-h-0 flex items-center"
-            >
-              Edit
-            </button>
-          )}
-        </div>
+        <p className="text-[18px] font-[600] text-text-secondary m-0">
+          Sent to {email}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <div className="mb-6">
-          <label 
-            htmlFor="otp-input" 
-            className="sr-only"
-          >
-            6-Digit Code
-          </label>
-          
-          <AuthCodeField
-            ref={inputRef}
-            id="otp-input"
-            value={code}
-            onChange={handleChange}
-            disabled={isLoading}
-            error={!!error}
-            placeholder="······"
-          />
+        <AuthCodeField
+          ref={inputRef}
+          value={code}
+          onChange={handleChange}
+          disabled={isLoading}
+          error={!!error}
+        />
 
-          {error ? (
-            <p className="text-[13px] sm:text-sm text-status-danger-text font-medium mt-2.5">
-              {error}
-            </p>
-          ) : (
-            <p className="text-[13px] text-text-muted mt-2.5">
-              This code expires in 15 minutes.
-            </p>
-          )}
-        </div>
+        {error && (
+          <p className="flex items-start gap-2 mt-3 text-[17px] leading-[1.35] font-[700] text-status-danger animate-in shake" role="alert">
+            <AlertCircle className="w-[22px] h-[22px] mt-px flex-none" strokeWidth={2.5} />
+            <span>{error}</span>
+          </p>
+        )}
 
-        <div className="flex items-center mb-8">
-          {countdown > 0 ? (
-            <p className="text-[14px] text-text-muted">
-              Resend code in {countdown}s
-            </p>
-          ) : (
-            <p className="text-[14px] text-text-secondary">
-              Didn't get the code?{' '}
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={isLoading}
-                className="font-semibold text-action-primary hover:text-action-primary-hover hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded disabled:opacity-50 min-h-[44px] inline-flex items-center"
-              >
-                Resend code
-              </button>
-            </p>
-          )}
-        </div>
-
-        <div className="mt-auto flex flex-col gap-4 items-center pb-2">
-          <Button
-            type="submit"
-            className="w-full h-[52px] sm:h-[56px] text-base font-semibold"
-            size="lg"
-            disabled={code.length < 6 || isLoading}
-            loading={isLoading}
-          >
-            {AuthStrings.continue}
-          </Button>
-
-          {onProblemLoggingIn ? (
+        <div className="flex items-center gap-4 p-4 mt-6 rounded-[18px] bg-[var(--color-proto-page)]">
+          <svg className="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
+            <circle 
+              cx="22" 
+              cy="22" 
+              r="20" 
+              className="fill-none stroke-[var(--color-proto-line2)] stroke-[4px]" 
+            />
+            <circle 
+              cx="22" 
+              cy="22" 
+              r="20" 
+              className="fill-none stroke-[var(--color-proto-blue)] stroke-[4px] transition-[stroke-dashoffset] duration-1000 ease-linear" 
+              style={{
+                strokeDasharray: circumference,
+                strokeDashoffset: dashoffset
+              }}
+            />
+          </svg>
+          <div className="flex-1 min-w-0">
+            {countdown > 0 ? (
+              <p className="m-0 text-[16px] text-[var(--color-proto-muted)]">
+                Resend code in <b className="text-[var(--color-proto-ink)] font-[800] tabular-nums">{formatTime(countdown)}</b>
+              </p>
+            ) : (
+              <p className="m-0 text-[16px] text-[var(--color-proto-muted)]">
+                Didn't get the code?
+              </p>
+            )}
             <button
               type="button"
-              onClick={onProblemLoggingIn}
-              className="text-[14px] font-medium text-text-secondary hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus rounded cursor-pointer min-h-[44px] flex items-center justify-center w-full"
+              onClick={handleResend}
+              disabled={countdown > 0 || isLoading}
+              className={cn(
+                "inline-block p-0 bg-transparent border-0 font-inherit text-[16px] font-[800] text-[var(--color-proto-blue-d)] underline underline-offset-3 cursor-pointer",
+                (countdown > 0 || isLoading) && "text-[var(--color-proto-muted)] no-underline opacity-50 cursor-default"
+              )}
             >
-              {AuthStrings.problemLoggingIn}
+              Resend it now
             </button>
-          ) : (
-            <a
-              href="mailto:support@parkdrop.com.ng?subject=ParkDrop%20Verification%20Code%20Help"
-              className="text-[14px] font-medium text-text-secondary hover:text-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus rounded min-h-[44px] flex items-center justify-center w-full"
+          </div>
+        </div>
+
+        <div className="mt-auto pt-6 flex flex-col gap-4 items-center">
+          <Button
+            type="submit"
+            size="default"
+            disabled={code.length < 6 || isLoading}
+            loading={isLoading}
+            className="w-full"
+          >
+            Continue
+          </Button>
+          
+          <p className="mt-3 text-center text-[15px] leading-[1.4] font-[600] text-text-muted">
+            Need to use a different email?{' '}
+            <button 
+              type="button" 
+              onClick={onChangeEmail}
+              className="text-[var(--color-proto-blue-d)] font-[800] underline underline-offset-3 bg-transparent border-0 cursor-pointer"
             >
-              {AuthStrings.problemLoggingIn}
-            </a>
-          )}
+              Go back
+            </button>
+          </p>
         </div>
       </form>
     </div>

@@ -1,68 +1,141 @@
 import * as React from 'react';
-import { ArrowLeft } from 'lucide-react';
-import { Button, AuthBackdrop } from '@/design-system';
+import { ArrowLeft, MessageSquare, Check, Package } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
   onBack?: () => void;
   showBack?: boolean;
+  heroState?: 'big' | 'mid' | 'compact';
+  onHelp?: () => void;
+  step?: number;
+  totalSteps?: number;
+  isSuccess?: boolean;
+  isKeyboardOpen?: boolean;
 }
 
-export function AuthLayout({ children, onBack, showBack = true }: AuthLayoutProps) {
+export function AuthLayout({ 
+  children, 
+  onBack, 
+  showBack = true,
+  heroState = 'big',
+  onHelp,
+  step,
+  totalSteps = 5,
+  isSuccess,
+  isKeyboardOpen
+}: AuthLayoutProps) {
+  // Mobile app styling mapped from the prototype
   return (
-    <div className="min-h-screen bg-surface-page flex flex-col items-center justify-center p-0 sm:p-6 md:p-10 relative overflow-hidden">
-      {/* Mobile background atmospheric motif */}
-      <div className="absolute -top-12 -right-12 w-80 h-80 pointer-events-none opacity-[0.06] md:hidden">
-        <AuthBackdrop className="w-full h-full" />
-      </div>
+    <div className="min-h-screen bg-surface-page flex flex-col md:items-center md:justify-center md:py-10">
+      <div className={cn(
+        "relative w-full h-full min-h-screen md:min-h-[840px] md:h-[840px] md:w-[392px] md:rounded-[44px] md:overflow-hidden md:shadow-2xl bg-action-primary flex flex-col font-sans text-text-primary",
+        isKeyboardOpen && "kbd" // Allows applying keyboard specific styles
+      )}>
+        
+        {/* Hero Section */}
+        <header className={cn(
+          "relative flex-none bg-action-primary bg-[radial-gradient(rgba(255,255,255,.12)_1.6px,transparent_1.7px)] bg-[length:20px_20px] text-white px-5 pb-[46px] overflow-hidden transition-all duration-300",
+          heroState === 'big' && "min-h-[clamp(176px,32vh,262px)] pt-[max(14px,env(safe-area-inset-top))]",
+          heroState === 'mid' && "min-h-[clamp(150px,25vh,206px)] pt-[max(14px,env(safe-area-inset-top))]",
+          heroState === 'compact' && "min-h-0 pt-[max(14px,env(safe-area-inset-top))]",
+          isKeyboardOpen && "min-h-0 pb-[38px]"
+        )}>
+          {/* Top Bar */}
+          <div className="relative z-10 flex items-center justify-between gap-2.5 min-h-[48px]">
+            {showBack && onBack ? (
+              <button 
+                onClick={onBack}
+                className="inline-flex items-center gap-2 h-12 px-3.5 pr-4 rounded-full bg-white/20 text-white text-base font-bold hover:bg-white/30 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" strokeWidth={2.5} />
+                Back
+              </button>
+            ) : (
+              <div className="w-[100px]" />
+            )}
 
-      <div className="w-full max-w-5xl flex-1 flex flex-col justify-center z-10 sm:my-auto">
-        <div className="min-h-screen sm:min-h-[540px] grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 items-start sm:items-center bg-transparent sm:bg-surface-default border-0 sm:border sm:border-border-default sm:rounded-3xl p-5 sm:p-10 sm:shadow-elevation-2 backdrop-blur-none sm:backdrop-blur-sm">
-          {/* Left Column: Form & Navigation */}
-          <div className="md:col-span-7 flex flex-col min-h-screen sm:min-h-[460px] pt-[env(safe-area-inset-top)] sm:pt-0 pb-[max(20px,env(safe-area-inset-bottom))] sm:pb-0">
-            <header className="flex items-center justify-between mb-6 sm:mb-8 min-h-[56px] sm:min-h-0 shrink-0">
-              <div className="flex items-center">
-                {showBack && onBack ? (
-                  <button
-                    type="button"
-                    onClick={onBack}
-                    className="flex items-center justify-center h-11 w-11 rounded-full hover:bg-surface-subtle -ml-2 text-text-secondary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
-                    aria-label="Go back"
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
-                ) : (
-                  <div className="w-11 h-11 -ml-2" />
-                )}
-
-                <div className="flex items-center gap-2.5 ml-1">
-                  <img src="/parkdrop-icon-only.png" alt="ParkDrop Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-sm" />
-                  <span className="font-bold text-lg sm:text-xl tracking-tight text-text-primary">ParkDrop</span>
-                </div>
+            {heroState !== 'compact' && (
+              <div className="flex items-center gap-2.5 text-[22px] font-extrabold tracking-[-0.02em]">
+                <span className="grid place-items-center w-[38px] h-[38px] rounded-[11px] bg-white text-action-primary">
+                  <Package className="w-6 h-6" strokeWidth={2.25} />
+                </span>
+                ParkDrop
               </div>
-            </header>
+            )}
 
-            <main className="flex-1 flex flex-col justify-start sm:justify-center">
-              {children}
-            </main>
+            <button 
+              onClick={onHelp}
+              className="inline-flex items-center gap-2 h-12 px-3.5 pr-4 rounded-full bg-white/20 text-white text-base font-bold hover:bg-white/30 transition-colors"
+            >
+              <MessageSquare className="w-5 h-5" strokeWidth={2.5} />
+              <span className="sr-only sm:not-sr-only">Need help?</span>
+            </button>
           </div>
 
-          {/* Right Column (Desktop): Brand Visual Composition */}
-          <div className="hidden md:flex md:col-span-5 flex-col items-center justify-center bg-pd-blue-50/60 border border-pd-blue-100 rounded-2xl p-8 min-h-[460px] relative overflow-hidden">
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <AuthBackdrop className="w-full h-full scale-110" />
+          {/* Tagline (Phone screen) */}
+          {heroState === 'big' && !isKeyboardOpen && (
+            <p className="relative z-10 mt-4 text-[clamp(24px,3.7vh,30px)] leading-[1.12] font-extrabold tracking-[-0.025em]">
+              Record parcels.<br/>Find them fast.
+            </p>
+          )}
+
+          {/* Steps (Compact) */}
+          {(heroState === 'compact' || isKeyboardOpen) && step && (
+            <div className={cn("relative z-10", isKeyboardOpen ? "mt-3" : "mt-4")}>
+              {!isKeyboardOpen && (
+                <p className="m-0 mb-2 text-base font-bold">Step {step} of {totalSteps}</p>
+              )}
+              <div className="flex gap-1.5">
+                {Array.from({ length: totalSteps }).map((_, i) => (
+                  <i 
+                    key={i} 
+                    className={cn(
+                      "flex-1 h-2 rounded-full",
+                      i < step ? "bg-white" : "bg-white/30"
+                    )} 
+                  />
+                ))}
+              </div>
             </div>
-            
-            <div className="relative z-10 text-center max-w-[260px] mt-auto">
-              <h2 className="text-base font-semibold text-pd-blue-900 mb-1">
-                Reliable Parcel Operations
-              </h2>
-              <p className="text-xs text-pd-blue-700/80 leading-relaxed">
-                Log packages, notify recipients instantly via SMS, and release pickups with verified tokens.
-              </p>
+          )}
+
+          {/* Badge (Ready screen) */}
+          {isSuccess && !isKeyboardOpen && (
+            <div className="absolute left-5 bottom-14 z-10 w-[68px] h-[68px] rounded-full bg-white text-status-success grid place-items-center animate-in zoom-in duration-300">
+              <Check className="w-[38px] h-[38px]" strokeWidth={3} />
             </div>
-          </div>
+          )}
+
+          {/* Isometric Art (Big/Mid) */}
+          {(heroState === 'big' || heroState === 'mid') && !isKeyboardOpen && (
+            <svg className="absolute right-2 bottom-0 z-[1] h-[clamp(96px,19vh,150px)] aspect-[206/150] w-auto" viewBox="0 0 206 150" aria-hidden="true">
+              <rect x="104" y="16" width="54" height="40" rx="4" fill="#E9C27F"/>
+              <rect x="104" y="16" width="54" height="12" rx="4" fill="#D6A557"/>
+              <rect x="122" y="16" width="18" height="40" fill="#F4E4BF"/>
+              <rect x="70" y="52" width="122" height="98" rx="5" fill="#E2B46E"/>
+              <rect x="70" y="52" width="122" height="18" rx="5" fill="#CF9A4D"/>
+              <rect x="120" y="52" width="20" height="98" fill="#F4E4BF"/>
+              <rect x="80" y="86" width="30" height="4" rx="2" fill="#B9852F"/>
+              <rect x="80" y="96" width="21" height="4" rx="2" fill="#B9852F"/>
+              <rect x="146" y="82" width="38" height="28" rx="4" fill="#fff"/>
+              <text x="165" y="101" textAnchor="middle" fontFamily="Manrope,system-ui,sans-serif" fontSize="14" fontWeight="800" fill="#0D1B2A">4821</text>
+              <rect x="4" y="82" width="74" height="68" rx="5" fill="#D9A45A"/>
+              <rect x="4" y="82" width="74" height="14" rx="5" fill="#C58C3F"/>
+              <rect x="14" y="82" width="16" height="68" fill="#F1DDB0"/>
+              <rect x="36" y="100" width="38" height="18" rx="3" fill="#fff"/>
+              <text x="55" y="113" textAnchor="middle" fontFamily="Manrope,system-ui,sans-serif" fontSize="9" fontWeight="800" fill="#0D1B2A">PD-2841</text>
+            </svg>
+          )}
+        </header>
+
+        {/* Sheet Content */}
+        <div className="relative z-[3] flex-1 min-h-0 -mt-7 bg-white rounded-t-[28px] flex flex-col overflow-hidden">
+          <section className="flex-1 min-h-0 flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
+            {children}
+          </section>
         </div>
+
       </div>
     </div>
   );
