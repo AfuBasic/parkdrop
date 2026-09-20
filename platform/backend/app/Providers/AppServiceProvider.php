@@ -21,6 +21,8 @@ class AppServiceProvider extends ServiceProvider
                 $registry->register(new \App\Services\Sync\Handlers\TestOnlyMutationHandler());
             }
 
+            $registry->register(new \App\Services\Sync\Handlers\CreateCustomerMutationHandler());
+
             return $registry;
         });
     }
