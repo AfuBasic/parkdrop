@@ -7,6 +7,7 @@ interface CodeScreenProps {
   email: string;
   onVerify: (code: string) => void;
   onResend: () => void;
+  onProblemLoggingIn?: () => void;
   isLoading?: boolean;
   error?: string;
   onChangeEmail?: () => void;
@@ -16,6 +17,7 @@ export function CodeScreen({
   email, 
   onVerify, 
   onResend, 
+  onProblemLoggingIn,
   isLoading, 
   error, 
   onChangeEmail 
@@ -63,19 +65,20 @@ export function CodeScreen({
   };
 
   return (
-    <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-right-3 duration-300">
+    <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-bottom-3 duration-300">
       <div className="mb-6 md:mb-8 text-left">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-text-primary">
           {AuthStrings.codeTitle}
         </h1>
-        <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 text-sm sm:text-base text-text-secondary leading-relaxed">
-          <span>{AuthStrings.codeSubtitle(email)}</span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <p className="text-text-secondary text-sm sm:text-base">
+            {AuthStrings.codeSubtitle(email)}
+          </p>
           {onChangeEmail && (
             <button
               type="button"
               onClick={onChangeEmail}
-              disabled={isLoading}
-              className="text-xs font-semibold text-action-primary hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-action-primary rounded cursor-pointer"
+              className="text-xs sm:text-sm font-medium text-action-primary hover:text-action-primary-hover hover:underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded cursor-pointer"
             >
               Edit
             </button>
@@ -84,8 +87,11 @@ export function CodeScreen({
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <div className="flex flex-col gap-3">
-          <label htmlFor="otp-input" className="text-sm font-semibold text-text-primary">
+        <div>
+          <label 
+            htmlFor="otp-input" 
+            className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2 text-left"
+          >
             6-Digit Code
           </label>
           
@@ -96,6 +102,9 @@ export function CodeScreen({
             inputMode="numeric"
             pattern="[0-9]*"
             autoComplete="one-time-code"
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-form-type="other"
             maxLength={6}
             value={code}
             onChange={handleChange}
@@ -144,12 +153,22 @@ export function CodeScreen({
             {AuthStrings.continue}
           </Button>
 
-          <a
-            href="mailto:support@parkdrop.com.ng?subject=ParkDrop%20Verification%20Code%20Help"
-            className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded"
-          >
-            {AuthStrings.problemLoggingIn}
-          </a>
+          {onProblemLoggingIn ? (
+            <button
+              type="button"
+              onClick={onProblemLoggingIn}
+              className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded cursor-pointer"
+            >
+              {AuthStrings.problemLoggingIn}
+            </button>
+          ) : (
+            <a
+              href="mailto:support@parkdrop.com.ng?subject=ParkDrop%20Verification%20Code%20Help"
+              className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded"
+            >
+              {AuthStrings.problemLoggingIn}
+            </a>
+          )}
         </div>
       </form>
     </div>
