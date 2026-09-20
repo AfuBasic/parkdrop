@@ -47,6 +47,9 @@ export interface LocalAuthorization {
   expires_at: string;
 }
 
+export type SyncStatus = 'SYNCED' | 'PENDING_CREATE' | 'PENDING_UPDATE' | 'CONFLICT';
+export type MediaSyncStatus = 'LOCAL_ONLY' | 'PENDING_UPLOAD' | 'AUTHORIZING' | 'UPLOADING' | 'VERIFYING' | 'SYNCED' | 'FAILED_RETRYABLE' | 'NEEDS_ATTENTION' | 'REMOVED';
+
 export interface LocalPackage {
   id: string; // uuid
   business_id: number;
@@ -59,7 +62,7 @@ export interface LocalPackage {
   client_created_at: string;
   server_received_at: string | null;
   version: number;
-  sync_status: 'SYNCED' | 'PENDING_CREATE' | 'PENDING_UPDATE';
+  sync_status: SyncStatus;
 }
 
 export interface LocalCustomer {
@@ -69,7 +72,21 @@ export interface LocalCustomer {
   phone_display: string;
   phone_normalized: string;
   version: number;
-  sync_status: 'SYNCED' | 'PENDING_CREATE' | 'PENDING_UPDATE';
+  sync_status: SyncStatus;
+}
+
+export interface LocalPackageMedia {
+  id: string; // uuid
+  business_id: number;
+  package_id: string; // fk to local package uuid
+  local_blob?: Blob;
+  status: MediaSyncStatus;
+  attempt_count: number;
+  created_at: string;
+  last_attempt_at?: string;
+  last_error_safe?: string;
+  cloudinary_asset_id?: string;
+  public_id?: string;
 }
 
 export interface LocalEntityAlias {
