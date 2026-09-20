@@ -5,8 +5,12 @@
 **Build 1 — Authentication + Business Onboarding: COMPLETED**
 **Build 3 — Offline-First Engine: COMPLETED**
 **Build 4 — Home (Mobile-First Operational Screen): COMPLETED**
+**Build 7 — Package Photos + Cloudinary: COMPLETED**
+**Build 8 — Arrival SMS: COMPLETED**
+**Build 9 — SMS Credit Wallet: COMPLETED**
+**Build 10 — Buy SMS Credits: COMPLETED**
 
-Next build: Customer Lookup / Add Package.
+Next build: Build 11.
 
 ## Core Architecture Decisions
 
