@@ -18,11 +18,11 @@ export function RememberedReauthScreen({
 }: RememberedReauthScreenProps) {
   return (
     <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-bottom-3 duration-300">
-      <div className="mb-6 md:mb-8 text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-text-primary">
+      <div className="mb-5 text-left">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-text-primary">
           {AuthStrings.reauthTitle(identity.name)}
         </h1>
-        <p className="text-text-secondary text-sm sm:text-base leading-relaxed">
+        <p className="text-sm font-medium text-text-secondary m-0 leading-relaxed">
           Your session expired. Confirm your identity to continue.
         </p>
       </div>
