@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { AuthStrings } from '../strings';
 import { Button } from '@/design-system';
 import { AuthCodeField } from '../components/AuthCodeField';
 import { AlertCircle } from 'lucide-react';
@@ -19,7 +18,7 @@ export function CodeScreen({
   email, 
   onVerify, 
   onResend, 
-  onProblemLoggingIn,
+  
   isLoading, 
   error, 
   onChangeEmail 
