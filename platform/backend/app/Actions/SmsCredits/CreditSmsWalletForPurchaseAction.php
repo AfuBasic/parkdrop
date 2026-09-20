@@ -28,8 +28,8 @@ class CreditSmsWalletForPurchaseAction
             $purchase,
             $verifiedAmountMinor,
             $verifiedCurrency,
-            $providerTransactionId,
-            $providerMetadata
+            $providerTransactionId
+
         ) {
             // 1. Row-lock the purchase record
             $lockedPurchase = SmsCreditPurchase::where('id', $purchase->id)
