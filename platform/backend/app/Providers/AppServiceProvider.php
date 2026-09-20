@@ -7,7 +7,6 @@ use App\Contracts\Sms\SmsProvider;
 use App\Services\Payments\FakePaymentGateway;
 use App\Services\Payments\FlutterwavePaymentGateway;
 use App\Services\Payments\PaystackPaymentGateway;
-use App\Services\Sms\FakeSmsProvider;
 use App\Services\Sms\TermiiSmsProvider;
 use App\Services\Sync\Handlers\CreateCustomerMutationHandler;
 use App\Services\Sync\Handlers\CreatePackageMutationHandler;
@@ -52,13 +51,7 @@ class AppServiceProvider extends ServiceProvider
             return new PaystackPaymentGateway;
         });
 
-        $this->app->singleton(SmsProvider::class, function ($app) {
-            $provider = env('SMS_PROVIDER', 'termii');
-
-            if ($app->environment('testing') || $provider === 'fake') {
-                return new FakeSmsProvider;
-            }
-
+        $this->app->singleton(SmsProvider::class, function () {
             return new TermiiSmsProvider;
         });
     }
