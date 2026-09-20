@@ -5,6 +5,7 @@ import {
   SheetHeader, 
   SheetTitle, 
   SheetDescription,
+  SheetClose,
   Button 
 } from '@/design-system';
 import { Mail, HelpCircle, CheckCircle2, Copy, Check } from 'lucide-react';
@@ -127,14 +128,15 @@ export function ProblemLoggingInSheet({
               <Mail className="w-4 h-4" />
               Send Email to Creator
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full sm:w-auto h-12 text-sm"
-              onClick={() => onOpenChange(false)}
-            >
-              Close
-            </Button>
+            <SheetClose asChild>
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full sm:w-auto h-12 text-sm"
+              >
+                Close
+              </Button>
+            </SheetClose>
           </div>
         </div>
       </SheetContent>
