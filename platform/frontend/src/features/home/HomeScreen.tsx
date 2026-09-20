@@ -7,12 +7,13 @@ interface HomeScreenProps {
   onNavigateToSearch?: () => void;
   onNavigateToAdd?: () => void;
   onNavigateToPackages?: () => void;
+  onNavigateToCredits?: () => void;
 }
 
-export function HomeScreen({ onNavigateToSearch, onNavigateToAdd, onNavigateToPackages }: HomeScreenProps) {
+export function HomeScreen({ onNavigateToSearch, onNavigateToAdd, onNavigateToPackages, onNavigateToCredits }: HomeScreenProps) {
   return (
     <div className="flex flex-col h-full max-w-lg mx-auto pb-4">
-      <HomeHeader />
+      <HomeHeader onNavigateToCredits={onNavigateToCredits} />
       
       <main className="flex-1 mt-2">
         <OperationalSearch 
