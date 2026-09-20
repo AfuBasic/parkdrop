@@ -147,12 +147,27 @@ export class SyncEngine {
 
       const data = await response.json();
       const changes = data.changes || [];
-      if (changes.length > 0) {
-        console.log(`[SyncEngine] Received ${changes.length} changes from server`);
+      for (const change of changes) {
+        try {
+          if (change.entity_type === 'sms_wallet' && change.payload) {
+            await db.smsWallets.put(change.payload);
+          } else if (change.entity_type === 'sms_credit_transaction' && change.payload) {
+            await db.smsCreditTransactions.put(change.payload);
+          } else if (change.entity_type === 'package' && change.payload) {
+            await db.packages.put({
+              ...change.payload,
+              sync_status: 'SYNCED',
+            });
+          } else if (change.entity_type === 'customer' && change.payload) {
+            await db.customers.put({
+              ...change.payload,
+              sync_status: 'SYNCED',
+            });
+          }
+        } catch (err) {
+          console.error(`[SyncEngine] Failed to apply change ${change.id}:`, err);
+        }
       }
-      
-      // Apply changes transactionally here in a real implementation
-      // e.g., using a handler registry for entity types
       
       currentCursor = data.cursor;
       hasMore = data.has_more;
