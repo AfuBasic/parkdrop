@@ -10,11 +10,36 @@ import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { playwright } from '@vitest/browser-playwright';
 const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
+import { VitePWA } from 'vite-plugin-pwa';
+
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      injectRegister: 'auto',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
+        navigateFallback: '/index.html',
+        navigateFallbackAllowlist: [/^\/$/], // Allow SPA routing to fallback
+        runtimeCaching: [
+          // Exclude API requests from generic caching
+          {
+            urlPattern: /^\/api\//,
+            handler: 'NetworkOnly',
+          }
+        ]
+      },
+      manifest: {
+        name: 'ParkDrop',
+        short_name: 'ParkDrop',
+        theme_color: '#2563EB', // pd-blue-600
+        background_color: '#F8FAFC',
+        display: 'standalone',
+      }
+    }),
   ],
   server: {
     port: 5174,
