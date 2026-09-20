@@ -53,6 +53,7 @@
     "@vitest/browser-playwright": "^5.0.1",
     "@vitest/coverage-v8": "5.0.1",
     "autoprefixer": "^10.6.1",
+    "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
     "oxlint": "^1.81.0",
     "playwright": "latest",
