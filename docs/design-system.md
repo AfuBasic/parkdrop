@@ -80,9 +80,11 @@ ParkDrop emails are designed to be transactional and reassuring. We do not use p
 ## Layers
 
 1. **Primitives (`src/design-system/components`)**: Basic UI elements like `Button`, `Input`, `SearchInput`, `StatusBadge`, `Dialog`.
-2. **Patterns (`src/design-system/patterns` / `src/features/packages/search`)**: Domain-specific UI combinations:
+2. **Patterns (`src/design-system/patterns` / `src/features/packages/*`)**: Domain-specific UI combinations:
+   - `PackageStatusTabs`: Semantic mobile tab bar displaying status filters (`Waiting`, `Collected`, `Returned`, `Cancelled`) with live exact package counts and >=44px touch targets.
+   - `PackageListRow`: Mobile scanning row for the packages queue with customer name, status badge, mono code, package ID, timestamp, and amount.
    - `PackageSearchInput`: 52–56px high mobile operational input with clear button, search icon, and accessible labels.
-   - `PackageSearchResultRow`: Compact scanning row displaying customer name, status badge, mono pickup code, public package ID (`PD-XXXXX`), formatted phone, relative timestamp, and amount due.
+   - `PackageSearchResultRow`: Compact scanning row for search results with score ranking and location tags.
    - `PackageListItem`: Home and list parcel row.
    - `SmsCreditBalance`: SMS credit display component.
 3. **App Shell (`src/design-system/shell`)**: High-level layout components like `AppShell`, `PageHeader`, `NavItem`.

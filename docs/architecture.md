@@ -72,25 +72,24 @@ ParkDrop is designed to operate reliably in environments with intermittent conne
 *   **Tailwind CSS v4:** Design system utility layer.
 *   **Lucide React:** Iconography.
 
-### Package Search (Local-First Operational Retrieval)
+### Packages Queue (Local-First Operational Status Filtering)
 ```
-Find a package entry
+Packages bottom nav / entry
         ↓
-PackageSearchScreen
+PackagesScreen
         ↓
-usePackageSearch(businessId, activePickupPointId, query)
+PackageStatusTabs (Waiting | Collected | Returned | Cancelled)
         ↓
-classifyQuery(query)
+usePackagesByStatus & usePackageStatusCounts
         ↓
-PackageSearchRepository
+PackageRepository (listByStatus & countByStatus)
         ↓
-Dexie IndexedDB (packages & customers stores with composite indexes)
+Dexie IndexedDB (packages [business_id+status] & [business_id+pickup_point_id+status])
         ↓
-rankAndSortResults(matches)
-        ↓
-PackageSearchResult[] (immediate <100ms response, reactive to sync updates)
+PackageListRow[] (deterministic recency order, reactive to local mutations and sync)
 ```
-When server changes occur, Reverb broadcasts a `SyncHint` to trigger the `SyncEngine` pull, which updates Dexie, reactively refreshing search results via `useLiveQuery`. Search has zero hard runtime dependency on an online `/api/search` endpoint.
+The operational queue defaults to `WAITING` parcels. Attendants can tap any package row to navigate toward the canonical package detail boundary. When background sync or local creation occurs, counts and list items update reactively without a full reload.
+
 
 
 ## Media Architecture (Cloudinary)

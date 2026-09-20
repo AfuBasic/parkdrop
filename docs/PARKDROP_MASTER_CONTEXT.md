@@ -10,8 +10,9 @@
 **Build 9 — SMS Credit Wallet: COMPLETED**
 **Build 10 — Buy SMS Credits: COMPLETED**
 **Build 11 — Package Search (Local-First Operational Package Retrieval): COMPLETED**
+**Build 12 — Packages List (Local-First Operational Package Queue + Status Filtering): COMPLETED**
 
-Next build: Build 12 (Packages List).
+Next build: Build 13 (Package Detail).
 
 ## Core Architecture Decisions
 
@@ -75,6 +76,18 @@ React, TypeScript, Vite, TanStack Router, TanStack Query, Tailwind CSS v4, Lucid
   - Reactive live queries: Dexie `useLiveQuery` automatically updates results when local records change without page reload.
   - Unsynced local packages (`sync_status: 'PENDING_CREATE'`) appear immediately in search with a subtle `Local` badge.
   - Truthful offline copy: Communicates device limitations gracefully when offline without falsely asserting that a package does not exist globally.
+
+### 7. Local-First Operational Packages Queue (Build 12)
+- **Primary Goal:** Provide the attendant with a live, status-filtered parcel shelf (`WAITING`, `COLLECTED`, `RETURNED`, `CANCELLED`), answering "What is physically here right now?" with zero filter setup required.
+- **Default View:** Defaults immediately to `WAITING` parcels. Attendants do not have to configure or toggle anything to begin scanning.
+- **Queue Architecture:**
+  - Status tabs (`PackageStatusTabs`) render exact local counts for each canonical status, derived via indexed queries on `[business_id+status]` and `[business_id+pickup_point_id+status]`.
+  - Incremental pagination (page size: 30) prevents unbounded DOM bloat while keeping scrolling at 60fps on mobile.
+  - Deterministic sort: Newest `client_created_at` descending, with `id` tie-breaker.
+  - Search entry integration: Read-only search bar navigates to `/packages/search`, sharing the Build 11 search architecture without duplication.
+  - Reactive live updates: Creating a local package offline immediately increments the `Waiting` count and adds the item to the top of the queue before synchronization occurs. Status transitions reactively move records between tabs.
+  - Contextual empty states: Clear, actionable empty messaging per tab (`Waiting` offers direct `"Add package"` action; `Collected`, `Returned`, and `Cancelled` give concise operational guidance).
+
 
 ---
 
