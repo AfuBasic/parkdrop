@@ -18,13 +18,13 @@ export function NameScreen({ initialName = '', onContinue }: NameScreenProps) {
   };
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">{AuthStrings.nameTitle}</h1>
-        <p className="text-text-secondary text-lg">{AuthStrings.nameSubtitle}</p>
+    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="mb-5">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-text-primary">{AuthStrings.nameTitle}</h1>
+        <p className="text-sm font-medium text-text-secondary m-0">{AuthStrings.nameSubtitle}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1 gap-6">
+      <form onSubmit={handleSubmit} className="flex flex-col flex-1">
         <Field label={AuthStrings.firstNameLabel} htmlFor="firstName">
           <Input
             id="firstName"
@@ -32,11 +32,12 @@ export function NameScreen({ initialName = '', onContinue }: NameScreenProps) {
             placeholder={AuthStrings.firstNamePlaceholder}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            className="h-12 text-base font-medium rounded-xl"
           />
         </Field>
 
-        <div className="mt-auto">
-          <Button type="submit" className="w-full" size="lg" disabled={!name.trim()}>
+        <div className="mt-auto pt-6">
+          <Button type="submit" className="w-full h-12 text-base font-bold" size="lg" disabled={!name.trim()}>
             {AuthStrings.continue}
           </Button>
         </div>
