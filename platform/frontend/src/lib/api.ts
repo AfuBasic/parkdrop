@@ -43,13 +43,33 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}): Pro
   }
 
   if (!response.ok) {
-    let message = 'An error occurred';
+    let message = 'An unexpected error occurred. Please try again.';
     let data;
     try {
       data = await response.json();
-      message = data.message || message;
+      // Only use server message if it is not a 500 internal server error or stack trace
+      if (response.status >= 500) {
+        message = 'Something went wrong on our end. Please try again shortly.';
+      } else if (data.message && typeof data.message === 'string') {
+        // Guard against any accidental raw exception messages leaking in non-500s
+        const raw = data.message.toLowerCase();
+        if (
+          raw.includes('sqlstate') ||
+          raw.includes('stack trace') ||
+          raw.includes('exception in') ||
+          raw.includes('syntax error') ||
+          raw.includes('call to a member function')
+        ) {
+          message = 'Something went wrong. Please try again.';
+        } else {
+          message = data.message;
+        }
+      }
     } catch {
-      // Not JSON
+      // Non-JSON response
+      if (response.status >= 500) {
+        message = 'Something went wrong on our end. Please try again shortly.';
+      }
     }
     throw new ApiError(response.status, message, data);
   }
