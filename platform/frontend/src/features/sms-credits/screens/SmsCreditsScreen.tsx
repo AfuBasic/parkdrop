@@ -10,9 +10,10 @@ import { SmsCreditActivityList } from '../components/SmsCreditActivityList';
 
 interface SmsCreditsScreenProps {
   onBack: () => void;
+  onNavigateToBuy?: () => void;
 }
 
-export function SmsCreditsScreen({ onBack }: SmsCreditsScreenProps) {
+export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenProps) {
   const { business } = useAuth();
   const businessId = business?.id;
   const syncState = useSyncState(businessId);
@@ -90,11 +91,22 @@ export function SmsCreditsScreen({ onBack }: SmsCreditsScreenProps) {
         {/* Hero Card */}
         <SmsCreditBalance balance={balance} variant="hero" />
 
-        {/* Info card regarding top-ups */}
+        {/* Buy Credits CTA */}
+        {onNavigateToBuy && (
+          <button
+            type="button"
+            onClick={onNavigateToBuy}
+            className="w-full h-13 bg-action-primary hover:bg-action-primary/95 active:scale-[0.99] text-white font-semibold text-[15px] rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>Buy SMS credits</span>
+          </button>
+        )}
+
+        {/* Info card regarding package notifications */}
         <div className="bg-surface-subtle border border-border-subtle rounded-[var(--radius-xl)] p-4 text-xs text-text-secondary flex flex-col gap-1.5">
-          <p className="font-semibold text-text-primary">Need more SMS credits?</p>
+          <p className="font-semibold text-text-primary">About SMS credits</p>
           <p>
-            Credit top-up packs will be available soon. Automated arrival SMS notifications are sent only when credits are available, but package handling and pickup codes remain free.
+            Credits are only used for outbound arrival SMS messages to parcel recipients. Core package intake, pickup codes, and verification remain 100% free.
           </p>
         </div>
 
