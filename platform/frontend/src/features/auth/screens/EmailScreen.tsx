@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { AuthStrings } from '../strings';
 import { Input, Button } from '@/design-system';
 import { CheckCircle2, MessageSquare, Shield, X, AlertCircle } from 'lucide-react';
 
@@ -10,7 +9,7 @@ interface EmailScreenProps {
   isLoading?: boolean;
 }
 
-export function EmailScreen({ initialEmail = '', onContinue, onProblemLoggingIn, isLoading }: EmailScreenProps) {
+export function EmailScreen({ initialEmail = '', onContinue, isLoading }: EmailScreenProps) {
   const [email, setEmail] = React.useState(initialEmail);
   const [error, setError] = React.useState('');
   const inputRef = React.useRef<HTMLInputElement>(null);
