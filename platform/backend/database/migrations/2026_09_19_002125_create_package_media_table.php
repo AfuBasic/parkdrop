@@ -12,11 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('package_media', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->foreignId('business_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('package_id')->constrained()->cascadeOnDelete();
-            $table->string('cloudinary_public_id')->unique();
-            $table->string('file_hash')->unique()->comment('SHA-256 for idempotency');
+            $table->uuid('package_id');
+            $table->foreign('package_id')->references('id')->on('packages')->cascadeOnDelete();
+            $table->string('cloudinary_asset_id')->nullable()->unique();
+            $table->string('public_id')->nullable()->unique();
+            $table->string('status')->default('PENDING');
             $table->string('resource_type')->default('image');
             $table->string('format')->nullable();
             $table->integer('width')->nullable();
