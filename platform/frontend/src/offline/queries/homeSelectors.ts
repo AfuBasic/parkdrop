@@ -15,7 +15,7 @@ export function useUnpaidCount(businessId?: number): number {
   const count = useLiveQuery(
     () => businessId 
       ? db.packages.where('business_id').equals(businessId)
-          .filter(p => p.amount_due > 0 && p.status !== 'CANCELLED')
+          .filter(p => p.amount_due_minor > 0 && p.status !== 'CANCELLED')
           .count() 
       : 0,
     [businessId],
@@ -25,12 +25,11 @@ export function useUnpaidCount(businessId?: number): number {
 }
 
 export function useCollectedTodayCount(businessId?: number): number {
-  const today = new Date().toISOString().split('T')[0];
   
   const count = useLiveQuery(
     () => businessId 
       ? db.packages.where('business_id').equals(businessId)
-          .filter(p => p.status === 'COLLECTED' && p.collected_at !== null && p.collected_at.startsWith(today))
+          .filter(p => p.status === 'COLLECTED' && false /* we don't have collected_at yet in this schema, so this is just a placeholder until Collection feature */)
           .count() 
       : 0,
     [businessId],
@@ -39,14 +38,26 @@ export function useCollectedTodayCount(businessId?: number): number {
   return count ?? 0;
 }
 
-export function useRecentPackages(businessId?: number, limit = 5): LocalPackage[] {
+export type EnrichedPackage = LocalPackage & { customer_name: string; customer_phone: string };
+
+export function useRecentPackages(businessId?: number, limit = 5): EnrichedPackage[] {
   const packages = useLiveQuery(
-    () => businessId
-      ? db.packages.where('business_id').equals(businessId)
+    async () => {
+      if (!businessId) return [];
+      const pkgs = await db.packages.where('business_id').equals(businessId)
           .reverse()
-          .sortBy('created_at')
-          .then(list => list.slice(0, limit))
-      : [],
+          .sortBy('client_created_at');
+      const sliced = pkgs.reverse().slice(0, limit);
+      
+      return Promise.all(sliced.map(async (pkg) => {
+        const customer = await db.customers.get(pkg.customer_id);
+        return {
+          ...pkg,
+          customer_name: customer?.name || 'Unknown',
+          customer_phone: customer?.phone_display || 'Unknown'
+        };
+      }));
+    },
     [businessId, limit],
     []
   );

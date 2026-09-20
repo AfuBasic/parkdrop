@@ -1,14 +1,14 @@
-import type { LocalPackage } from '@/offline/db/schema';
+import type { EnrichedPackage } from '@/offline/queries/homeSelectors';
 import { StatusBadge } from '@/design-system/components/StatusBadge';
 import { formatMoney, formatPhone } from '@/lib/formatters';
 
 interface PackageListItemProps {
-  pkg: LocalPackage;
+  pkg: EnrichedPackage;
 }
 
 export function PackageListItem({ pkg }: PackageListItemProps) {
   // Map our domain statuses to the design system badge variants
-  const getVariant = (status: LocalPackage['status']) => {
+  const getVariant = (status: EnrichedPackage['status']) => {
     switch (status) {
       case 'WAITING': return 'neutral';
       case 'COLLECTED': return 'success';
@@ -54,8 +54,8 @@ export function PackageListItem({ pkg }: PackageListItemProps) {
       </div>
       
       <div className="flex items-center justify-between text-[var(--text-caption)] text-text-secondary mt-1">
-        <span>{getRelativeTime(pkg.created_at)}</span>
-        <span className="font-semibold text-text-primary">{formatMoney(pkg.amount_due)}</span>
+        <span>{getRelativeTime(pkg.client_created_at)}</span>
+        <span className="font-semibold text-text-primary">{formatMoney(pkg.amount_due_minor)}</span>
       </div>
     </div>
   );
