@@ -121,6 +121,17 @@
 
   --animate-in: animate-in 0.3s ease-out;
   --animate-out: animate-out 0.3s ease-in;
+
+  --animate-sheet-fade-in: sheet-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-fade-out: sheet-fade-out 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-in-bottom: sheet-slide-in-bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-out-bottom: sheet-slide-out-bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-in-top: sheet-slide-in-top 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-out-top: sheet-slide-out-top 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-in-left: sheet-slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-out-left: sheet-slide-out-left 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-in-right: sheet-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-sheet-slide-out-right: sheet-slide-out-right 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes sheet-fade-in {
@@ -173,43 +184,54 @@
   to { transform: translateX(100%); }
 }
 
-.animate-sheet-fade-in {
+/* Sheet and Dialog Animation Rules mapped to Radix [data-state] */
+[data-state="open"].animate-sheet-fade-in,
+[data-state="open"] .animate-sheet-fade-in {
   animation: sheet-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-fade-out {
+[data-state="closed"].animate-sheet-fade-out,
+[data-state="closed"] .animate-sheet-fade-out {
   animation: sheet-fade-out 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-in-bottom {
+[data-state="open"].animate-sheet-slide-in-bottom,
+[data-state="open"] .animate-sheet-slide-in-bottom {
   animation: sheet-slide-in-bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-out-bottom {
+[data-state="closed"].animate-sheet-slide-out-bottom,
+[data-state="closed"] .animate-sheet-slide-out-bottom {
   animation: sheet-slide-out-bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-in-top {
+[data-state="open"].animate-sheet-slide-in-top,
+[data-state="open"] .animate-sheet-slide-in-top {
   animation: sheet-slide-in-top 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-out-top {
+[data-state="closed"].animate-sheet-slide-out-top,
+[data-state="closed"] .animate-sheet-slide-out-top {
   animation: sheet-slide-out-top 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-in-left {
+[data-state="open"].animate-sheet-slide-in-left,
+[data-state="open"] .animate-sheet-slide-in-left {
   animation: sheet-slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-out-left {
+[data-state="closed"].animate-sheet-slide-out-left,
+[data-state="closed"] .animate-sheet-slide-out-left {
   animation: sheet-slide-out-left 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-in-right {
+[data-state="open"].animate-sheet-slide-in-right,
+[data-state="open"] .animate-sheet-slide-in-right {
   animation: sheet-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-sheet-slide-out-right {
+[data-state="closed"].animate-sheet-slide-out-right,
+[data-state="closed"] .animate-sheet-slide-out-right {
   animation: sheet-slide-out-right 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
