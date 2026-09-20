@@ -95,3 +95,20 @@ export interface LocalEntityAlias {
   entity_type: string;
   resolved_at: string;
 }
+
+export interface LocalSmsWallet {
+  id: number;
+  business_id: number;
+  balance: number;
+  updated_at: string;
+}
+
+export interface LocalSmsCreditTransaction {
+  id: number;
+  sms_wallet_id: number;
+  amount: number;
+  type: 'CREDIT' | 'DEBIT';
+  reference_type: string | null;
+  reference_id: string | null;
+  created_at: string;
+}
