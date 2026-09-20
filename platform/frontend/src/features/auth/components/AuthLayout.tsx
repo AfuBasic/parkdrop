@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ArrowLeft, MessageSquare, Check, Package } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface AuthLayoutProps {
