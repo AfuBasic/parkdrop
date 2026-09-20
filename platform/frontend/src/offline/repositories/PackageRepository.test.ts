@@ -16,7 +16,7 @@ describe('PackageRepository', () => {
     const amountDue = 350000; // 3500 NGN
     const sendSms = true;
 
-    const pkg = await PackageRepository.createLocal(businessId, pickupPointId, customerId, amountDue, sendSms);
+    const { package: pkg } = await PackageRepository.createLocal(businessId, pickupPointId, customerId, amountDue, sendSms);
 
     expect(pkg).toBeDefined();
     expect(pkg.business_id).toBe(businessId);
