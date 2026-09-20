@@ -10,6 +10,7 @@ import { AppShell } from '@/design-system/shell/AppShell';
 import { HomeScreen } from '@/features/home/HomeScreen';
 
 import { AddPackageScreen } from '@/features/packages/add/AddPackageScreen';
+import { PackageSearchScreen } from '@/features/packages/search/PackageSearchScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
 import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
 import { MessageSquare, ChevronRight } from 'lucide-react';
@@ -129,7 +130,11 @@ function AppContent() {
         />
       )}
       {currentPath === '/customers' && renderPlaceholder('Customers', 'Customer directory and lookup will be built in a future milestone.')}
-      {currentPath === '/packages/search' && renderPlaceholder('Search Packages', 'Full package search capabilities will be built in a future milestone.')}
+      {currentPath === '/packages/search' && (
+        <PackageSearchScreen 
+          onBack={() => setCurrentPath('/')}
+        />
+      )}
       
       {currentPath === '/more/sms-credits' && (
         <SmsCreditsScreen 

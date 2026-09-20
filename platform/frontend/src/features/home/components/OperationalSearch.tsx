@@ -16,7 +16,7 @@ export function OperationalSearch({ onSearchFocus, onAddPackage }: OperationalSe
           className="cursor-text"
         >
           <SearchInput 
-            placeholder="Search name, phone or pickup code" 
+            placeholder="Search name, phone, pickup code or package ID" 
             readOnly // Readonly because in this milestone it's just an entry point that acts like a button
             className="h-14 sm:h-12 shadow-sm text-lg sm:text-base cursor-text bg-surface-default"
           />
