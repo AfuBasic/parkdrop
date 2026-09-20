@@ -123,4 +123,11 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Initial Free SMS Credits for New Businesses
+    |--------------------------------------------------------------------------
+    */
+    'initial_sms_credits' => (int) env('INITIAL_SMS_CREDITS', 20),
+
 ];
