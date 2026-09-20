@@ -9,16 +9,18 @@ use App\Models\PickupPoint;
 use App\Models\PrivacyAcknowledgement;
 use App\Models\SmsCreditTransaction;
 use App\Models\SmsWallet;
+use App\Mail\WelcomeMail;
 use App\Models\User;
 use App\Models\UserDevice;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class CompleteOwnerOnboardingAction
 {
     public function execute(array $data): array
     {
-        return DB::transaction(function () use ($data) {
+        $result = DB::transaction(function () use ($data) {
             $normalizedEmail = strtolower(trim($data['email']));
 
             // Verify challenge id for registration/auth to ensure they actually verified an OTP
@@ -110,5 +112,19 @@ class CompleteOwnerOnboardingAction
                 'pickup_point' => $pickupPoint,
             ];
         });
+
+        // Send welcome email after onboarding succeeds
+        if (! empty($result['user']->email)) {
+            Mail::to($result['user']->email)->queue(
+                new WelcomeMail(
+                    user: $result['user'],
+                    business: $result['business'],
+                    pickupPoint: $result['pickup_point'],
+                    initialCredits: config('app.initial_sms_credits', 20)
+                )
+            );
+        }
+
+        return $result;
     }
 }
