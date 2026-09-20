@@ -117,6 +117,31 @@ export class SyncEngine {
           }
         }
 
+        const originalMutation = pending.find(m => m.mutation_id === result.mutation_id);
+
+        // Handle RECORD_PAYMENT mutation response
+        if (originalMutation && originalMutation.operation === 'RECORD_PAYMENT') {
+          const paymentId = originalMutation.payload.payment_id as string;
+          if (result.status === 'APPLIED') {
+            const existing = await db.payments.get(paymentId);
+            if (existing) {
+              await db.payments.update(paymentId, {
+                sync_status: 'SYNCED',
+                sync_error: null,
+              });
+            }
+          } else if (result.status === 'REJECTED') {
+            // Payment rejected by server (e.g. overpayment race condition or status forbid)
+            const existing = await db.payments.get(paymentId);
+            if (existing) {
+              await db.payments.update(paymentId, {
+                sync_status: 'NEEDS_ATTENTION',
+                sync_error: (result.metadata?.user_message as string) || (result.metadata?.error as string) || 'Payment rejected by server',
+              });
+            }
+          }
+        }
+
         await MutationQueue.resolveResult(result.mutation_id, result.status, result.metadata?.error);
       }
 
@@ -160,6 +185,20 @@ export class SyncEngine {
             });
           } else if (change.entity_type === 'customer' && change.payload) {
             await db.customers.put({
+              ...change.payload,
+              sync_status: 'SYNCED',
+            });
+          } else if ((change.entity_type === 'package_media' || change.entity_type === 'packageMedia') && change.payload) {
+            const existing = await db.packageMedia.get(change.entity_id);
+            await db.packageMedia.put({
+              ...existing,
+              ...change.payload,
+              status: (change.payload.status as any) || 'SYNCED',
+              attempt_count: existing?.attempt_count ?? 0,
+              created_at: change.payload.created_at || existing?.created_at || new Date().toISOString(),
+            });
+          } else if (change.entity_type === 'payment' && change.payload) {
+            await db.payments.put({
               ...change.payload,
               sync_status: 'SYNCED',
             });

@@ -63,6 +63,8 @@ export interface LocalPackage {
   server_received_at: string | null;
   version: number;
   sync_status: SyncStatus;
+  creator_name?: string | null;
+  pickup_point_name?: string | null;
 }
 
 export interface LocalCustomer {
@@ -111,4 +113,27 @@ export interface LocalSmsCreditTransaction {
   reference_type: string | null;
   reference_id: string | null;
   created_at: string;
+}
+
+export type PaymentMethod = 'CASH' | 'TRANSFER' | 'POS' | 'OTHER';
+export type PaymentStatus = 'COMPLETED' | 'REVERSED';
+export type PaymentSyncStatus = 'SYNCED' | 'PENDING_CREATE' | 'NEEDS_ATTENTION';
+
+export interface LocalPayment {
+  id: string; // uuid
+  business_id: number;
+  package_id: string; // fk to package uuid
+  amount_minor: number; // integer kobo
+  method: PaymentMethod;
+  recorded_by_user_id: number | null;
+  recorded_by_user_name?: string | null;
+  recorded_by_device_uuid?: string | null;
+  recorded_at: string;
+  client_recorded_at: string;
+  status: PaymentStatus;
+  reverses_payment_id?: string | null;
+  reversal_reason?: string | null;
+  sync_status: PaymentSyncStatus;
+  sync_error?: string | null;
+  version: number;
 }

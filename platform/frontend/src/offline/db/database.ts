@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { LocalMutation, LocalSyncState, LocalConflict, LocalAuthorization, LocalPackage, LocalCustomer, LocalEntityAlias, LocalPackageMedia, LocalSmsWallet, LocalSmsCreditTransaction } from './schema';
+import type { LocalMutation, LocalSyncState, LocalConflict, LocalAuthorization, LocalPackage, LocalCustomer, LocalEntityAlias, LocalPackageMedia, LocalSmsWallet, LocalSmsCreditTransaction, LocalPayment } from './schema';
 
 export class ParkDropDatabase extends Dexie {
   mutations!: Table<LocalMutation, number>;
@@ -12,6 +12,7 @@ export class ParkDropDatabase extends Dexie {
   packageMedia!: Table<LocalPackageMedia, string>;
   smsWallets!: Table<LocalSmsWallet, number>;
   smsCreditTransactions!: Table<LocalSmsCreditTransaction, number>;
+  payments!: Table<LocalPayment, string>;
 
   constructor() {
     super('ParkDropLocalDB');
@@ -44,6 +45,10 @@ export class ParkDropDatabase extends Dexie {
 
     this.version(6).stores({
       customers: 'id, business_id, name, phone_normalized, [business_id+phone_normalized], [business_id+name]'
+    });
+
+    this.version(7).stores({
+      payments: 'id, business_id, package_id, status, sync_status, recorded_at, [business_id+package_id+recorded_at], [business_id+sync_status]'
     });
   }
 }
