@@ -68,6 +68,13 @@ class AuthChallengeController extends Controller
 
         RateLimiter::clear($verifyKey);
 
+        // User successfully verified their code: clear email rate limiters
+        // since they have proven ownership of the inbox
+        $emailHash = hash('sha256', $normalizedEmail);
+        RateLimiter::clear('auth-code-cooldown:'.$emailHash);
+        RateLimiter::clear('email-window-otp:'.$emailHash);
+        RateLimiter::clear('email-daily-otp:'.$emailHash);
+
         // Look up or create user by normalized email
         $user = User::where('email_normalized', $normalizedEmail)
             ->orWhere('email', $normalizedEmail)
@@ -203,8 +210,8 @@ class AuthChallengeController extends Controller
         }
 
         // Email daily
-        if (RateLimiter::tooManyAttempts('email-daily-otp:'.$hash, config('otp.limits.send_daily.attempts', 8))) {
-            return $this->buildRateLimitResponse(RateLimiter::availableIn('email-daily-otp:'.$hash));
+        if (RateLimiter::tooManyAttempts('email-daily-otp:'.$hash, config('otp.limits.send_daily.attempts', 25))) {
+            return $this->buildRateLimitResponse(RateLimiter::availableIn('email-daily-otp:'.$hash), isDailyLimit: true);
         }
 
         // Email 15 min
@@ -222,12 +229,17 @@ class AuthChallengeController extends Controller
         return null;
     }
 
-    protected function buildRateLimitResponse(int $retryAfter): JsonResponse
+    protected function buildRateLimitResponse(int $retryAfter, bool $isDailyLimit = false): JsonResponse
     {
         $minutes = ceil($retryAfter / 60);
-        $message = 'Too many code requests. Wait a little and try again.';
-        if ($minutes > 0) {
+
+        if ($isDailyLimit && $minutes > 60) {
+            $hours = ceil($minutes / 60);
+            $message = "Too many verification code requests for today. Please try again in {$hours} hours or contact support.";
+        } elseif ($minutes > 1) {
             $message = "Too many code requests. Try again in about {$minutes} minutes.";
+        } elseif ($minutes === 1.0 || $retryAfter > 10) {
+            $message = 'Too many code requests. Try again in about 1 minute.';
         } else {
             $message = 'Too many code requests. Try again in a few seconds.';
         }
@@ -235,7 +247,7 @@ class AuthChallengeController extends Controller
         return response()->json([
             'message' => $message,
         ], 429, [
-            'Retry-After' => $retryAfter,
+            'Retry-After' => min($retryAfter, 3600), // Cap HTTP Retry-After header to 1 hour max
         ]);
     }
 }
