@@ -14,7 +14,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\Sync\MutationRegistry::class, function ($app) {
+            $registry = new \App\Services\Sync\MutationRegistry();
+
+            if ($app->environment('testing')) {
+                $registry->register(new \App\Services\Sync\Handlers\TestOnlyMutationHandler());
+            }
+
+            return $registry;
+        });
     }
 
     /**
