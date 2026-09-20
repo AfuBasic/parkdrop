@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription,
   Button 
 } from '@/design-system';
 import { Mail, HelpCircle, CheckCircle2, Copy, Check } from 'lucide-react';
 import { notify } from '@/lib/notify';
 
-interface ProblemLoggingInDialogProps {
+interface ProblemLoggingInSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   email?: string;
@@ -18,11 +18,11 @@ interface ProblemLoggingInDialogProps {
 
 const SUPPORT_EMAIL = 'support@parkdrop.com.ng';
 
-export function ProblemLoggingInDialog({
+export function ProblemLoggingInSheet({
   open,
   onOpenChange,
   email,
-}: ProblemLoggingInDialogProps) {
+}: ProblemLoggingInSheetProps) {
   const [copied, setCopied] = React.useState(false);
 
   const subject = encodeURIComponent(
@@ -49,21 +49,21 @@ export function ProblemLoggingInDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[92vw] sm:w-full p-6">
-        <DialogHeader className="text-left space-y-2">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="w-full max-w-lg mx-auto p-6 sm:p-8">
+        <SheetHeader className="text-left space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-action-primary/10 text-action-primary flex items-center justify-center mb-1">
             <HelpCircle className="w-6 h-6" />
           </div>
-          <DialogTitle className="text-xl font-bold text-text-primary tracking-tight">
+          <SheetTitle className="text-xl font-bold text-text-primary tracking-tight">
             Need help signing in?
-          </DialogTitle>
-          <DialogDescription className="text-sm text-text-secondary leading-relaxed">
+          </SheetTitle>
+          <SheetDescription className="text-sm text-text-secondary leading-relaxed">
             If you are having trouble receiving confirmation codes, accessing your account, or resetting your PIN, contact the platform creator directly.
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
-        <div className="mt-4 space-y-4">
+        <div className="mt-5 space-y-4">
           {/* Email Support Card */}
           <div className="p-4 rounded-2xl border border-border-default bg-surface-subtle/50 flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -76,7 +76,7 @@ export function ProblemLoggingInDialog({
               </span>
             </div>
 
-            <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-surface-default border border-border-default">
+            <div className="flex items-center justify-between gap-2 p-3 rounded-xl bg-surface-default border border-border-default">
               <div className="flex items-center gap-2.5 overflow-hidden">
                 <Mail className="w-4 h-4 text-action-primary flex-shrink-0" />
                 <span className="text-sm font-semibold text-text-primary truncate select-all">
@@ -88,7 +88,7 @@ export function ProblemLoggingInDialog({
                 variant="ghost"
                 size="sm"
                 onClick={handleCopy}
-                className="h-8 px-2.5 text-xs text-text-secondary hover:text-text-primary flex-shrink-0"
+                className="h-8 px-3 text-xs text-text-secondary hover:text-text-primary flex-shrink-0"
               >
                 {copied ? (
                   <span className="flex items-center gap-1 text-status-success font-medium">
@@ -116,28 +116,28 @@ export function ProblemLoggingInDialog({
           </div>
 
           {/* Actions */}
-          <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+          <div className="pt-3 flex flex-col sm:flex-row gap-3">
             <Button
               type="button"
-              className="w-full h-11 text-sm font-semibold flex items-center justify-center gap-2"
+              className="w-full h-12 text-sm font-semibold flex items-center justify-center gap-2"
               onClick={() => {
                 window.location.href = mailtoUrl;
               }}
             >
               <Mail className="w-4 h-4" />
-              Send Email
+              Send Email to Creator
             </Button>
             <Button
               type="button"
               variant="secondary"
-              className="w-full sm:w-auto h-11 text-sm"
+              className="w-full sm:w-auto h-12 text-sm"
               onClick={() => onOpenChange(false)}
             >
               Close
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }
