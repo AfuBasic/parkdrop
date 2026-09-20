@@ -34,6 +34,30 @@ export class SyncEngine {
     const mutationIds = pending.map(m => m.mutation_id);
     await MutationQueue.markSyncing(mutationIds);
 
+    // Apply any known aliases to the pending payloads before sending
+    const aliases = await db.entityAliases.toArray();
+    const aliasMap = new Map(aliases.map(a => [a.local_id, a.canonical_id]));
+
+    const mappedPending = pending.map(m => {
+      if (aliasMap.size === 0) return m;
+      
+      const payloadString = JSON.stringify(m.payload);
+      let replaced = payloadString;
+      
+      for (const [localId, canonicalId] of aliasMap.entries()) {
+        if (replaced.includes(localId)) {
+          // Simple string replacement for UUIDs in payload
+          // In a production scenario, you might want more precise path-based replacement
+          replaced = replaced.split(localId).join(canonicalId);
+        }
+      }
+      
+      return {
+        ...m,
+        payload: JSON.parse(replaced)
+      };
+    });
+
     const deviceUuid = getDeviceUuid();
 
     try {
@@ -45,7 +69,7 @@ export class SyncEngine {
         },
         body: JSON.stringify({
           device_uuid: deviceUuid,
-          mutations: pending.map(m => ({
+          mutations: mappedPending.map(m => ({
             mutation_id: m.mutation_id,
             operation: m.operation,
             payload: m.payload,
@@ -67,6 +91,32 @@ export class SyncEngine {
       const results = data.results || [];
 
       for (const result of results) {
+        // If the server tells us it reconciled a duplicate entity, record the alias
+        if (result.status === 'APPLIED' && result.metadata?.reconciled && result.metadata?.canonical_id) {
+          const originalMutation = pending.find(m => m.mutation_id === result.mutation_id);
+          if (originalMutation && originalMutation.operation === 'CREATE_CUSTOMER') {
+            const localId = originalMutation.payload.customer_id as string;
+            const canonicalId = result.metadata.canonical_id;
+            
+            if (localId && localId !== canonicalId) {
+              await db.entityAliases.put({
+                local_id: localId,
+                canonical_id: canonicalId,
+                entity_type: 'customer',
+                resolved_at: new Date().toISOString()
+              });
+              
+              // Also update the local customer record's ID
+              const customer = await db.customers.get(localId);
+              if (customer) {
+                await db.customers.delete(localId);
+                customer.id = canonicalId;
+                await db.customers.put(customer);
+              }
+            }
+          }
+        }
+
         await MutationQueue.resolveResult(result.mutation_id, result.status, result.metadata?.error);
       }
 
