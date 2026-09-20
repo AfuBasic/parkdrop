@@ -26,16 +26,16 @@ export const AuthCodeField = React.forwardRef<HTMLInputElement, AuthCodeFieldPro
             <span 
               key={i} 
               className={cn(
-                "relative flex-1 h-[70px] grid place-items-center border-2 rounded-[14px] bg-white text-[34px] font-[800] text-text-primary tabular-nums transition-all duration-120",
+                "relative flex-1 h-14 sm:h-16 grid place-items-center border-2 rounded-xl bg-white text-2xl font-bold text-text-primary tabular-nums transition-all duration-120",
                 error 
                   ? "border-[var(--color-proto-bad)] bg-[var(--color-proto-badbg)]"
                   : isFilled 
                     ? "border-[var(--color-proto-blue)] bg-[var(--color-proto-tint)]"
                     : isActive
-                      ? "border-[var(--color-proto-blue)] shadow-[0_0_0_4px_rgba(37,99,235,0.16)]"
+                      ? "border-[var(--color-proto-blue)] shadow-[0_0_0_3px_rgba(37,99,235,0.16)]"
                       : "border-border-strong",
                 // Simulate the blinking cursor
-                isActive && "after:content-[''] after:absolute after:w-0.5 after:h-[34px] after:bg-[var(--color-proto-blue)] after:animate-[blink_1s_steps(1)_infinite]"
+                isActive && "after:content-[''] after:absolute after:w-0.5 after:h-6 after:bg-[var(--color-proto-blue)] after:animate-[blink_1s_steps(1)_infinite]"
               )}
             >
               {code.charAt(i)}
