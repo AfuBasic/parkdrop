@@ -36,7 +36,7 @@ return [
 
         // Daily limit for the same email
         'send_daily' => [
-            'attempts' => env('OTP_SEND_DAILY_ATTEMPTS', 8),
+            'attempts' => env('OTP_SEND_DAILY_ATTEMPTS', 25),
             'minutes' => 24 * 60,
         ],
 
