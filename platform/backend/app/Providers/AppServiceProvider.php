@@ -10,6 +10,7 @@ use App\Services\Payments\PaystackPaymentGateway;
 use App\Services\Sms\TermiiSmsProvider;
 use App\Services\Sync\Handlers\CreateCustomerMutationHandler;
 use App\Services\Sync\Handlers\CreatePackageMutationHandler;
+use App\Services\Sync\Handlers\RecordPaymentMutationHandler;
 use App\Services\Sync\Handlers\TestOnlyMutationHandler;
 use App\Services\Sync\MutationRegistry;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -33,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
 
             $registry->register(new CreateCustomerMutationHandler);
             $registry->register(new CreatePackageMutationHandler);
+            $registry->register($app->make(RecordPaymentMutationHandler::class));
 
             return $registry;
         });

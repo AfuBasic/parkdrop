@@ -5,6 +5,8 @@ namespace App\Actions\Sync;
 use App\Models\Business;
 use App\Models\Customer;
 use App\Models\Package;
+use App\Models\PackageMedia;
+use App\Models\Payment;
 use App\Models\SmsCreditTransaction;
 use App\Models\SmsWallet;
 use App\Models\SyncChange;
@@ -57,15 +59,33 @@ class PullChangesAction
                             }
                             break;
                         case 'package':
-                            $pkg = Package::find($change->entity_id);
+                            $pkg = Package::with(['creator', 'pickupPoint'])->find($change->entity_id);
                             if ($pkg) {
-                                $payload = $pkg->toArray();
+                                $data = $pkg->toArray();
+                                $data['creator_name'] = $pkg->creator?->first_name ?: ($pkg->creator?->email ? explode('@', $pkg->creator->email)[0] : null);
+                                $data['pickup_point_name'] = $pkg->pickupPoint?->name;
+                                $payload = $data;
                             }
                             break;
                         case 'customer':
                             $cust = Customer::find($change->entity_id);
                             if ($cust) {
                                 $payload = $cust->toArray();
+                            }
+                            break;
+                        case 'package_media':
+                            $media = PackageMedia::find($change->entity_id);
+                            if ($media) {
+                                $payload = $media->toArray();
+                            }
+                            break;
+                        case 'payment':
+                            $payment = Payment::with('recordedBy')->find($change->entity_id);
+                            if ($payment) {
+                                $paymentData = $payment->toArray();
+                                $paymentData['recorded_by_user_name'] = $payment->recordedBy?->first_name
+                                    ?: ($payment->recordedBy?->email ? explode('@', $payment->recordedBy->email)[0] : null);
+                                $payload = $paymentData;
                             }
                             break;
                     }

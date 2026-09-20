@@ -12,6 +12,7 @@ class Package extends Model
     use HasUuids;
 
     protected $fillable = [
+        'id',
         'business_id',
         'pickup_point_id',
         'customer_id',
@@ -60,5 +61,9 @@ class Package extends Model
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
-}
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+}
