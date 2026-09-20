@@ -1,31 +1,36 @@
 <?php
 
+namespace Tests\Unit;
+
 use App\Services\PhoneNormalizer;
+use PHPUnit\Framework\TestCase;
 
-test('it normalizes valid nigerian phone numbers', function () {
-    // Standard formats
-    expect(PhoneNormalizer::normalize('08031234567'))->toBe('+2348031234567');
-    expect(PhoneNormalizer::normalize('8031234567'))->toBe('+2348031234567');
-    expect(PhoneNormalizer::normalize('2348031234567'))->toBe('+2348031234567');
-    expect(PhoneNormalizer::normalize('+2348031234567'))->toBe('+2348031234567');
+class PhoneNormalizerTest extends TestCase
+{
+    public function test_it_normalizes_valid_nigerian_phone_numbers(): void
+    {
+        $this->assertEquals('+2348031234567', PhoneNormalizer::normalize('08031234567'));
+        $this->assertEquals('+2348031234567', PhoneNormalizer::normalize('8031234567'));
+        $this->assertEquals('+2348031234567', PhoneNormalizer::normalize('2348031234567'));
+        $this->assertEquals('+2348031234567', PhoneNormalizer::normalize('+2348031234567'));
 
-    // With spaces and hyphens
-    expect(PhoneNormalizer::normalize('0803 123 4567'))->toBe('+2348031234567');
-    expect(PhoneNormalizer::normalize('0803-123-4567'))->toBe('+2348031234567');
-    expect(PhoneNormalizer::normalize('+234 803 123 4567'))->toBe('+2348031234567');
-});
+        $this->assertEquals('+2348031234567', PhoneNormalizer::normalize('0803 123 4567'));
+        $this->assertEquals('+2348031234567', PhoneNormalizer::normalize('0803-123-4567'));
+        $this->assertEquals('+2348031234567', PhoneNormalizer::normalize('+234 803 123 4567'));
+    }
 
-test('it rejects invalid phone numbers', function () {
-    expect(PhoneNormalizer::normalize('123'))->toBeNull();
-    expect(PhoneNormalizer::normalize('abcde'))->toBeNull();
-    expect(PhoneNormalizer::normalize('00000000000'))->toBeNull();
-    expect(PhoneNormalizer::normalize('08031234567890123'))->toBeNull(); // Too long
-    expect(PhoneNormalizer::normalize('080'))->toBeNull(); // Too short
-});
+    public function test_it_rejects_invalid_phone_numbers(): void
+    {
+        $this->assertNull(PhoneNormalizer::normalize('123'));
+        $this->assertNull(PhoneNormalizer::normalize('abcde'));
+        $this->assertNull(PhoneNormalizer::normalize('00000000000'));
+        $this->assertNull(PhoneNormalizer::normalize('08031234567890123'));
+        $this->assertNull(PhoneNormalizer::normalize('080'));
+    }
 
-test('it formats normalized phone numbers for display', function () {
-    expect(PhoneNormalizer::formatForDisplay('+2348031234567'))->toBe('0803 123 4567');
-    
-    // If not a standard normalized format, return as is
-    expect(PhoneNormalizer::formatForDisplay('+15551234567'))->toBe('+15551234567');
-});
+    public function test_it_formats_normalized_phone_numbers_for_display(): void
+    {
+        $this->assertEquals('0803 123 4567', PhoneNormalizer::formatForDisplay('+2348031234567'));
+        $this->assertEquals('+15551234567', PhoneNormalizer::formatForDisplay('+15551234567'));
+    }
+}
