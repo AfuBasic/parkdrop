@@ -92,11 +92,27 @@ class CompleteOwnerOnboardingAction
                 'balance' => config('app.initial_sms_credits', 20),
             ]);
 
-            SmsCreditTransaction::create([
+            $initialTx = SmsCreditTransaction::create([
                 'sms_wallet_id' => $wallet->id,
                 'amount' => config('app.initial_sms_credits', 20),
                 'type' => 'credit',
                 'reference_type' => 'WELCOME_CREDIT',
+            ]);
+
+            \App\Models\SyncChange::create([
+                'business_id' => $business->id,
+                'entity_type' => 'sms_wallet',
+                'entity_id' => (string) $wallet->id,
+                'operation' => 'CREATED',
+                'entity_version' => 1,
+            ]);
+
+            \App\Models\SyncChange::create([
+                'business_id' => $business->id,
+                'entity_type' => 'sms_credit_transaction',
+                'entity_id' => (string) $initialTx->id,
+                'operation' => 'CREATED',
+                'entity_version' => 1,
             ]);
 
             // 8. Privacy Acknowledgement
