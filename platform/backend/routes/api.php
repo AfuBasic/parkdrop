@@ -36,4 +36,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Sync endpoints
     Route::post('/v1/sync/push', [\App\Http\Controllers\Api\V1\Sync\SyncController::class, 'push']);
     Route::get('/v1/sync/pull', [\App\Http\Controllers\Api\V1\Sync\SyncController::class, 'pull']);
+    
+    // Package Media endpoints
+    Route::prefix('v1/packages/{package}/media')->group(function () {
+        Route::post('authorize', [\App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController::class, 'authorizeUpload']);
+        Route::post('complete', [\App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController::class, 'completeUpload']);
+        Route::get('{media}/view', [\App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController::class, 'view']);
+    });
 });
