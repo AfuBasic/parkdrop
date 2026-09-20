@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinutes(
                 config('otp.limits.send_daily.minutes', 1440),
-                config('otp.limits.send_daily.attempts', 8)
+                config('otp.limits.send_daily.attempts', 25)
             )->by($hash);
         });
 
