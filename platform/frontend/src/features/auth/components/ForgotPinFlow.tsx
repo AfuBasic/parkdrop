@@ -6,6 +6,8 @@ import { useAuth } from '../AuthContext';
 import { notify } from '@/lib/notify';
 import { db, type DeviceMeta, type RememberedIdentity } from '@/lib/db';
 
+import { ProblemLoggingInDialog } from './ProblemLoggingInDialog';
+
 interface ForgotPinFlowProps {
   deviceMeta: DeviceMeta;
   rememberedIdentity?: RememberedIdentity | null;
@@ -16,6 +18,7 @@ export function ForgotPinFlow({ deviceMeta, rememberedIdentity, onCancel }: Forg
   const { setAuthenticatedUser } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState('');
+  const [showProblemHelp, setShowProblemHelp] = React.useState(false);
 
   // Email associated with the remembered device or remembered identity
   const email = deviceMeta.email || rememberedIdentity?.email || '';
@@ -90,15 +93,24 @@ export function ForgotPinFlow({ deviceMeta, rememberedIdentity, onCancel }: Forg
   };
 
   return (
-    <AuthLayout showBack={true} onBack={onCancel}>
-      <CodeScreen
+    <>
+      <AuthLayout showBack={true} onBack={onCancel}>
+        <CodeScreen
+          email={email}
+          onVerify={handleVerifyCode}
+          onResend={handleSendCode}
+          onProblemLoggingIn={() => setShowProblemHelp(true)}
+          isLoading={isLoading}
+          error={error}
+          onChangeEmail={onCancel}
+        />
+      </AuthLayout>
+
+      <ProblemLoggingInDialog
+        open={showProblemHelp}
+        onOpenChange={setShowProblemHelp}
         email={email}
-        onVerify={handleVerifyCode}
-        onResend={handleSendCode}
-        isLoading={isLoading}
-        error={error}
-        onChangeEmail={onCancel}
       />
-    </AuthLayout>
+    </>
   );
 }
