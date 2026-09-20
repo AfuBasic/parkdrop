@@ -2,9 +2,9 @@
 
 namespace App\Services\Cloudinary;
 
-use Cloudinary\Configuration\Configuration;
-use Cloudinary\Api\Upload\UploadApi;
 use Cloudinary\Api\Utils;
+use Cloudinary\Cloudinary;
+use Cloudinary\Configuration\Configuration;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -13,19 +13,19 @@ class CloudinaryMediaService
     public function __construct()
     {
         $url = config('cloudinary.cloud_url');
-        
+
         if ($url) {
             Configuration::instance($url);
         } else {
             Configuration::instance([
                 'cloud' => [
                     'cloud_name' => config('cloudinary.cloud_name'),
-                    'api_key'    => config('cloudinary.api_key'),
+                    'api_key' => config('cloudinary.api_key'),
                     'api_secret' => config('cloudinary.api_secret'),
                 ],
                 'url' => [
                     'secure' => true,
-                ]
+                ],
             ]);
         }
     }
@@ -48,11 +48,11 @@ class CloudinaryMediaService
 
         return [
             'cloud_name' => config('cloudinary.cloud_name'),
-            'api_key'    => config('cloudinary.api_key'),
-            'timestamp'  => $timestamp,
-            'signature'  => $signature,
-            'public_id'  => $publicId,
-            'folder'     => $folder,
+            'api_key' => config('cloudinary.api_key'),
+            'timestamp' => $timestamp,
+            'signature' => $signature,
+            'public_id' => $publicId,
+            'folder' => $folder,
         ];
     }
 
@@ -62,7 +62,7 @@ class CloudinaryMediaService
     public function generateSignedDeliveryUrl(string $publicId): string
     {
         try {
-            return \Cloudinary\Cloudinary::image($publicId)
+            return Cloudinary::image($publicId)
                 ->signUrl()
                 ->toUrl();
         } catch (Exception $e) {

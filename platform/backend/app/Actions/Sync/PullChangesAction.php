@@ -3,6 +3,10 @@
 namespace App\Actions\Sync;
 
 use App\Models\Business;
+use App\Models\Customer;
+use App\Models\Package;
+use App\Models\SmsCreditTransaction;
+use App\Models\SmsWallet;
 use App\Models\SyncChange;
 
 class PullChangesAction
@@ -23,12 +27,12 @@ class PullChangesAction
         $nextCursor = $changes->last()?->id ?? $afterCursor;
 
         return [
-            'changes' => $changes->map(function ($change) use ($business) {
+            'changes' => $changes->map(function ($change) {
                 $payload = null;
                 if ($change->operation !== 'DELETED') {
                     switch ($change->entity_type) {
                         case 'sms_wallet':
-                            $wallet = \App\Models\SmsWallet::find($change->entity_id);
+                            $wallet = SmsWallet::find($change->entity_id);
                             if ($wallet) {
                                 $payload = [
                                     'id' => $wallet->id,
@@ -39,7 +43,7 @@ class PullChangesAction
                             }
                             break;
                         case 'sms_credit_transaction':
-                            $tx = \App\Models\SmsCreditTransaction::find($change->entity_id);
+                            $tx = SmsCreditTransaction::find($change->entity_id);
                             if ($tx) {
                                 $payload = [
                                     'id' => $tx->id,
@@ -53,13 +57,13 @@ class PullChangesAction
                             }
                             break;
                         case 'package':
-                            $pkg = \App\Models\Package::find($change->entity_id);
+                            $pkg = Package::find($change->entity_id);
                             if ($pkg) {
                                 $payload = $pkg->toArray();
                             }
                             break;
                         case 'customer':
-                            $cust = \App\Models\Customer::find($change->entity_id);
+                            $cust = Customer::find($change->entity_id);
                             if ($cust) {
                                 $payload = $cust->toArray();
                             }

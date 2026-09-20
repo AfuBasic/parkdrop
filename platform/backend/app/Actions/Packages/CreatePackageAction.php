@@ -5,6 +5,7 @@ namespace App\Actions\Packages;
 use App\Models\Business;
 use App\Models\Package;
 use App\Models\SyncChange;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class CreatePackageAction
@@ -20,7 +21,7 @@ class CreatePackageAction
         ?string $clientCreatedAt = null
     ): Package {
         return DB::transaction(function () use ($business, $payload, $userId, $deviceUuid, $clientCreatedAt) {
-            
+
             $package = Package::create([
                 'id' => $payload['package_id'],
                 'business_id' => $business->id,
@@ -32,7 +33,7 @@ class CreatePackageAction
                 'status' => 'WAITING',
                 'created_by_user_id' => $userId,
                 'created_by_device_uuid' => $deviceUuid,
-                'client_created_at' => $clientCreatedAt ? \Carbon\Carbon::parse($clientCreatedAt) : now(),
+                'client_created_at' => $clientCreatedAt ? Carbon::parse($clientCreatedAt) : now(),
                 'version' => 1,
             ]);
 
@@ -46,7 +47,7 @@ class CreatePackageAction
             ]);
 
             // If arrival SMS was requested, queue an outbox intent (omitted true SMS logic for this milestone, just tracking intent if requested)
-            if (!empty($payload['arrival_sms_requested'])) {
+            if (! empty($payload['arrival_sms_requested'])) {
                 DB::table('outbox_events')->insert([
                     'business_id' => $business->id,
                     'type' => 'ARRIVAL_SMS_REQUESTED',

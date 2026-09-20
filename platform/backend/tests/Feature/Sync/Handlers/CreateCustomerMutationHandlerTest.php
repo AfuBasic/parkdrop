@@ -24,6 +24,7 @@ class CreateCustomerMutationHandlerTest extends TestCase
         
         // Since BusinessFactory doesn't exist, we'll manually create a Business.
         $this->business = Business::create([
+            'public_id' => (string) Str::uuid(),
             'name' => 'Test Business',
             'slug' => 'test-business-' . Str::random(6),
         ]);

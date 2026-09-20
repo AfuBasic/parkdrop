@@ -2,12 +2,13 @@
 
 namespace App\Actions\PackageMedia;
 
+use App\Models\Package;
 use App\Models\PackageMedia;
 use App\Models\PackageMediaUploadIntent;
-use App\Models\Package;
 use App\Models\SyncChange;
-use Illuminate\Support\Facades\DB;
+use Cloudinary\Api\Utils;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class CompleteUploadAction
@@ -24,31 +25,31 @@ class CompleteUploadAction
             ->first();
 
         // If intent doesn't exist or is expired, we might still accept it if it's already completed idempotently.
-        if (!$intent) {
+        if (! $intent) {
             $existingMedia = PackageMedia::where('id', $mediaId)->where('package_id', $packageId)->first();
             if ($existingMedia && $existingMedia->status === 'SYNCED') {
                 return $existingMedia; // Idempotent completion
             }
-            throw new Exception("No valid upload intent found or intent expired.");
+            throw new Exception('No valid upload intent found or intent expired.');
         }
 
         // Verify public_id matches our intent
         $providerPublicId = $cloudinaryResponse['public_id'] ?? null;
         if ($providerPublicId !== $intent->expected_public_id) {
-            throw new InvalidArgumentException("Public ID mismatch.");
+            throw new InvalidArgumentException('Public ID mismatch.');
         }
 
         // Cloudinary response verification would typically check the signature here if using the SDK verification properly.
         // For simplicity and since we trust the signed public_id matching the intent, we proceed.
         // We'd use \Cloudinary\Api\Utils::api_sign_request and compare if the signature is included in $cloudinaryResponse.
-        $expectedSignature = \Cloudinary\Api\Utils::api_sign_request([
+        $expectedSignature = Utils::api_sign_request([
             'public_id' => $providerPublicId,
             'version' => $cloudinaryResponse['version'] ?? '',
         ], config('cloudinary.api_secret'));
-        
+
         if (isset($cloudinaryResponse['signature']) && $cloudinaryResponse['signature'] !== $expectedSignature) {
-            // Note: Cloudinary's response signature signs specific fields (public_id, version). 
-            // In a real strict environment we check this, but we'll accept it if signature isn't passed for mock testing, 
+            // Note: Cloudinary's response signature signs specific fields (public_id, version).
+            // In a real strict environment we check this, but we'll accept it if signature isn't passed for mock testing,
             // relying on the intent state instead.
         }
 

@@ -7,7 +7,6 @@ use App\Models\Customer;
 use App\Models\SyncChange;
 use App\Services\PhoneNormalizer;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class CreateCustomerMutationHandler implements MutationHandler
 {
@@ -27,18 +26,18 @@ class CreateCustomerMutationHandler implements MutationHandler
         if ($validator->fails()) {
             return [
                 'status' => 'REJECTED',
-                'metadata' => ['errors' => $validator->errors()->toArray()]
+                'metadata' => ['errors' => $validator->errors()->toArray()],
             ];
         }
 
         $data = $validator->validated();
-        
+
         $normalizedPhone = PhoneNormalizer::normalize($data['phone_display']);
 
-        if (!$normalizedPhone) {
+        if (! $normalizedPhone) {
             return [
                 'status' => 'REJECTED',
-                'metadata' => ['error' => 'INVALID_PHONE']
+                'metadata' => ['error' => 'INVALID_PHONE'],
             ];
         }
 
@@ -60,7 +59,7 @@ class CreateCustomerMutationHandler implements MutationHandler
                 'metadata' => [
                     'canonical_id' => $existing->id,
                     'reconciled' => true,
-                ]
+                ],
             ];
         }
 
@@ -89,7 +88,7 @@ class CreateCustomerMutationHandler implements MutationHandler
             'metadata' => [
                 'canonical_id' => $customer->id,
                 'reconciled' => false,
-            ]
+            ],
         ];
     }
 }

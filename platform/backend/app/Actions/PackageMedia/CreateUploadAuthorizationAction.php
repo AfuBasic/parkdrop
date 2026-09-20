@@ -5,7 +5,6 @@ namespace App\Actions\PackageMedia;
 use App\Models\Package;
 use App\Models\PackageMediaUploadIntent;
 use App\Services\Cloudinary\CloudinaryMediaService;
-use Exception;
 use Illuminate\Support\Str;
 
 class CreateUploadAuthorizationAction
@@ -19,11 +18,11 @@ class CreateUploadAuthorizationAction
 
     /**
      * Generate Cloudinary upload authorization.
-     * 
-     * @param string $packageId UUID of the package
-     * @param string $mediaId UUID of the intended PackageMedia
-     * @param int $businessId the authorized business ID
-     * @param int $userId the authorized user ID
+     *
+     * @param  string  $packageId  UUID of the package
+     * @param  string  $mediaId  UUID of the intended PackageMedia
+     * @param  int  $businessId  the authorized business ID
+     * @param  int  $userId  the authorized user ID
      */
     public function execute(string $packageId, string $mediaId, int $businessId, int $userId): array
     {
@@ -37,7 +36,7 @@ class CreateUploadAuthorizationAction
             ->update(['status' => 'EXPIRED']);
 
         $expectedPublicId = (string) Str::uuid();
-        
+
         $intent = PackageMediaUploadIntent::create([
             'package_id' => $package->id,
             'media_id' => $mediaId,
@@ -47,7 +46,7 @@ class CreateUploadAuthorizationAction
             'expires_at' => now()->addMinutes(30),
         ]);
 
-        $folder = 'parkdrop/packages/' . md5((string)$businessId) . '/' . $package->id;
+        $folder = 'parkdrop/packages/'.md5((string) $businessId).'/'.$package->id;
 
         return $this->cloudinary->generateUploadSignature($expectedPublicId, $folder);
     }

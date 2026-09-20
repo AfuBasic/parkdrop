@@ -47,7 +47,7 @@ class CreatePackageMutationHandler implements MutationHandler
 
         // Validate Business Access and Tenancy
         $business = Business::find($businessId);
-        if (!$business) {
+        if (! $business) {
             return [
                 'status' => 'REJECTED',
                 'metadata' => ['error' => 'BUSINESS_NOT_FOUND'],
@@ -59,7 +59,7 @@ class CreatePackageMutationHandler implements MutationHandler
             ->where('business_id', $businessId)
             ->first();
 
-        if (!$customer) {
+        if (! $customer) {
             return [
                 'status' => 'REJECTED',
                 'metadata' => ['error' => 'CUSTOMER_NOT_FOUND_OR_UNAUTHORIZED'],
@@ -67,12 +67,12 @@ class CreatePackageMutationHandler implements MutationHandler
         }
 
         // Validate Pickup Point belongs to Business if provided
-        if (!empty($payload['pickup_point_id'])) {
+        if (! empty($payload['pickup_point_id'])) {
             $pickupPoint = PickupPoint::where('id', $payload['pickup_point_id'])
                 ->where('business_id', $businessId)
                 ->first();
 
-            if (!$pickupPoint) {
+            if (! $pickupPoint) {
                 return [
                     'status' => 'REJECTED',
                     'metadata' => ['error' => 'PICKUP_POINT_NOT_FOUND_OR_UNAUTHORIZED'],
@@ -83,7 +83,7 @@ class CreatePackageMutationHandler implements MutationHandler
         $payload['pickup_point_id'] = $payload['pickup_point_id'] ?? $pickupPointId;
 
         // Ensure user ID is available
-        if (!$userId) {
+        if (! $userId) {
             return [
                 'status' => 'REJECTED',
                 'metadata' => ['error' => 'UNAUTHORIZED_USER'],
@@ -102,6 +102,7 @@ class CreatePackageMutationHandler implements MutationHandler
 
             if ($existingPublicId) {
                 DB::rollBack();
+
                 return [
                     'status' => 'CONFLICT',
                     'metadata' => [
@@ -117,6 +118,7 @@ class CreatePackageMutationHandler implements MutationHandler
 
             if ($existingPickupCode) {
                 DB::rollBack();
+
                 return [
                     'status' => 'CONFLICT',
                     'metadata' => [
@@ -125,7 +127,7 @@ class CreatePackageMutationHandler implements MutationHandler
                 ];
             }
 
-            $action = new CreatePackageAction();
+            $action = new CreatePackageAction;
             $package = $action->execute(
                 $business,
                 $payload,
@@ -145,6 +147,7 @@ class CreatePackageMutationHandler implements MutationHandler
 
         } catch (\Exception $e) {
             DB::rollBack();
+
             return [
                 'status' => 'RETRYABLE',
                 'metadata' => [

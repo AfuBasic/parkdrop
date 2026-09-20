@@ -3,7 +3,6 @@
 namespace App\Services\Sync;
 
 use App\Contracts\Sync\MutationHandler;
-use InvalidArgumentException;
 
 class MutationRegistry
 {
