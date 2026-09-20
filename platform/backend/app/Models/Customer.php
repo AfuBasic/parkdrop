@@ -25,4 +25,9 @@ class Customer extends Model
     {
         return $this->belongsTo(Business::class);
     }
+
+    public function packages()
+    {
+        return $this->hasMany(Package::class);
+    }
 }

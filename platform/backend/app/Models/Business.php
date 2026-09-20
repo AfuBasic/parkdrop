@@ -31,4 +31,9 @@ class Business extends Model
     {
         return $this->hasOne(SmsWallet::class);
     }
+
+    public function packages()
+    {
+        return $this->hasMany(Package::class);
+    }
 }
