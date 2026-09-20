@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->validateCsrfTokens(except: [
+            'api/v1/auth/*',
+            'api/v1/media/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
