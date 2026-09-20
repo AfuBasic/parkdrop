@@ -3,19 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PackageMedia extends Model
 {
-    protected $fillable = [
-        'business_id',
-        'package_id',
-        'cloudinary_public_id',
-        'file_hash',
-        'resource_type',
-        'format',
-        'width',
-        'height',
-        'bytes',
-        'created_by',
+    use HasUuids;
+
+    protected $guarded = [];
+
+    protected $casts = [
+        'width' => 'integer',
+        'height' => 'integer',
+        'bytes' => 'integer',
     ];
+
+    public function business(): BelongsTo
+    {
+        return $this->belongsTo(Business::class);
+    }
+
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(Package::class);
+    }
 }
