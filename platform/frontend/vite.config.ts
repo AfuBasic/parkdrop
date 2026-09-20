@@ -21,6 +21,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       workbox: {
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
         navigateFallback: '/index.html',
         navigateFallbackAllowlist: [/^\/$/], // Allow SPA routing to fallback

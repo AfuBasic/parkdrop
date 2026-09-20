@@ -4,9 +4,10 @@ import { formatMoney, formatPhone } from '@/lib/formatters';
 
 interface PackageListItemProps {
   pkg: EnrichedPackage;
+  onSelect?: (pkg: EnrichedPackage) => void;
 }
 
-export function PackageListItem({ pkg }: PackageListItemProps) {
+export function PackageListItem({ pkg, onSelect }: PackageListItemProps) {
   // Map our domain statuses to the design system badge variants
   const getVariant = (status: EnrichedPackage['status']) => {
     switch (status) {
@@ -35,7 +36,10 @@ export function PackageListItem({ pkg }: PackageListItemProps) {
   };
 
   return (
-    <div className="flex flex-col gap-1 py-3 border-b border-border-subtle last:border-b-0 hover:bg-surface-subtle transition-colors -mx-4 px-4 sm:mx-0 sm:px-2 rounded-lg cursor-pointer">
+    <div 
+      onClick={() => onSelect?.(pkg)}
+      className="flex flex-col gap-1 py-3 border-b border-border-subtle last:border-b-0 hover:bg-surface-subtle transition-colors -mx-4 px-4 sm:mx-0 sm:px-2 rounded-lg cursor-pointer"
+    >
       <div className="flex items-center justify-between">
         <span className="font-semibold text-text-primary text-[var(--text-body-md)] truncate pr-4">
           {pkg.customer_name}

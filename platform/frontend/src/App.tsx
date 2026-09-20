@@ -12,6 +12,7 @@ import { HomeScreen } from '@/features/home/HomeScreen';
 import { AddPackageScreen } from '@/features/packages/add/AddPackageScreen';
 import { PackageSearchScreen } from '@/features/packages/search/PackageSearchScreen';
 import { PackagesScreen } from '@/features/packages/list/PackagesScreen';
+import { PackageDetailScreen } from '@/features/packages/detail/PackageDetailScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
 import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
 import { MessageSquare, ChevronRight } from 'lucide-react';
@@ -120,6 +121,7 @@ function AppContent() {
           onNavigateToAdd={() => setCurrentPath('/add')}
           onNavigateToPackages={() => setCurrentPath('/packages')}
           onNavigateToCredits={() => setCurrentPath('/more/sms-credits')}
+          onSelectPackage={(id) => setCurrentPath(`/packages/${id}`)}
         />
       )}
       
@@ -127,6 +129,7 @@ function AppContent() {
         <PackagesScreen 
           onNavigateToSearch={() => setCurrentPath('/packages/search')}
           onNavigateToAdd={() => setCurrentPath('/add')}
+          onSelectPackage={(pkg) => setCurrentPath(`/packages/${pkg.id}`)}
         />
       )}
       {currentPath === '/add' && (
@@ -139,6 +142,14 @@ function AppContent() {
       {currentPath === '/packages/search' && (
         <PackageSearchScreen 
           onBack={() => setCurrentPath('/')}
+          onSelectPackage={(pkg) => setCurrentPath(`/packages/${pkg.packageId}`)}
+        />
+      )}
+      {currentPath.startsWith('/packages/') && currentPath !== '/packages/search' && (
+        <PackageDetailScreen
+          packageId={currentPath.replace('/packages/', '')}
+          businessId={business?.id || 0}
+          onBack={() => setCurrentPath('/packages')}
         />
       )}
       

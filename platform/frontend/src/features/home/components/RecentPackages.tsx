@@ -6,9 +6,10 @@ import { PackageListItem } from './PackageListItem';
 interface RecentPackagesProps {
   onSeeAll?: () => void;
   onAddPackage?: () => void;
+  onSelectPackage?: (packageId: string) => void;
 }
 
-export function RecentPackages({ onSeeAll, onAddPackage }: RecentPackagesProps) {
+export function RecentPackages({ onSeeAll, onAddPackage, onSelectPackage }: RecentPackagesProps) {
   const { business } = useAuth();
   const recentPackages = useRecentPackages(business?.id, 5);
 
@@ -45,7 +46,7 @@ export function RecentPackages({ onSeeAll, onAddPackage }: RecentPackagesProps) 
       ) : (
         <div className="bg-surface-default rounded-[var(--radius-xl)] p-2 sm:p-4 shadow-sm border border-border-subtle">
           {recentPackages.map(pkg => (
-            <PackageListItem key={pkg.id} pkg={pkg} />
+            <PackageListItem key={pkg.id} pkg={pkg} onSelect={(item) => onSelectPackage?.(item.id)} />
           ))}
         </div>
       )}

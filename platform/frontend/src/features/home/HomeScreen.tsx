@@ -8,9 +8,10 @@ interface HomeScreenProps {
   onNavigateToAdd?: () => void;
   onNavigateToPackages?: () => void;
   onNavigateToCredits?: () => void;
+  onSelectPackage?: (packageId: string) => void;
 }
 
-export function HomeScreen({ onNavigateToSearch, onNavigateToAdd, onNavigateToPackages, onNavigateToCredits }: HomeScreenProps) {
+export function HomeScreen({ onNavigateToSearch, onNavigateToAdd, onNavigateToPackages, onNavigateToCredits, onSelectPackage }: HomeScreenProps) {
   return (
     <div className="flex flex-col h-full max-w-lg mx-auto pb-4">
       <HomeHeader onNavigateToCredits={onNavigateToCredits} />
@@ -26,6 +27,7 @@ export function HomeScreen({ onNavigateToSearch, onNavigateToAdd, onNavigateToPa
         <RecentPackages 
           onSeeAll={onNavigateToPackages}
           onAddPackage={onNavigateToAdd}
+          onSelectPackage={onSelectPackage}
         />
       </main>
     </div>

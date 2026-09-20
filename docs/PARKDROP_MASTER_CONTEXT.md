@@ -11,8 +11,10 @@
 **Build 10 — Buy SMS Credits: COMPLETED**
 **Build 11 — Package Search (Local-First Operational Package Retrieval): COMPLETED**
 **Build 12 — Packages List (Local-First Operational Package Queue + Status Filtering): COMPLETED**
+**Build 13 — Package Detail (Single Operational Package Record + Customer + Photo + SMS + Payment + Activity): COMPLETED**
+**Build 14 — Payments (Append-Only Payment Recording + Offline Support + Derived Payment State + Concurrency Safety): COMPLETED**
 
-Next build: Build 13 (Package Detail).
+Next build: Build 15 (Release / Collect Package).
 
 ## Core Architecture Decisions
 

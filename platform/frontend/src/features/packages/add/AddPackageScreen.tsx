@@ -63,7 +63,7 @@ export function AddPackageScreen({ onNavigate, onBack }: AddPackageScreenProps) 
           publicPackageId={savedPackage.public_package_id}
           onAddAnother={resetForm}
           onViewPackage={() => {
-            if (onNavigate) onNavigate('/packages');
+            if (onNavigate) onNavigate(`/packages/${savedPackage.id}`);
           }}
         />
       </div>
