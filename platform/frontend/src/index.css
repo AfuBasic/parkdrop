@@ -123,6 +123,96 @@
   --animate-out: animate-out 0.3s ease-in;
 }
 
+@keyframes sheet-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheet-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes sheet-slide-in-bottom {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes sheet-slide-out-bottom {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes sheet-slide-in-top {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes sheet-slide-out-top {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+@keyframes sheet-slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes sheet-slide-out-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-100%); }
+}
+
+@keyframes sheet-slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes sheet-slide-out-right {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.animate-sheet-fade-in {
+  animation: sheet-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-fade-out {
+  animation: sheet-fade-out 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-in-bottom {
+  animation: sheet-slide-in-bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-out-bottom {
+  animation: sheet-slide-out-bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-in-top {
+  animation: sheet-slide-in-top 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-out-top {
+  animation: sheet-slide-out-top 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-in-left {
+  animation: sheet-slide-in-left 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-out-left {
+  animation: sheet-slide-out-left 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-in-right {
+  animation: sheet-slide-in-right 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-sheet-slide-out-right {
+  animation: sheet-slide-out-right 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 @layer base {
   :root {
     background-color: var(--color-surface-page);
