@@ -1,6 +1,7 @@
-import { db } from '../../offline/db/database';
-import { api } from '../../../utils/api';
-import { uploadToCloudinary, type CloudinaryUploadParams, type CloudinaryUploadResponse } from './cloudinary-upload-client';
+import { db } from '@/offline/db/database';
+import { fetchApi } from '@/lib/api';
+import { uploadToCloudinary, type CloudinaryUploadParams } from './cloudinary-upload-client';
+import type { LocalPackageMedia } from '@/offline/db/schema';
 
 export class MediaUploadCoordinator {
   static async syncPendingMedia(businessId: number): Promise<void> {
@@ -11,7 +12,7 @@ export class MediaUploadCoordinator {
       .toArray();
 
     const toProcess = pendingMedia.filter(
-      (m) =>
+      (m: LocalPackageMedia) =>
         m.status === 'PENDING_UPLOAD' ||
         m.status === 'AUTHORIZING' ||
         m.status === 'UPLOADING' ||
@@ -41,12 +42,16 @@ export class MediaUploadCoordinator {
         // 2. Request Authorization
         await db.packageMedia.update(media.id, { status: 'AUTHORIZING' });
         
-        const authResponse = await api.post(`/packages/${pkg.id}/media/authorize`, {
-          business_id: businessId,
-          media_id: media.id,
+        const authRes = await fetchApi(`/packages/${pkg.id}/media/authorize`, {
+          method: 'POST',
+          body: JSON.stringify({
+            business_id: businessId,
+            media_id: media.id,
+          }),
         });
 
-        const authParams = authResponse.data as CloudinaryUploadParams;
+        const authData = await authRes.json();
+        const authParams = authData.data as CloudinaryUploadParams;
 
         // 3. Upload to Cloudinary
         await db.packageMedia.update(media.id, { status: 'UPLOADING', attempt_count: media.attempt_count + 1, last_attempt_at: new Date().toISOString() });
@@ -56,10 +61,13 @@ export class MediaUploadCoordinator {
         // 4. Complete Upload Verification
         await db.packageMedia.update(media.id, { status: 'VERIFYING' });
         
-        await api.post(`/packages/${pkg.id}/media/complete`, {
-          business_id: businessId,
-          media_id: media.id,
-          cloudinary_response: uploadResponse,
+        await fetchApi(`/packages/${pkg.id}/media/complete`, {
+          method: 'POST',
+          body: JSON.stringify({
+            business_id: businessId,
+            media_id: media.id,
+            cloudinary_response: uploadResponse,
+          }),
         });
 
         // 5. Finalize: Remove local blob to save space, mark SYNCED
