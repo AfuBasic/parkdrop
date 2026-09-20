@@ -11,6 +11,7 @@ import { HomeScreen } from '@/features/home/HomeScreen';
 
 import { AddPackageScreen } from '@/features/packages/add/AddPackageScreen';
 import { PackageSearchScreen } from '@/features/packages/search/PackageSearchScreen';
+import { PackagesScreen } from '@/features/packages/list/PackagesScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
 import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
 import { MessageSquare, ChevronRight } from 'lucide-react';
@@ -122,7 +123,12 @@ function AppContent() {
         />
       )}
       
-      {currentPath === '/packages' && renderPlaceholder('Packages', 'Package list and management will be built in a future milestone.')}
+      {currentPath === '/packages' && (
+        <PackagesScreen 
+          onNavigateToSearch={() => setCurrentPath('/packages/search')}
+          onNavigateToAdd={() => setCurrentPath('/add')}
+        />
+      )}
       {currentPath === '/add' && (
         <AddPackageScreen 
           onNavigate={setCurrentPath}
