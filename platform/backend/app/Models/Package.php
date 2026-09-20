@@ -35,6 +35,16 @@ class Package extends Model
         return $this->belongsTo(Business::class);
     }
 
+    public function outboxEvents(): HasMany
+    {
+        return $this->hasMany(OutboxEvent::class);
+    }
+
+    public function packageMedia(): HasMany
+    {
+        return $this->hasMany(PackageMedia::class);
+    }
+
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
