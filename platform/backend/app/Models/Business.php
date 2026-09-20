@@ -17,6 +17,11 @@ class Business extends Model
         return $this->hasMany(BusinessMembership::class);
     }
 
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
+
     public function pickupPoints()
     {
         return $this->hasMany(PickupPoint::class);
