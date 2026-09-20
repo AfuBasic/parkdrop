@@ -40,6 +40,16 @@ class AppServiceProvider extends ServiceProvider
 
             return new \App\Services\Payments\PaystackPaymentGateway();
         });
+
+        $this->app->singleton(\App\Contracts\Sms\SmsProvider::class, function ($app) {
+            $provider = env('SMS_PROVIDER', 'termii');
+
+            if ($app->environment('testing') || $provider === 'fake') {
+                return new \App\Services\Sms\FakeSmsProvider();
+            }
+
+            return new \App\Services\Sms\TermiiSmsProvider();
+        });
     }
 
     /**
