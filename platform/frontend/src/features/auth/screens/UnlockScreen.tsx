@@ -38,14 +38,14 @@ export function UnlockScreen({ deviceMeta, onUnlocked, onLogout, onForgotPin }: 
   return (
     <AuthLayout showBack={false}>
       <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="mb-10 text-center">
-          <div className="w-20 h-20 bg-status-info-bg rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-3xl font-bold text-status-info">{deviceMeta.first_name[0]}</span>
+        <div className="mb-[22px]">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[var(--color-proto-tint)] rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl sm:text-3xl font-bold text-[var(--color-proto-blue-d)]">{deviceMeta.first_name[0]}</span>
           </div>
-          <h1 className="text-3xl font-bold tracking-tight mb-2 text-text-primary">
+          <h1 className="text-2xl sm:text-[26px] font-[800] tracking-tight text-center text-text-primary mb-1">
             {AuthStrings.unlockTitle(deviceMeta.first_name)}
           </h1>
-          <p className="text-text-secondary text-lg">{AuthStrings.unlockSubtitle}</p>
+          <p className="text-base font-[600] text-center text-text-secondary m-0">{AuthStrings.unlockSubtitle}</p>
         </div>
 
         <div className="flex flex-col items-center flex-1">
