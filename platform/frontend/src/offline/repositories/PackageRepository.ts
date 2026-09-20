@@ -101,6 +101,80 @@ export class PackageRepository {
       .count();
   }
 
+  /**
+   * Returns exact package counts for all canonical statuses scoped to active business/pickup-point.
+   */
+  static async countByStatus(
+    businessId: number,
+    pickupPointId: number | null
+  ): Promise<{ WAITING: number; COLLECTED: number; RETURNED: number; CANCELLED: number }> {
+    if (pickupPointId) {
+      const [waiting, collected, returned, cancelled] = await Promise.all([
+        db.packages.where('[business_id+pickup_point_id+status]').equals([businessId, pickupPointId, 'WAITING']).count(),
+        db.packages.where('[business_id+pickup_point_id+status]').equals([businessId, pickupPointId, 'COLLECTED']).count(),
+        db.packages.where('[business_id+pickup_point_id+status]').equals([businessId, pickupPointId, 'RETURNED']).count(),
+        db.packages.where('[business_id+pickup_point_id+status]').equals([businessId, pickupPointId, 'CANCELLED']).count(),
+      ]);
+      return { WAITING: waiting, COLLECTED: collected, RETURNED: returned, CANCELLED: cancelled };
+    }
+
+    const [waiting, collected, returned, cancelled] = await Promise.all([
+      db.packages.where('[business_id+status]').equals([businessId, 'WAITING']).count(),
+      db.packages.where('[business_id+status]').equals([businessId, 'COLLECTED']).count(),
+      db.packages.where('[business_id+status]').equals([businessId, 'RETURNED']).count(),
+      db.packages.where('[business_id+status]').equals([businessId, 'CANCELLED']).count(),
+    ]);
+    return { WAITING: waiting, COLLECTED: collected, RETURNED: returned, CANCELLED: cancelled };
+  }
+
+  /**
+   * Retrieves paginated packages filtered by status, sorted by client_created_at desc, joined with customer details.
+   */
+  static async listByStatus(
+    businessId: number,
+    pickupPointId: number | null,
+    status: LocalPackage['status'],
+    limit = 30,
+    offset = 0
+  ): Promise<Array<LocalPackage & { customer_name: string; customer_phone: string }>> {
+    let pkgs: LocalPackage[];
+
+    if (pickupPointId) {
+      pkgs = await db.packages
+        .where('[business_id+pickup_point_id+status]')
+        .equals([businessId, pickupPointId, status])
+        .toArray();
+    } else {
+      pkgs = await db.packages
+        .where('[business_id+status]')
+        .equals([businessId, status])
+        .toArray();
+    }
+
+    // Deterministic sort by client_created_at desc, with id tie-breaker
+    pkgs.sort((a, b) => {
+      const diff = new Date(b.client_created_at).getTime() - new Date(a.client_created_at).getTime();
+      if (diff !== 0) return diff;
+      return b.id.localeCompare(a.id);
+    });
+
+    const page = pkgs.slice(offset, offset + limit);
+
+    // Batch load customer details
+    const customerIds = Array.from(new Set(page.map(p => p.customer_id)));
+    const customers = await db.customers.where('id').anyOf(customerIds).toArray();
+    const customerMap = new Map(customers.map(c => [c.id, c]));
+
+    return page.map(p => {
+      const customer = customerMap.get(p.customer_id);
+      return {
+        ...p,
+        customer_name: customer?.name || 'Unknown Customer',
+        customer_phone: customer?.phone_display || 'Unknown Phone',
+      };
+    });
+  }
+
   static async getRecent(businessId: number, limit = 10): Promise<LocalPackage[]> {
     return db.packages
       .where('business_id')
