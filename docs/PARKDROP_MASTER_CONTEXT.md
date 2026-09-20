@@ -4,8 +4,9 @@
 
 **Build 1 — Authentication + Business Onboarding: COMPLETED**
 **Build 3 — Offline-First Engine: COMPLETED**
+**Build 4 — Home (Mobile-First Operational Screen): COMPLETED**
 
-Next build: Package features (Add Package, Process Payment, UI).
+Next build: Customer Lookup / Add Package.
 
 ## Core Architecture Decisions
 
