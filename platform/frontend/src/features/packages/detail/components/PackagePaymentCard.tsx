@@ -199,7 +199,7 @@ export function PackagePaymentCard({
               </button>
 
               {isPartPayment && (
-                <form onSubmit={handleCustomSubmit} className="flex flex-col gap-3 mt-1">
+                <div className="flex flex-col gap-3 mt-1">
                   <div className="relative flex items-center">
                     <span className="absolute left-3.5 text-[18px] font-extrabold text-[var(--pd-muted)]">₦</span>
                     <input
@@ -216,7 +216,7 @@ export function PackagePaymentCard({
                   </div>
 
                   <button
-                    type="submit"
+                    type="button"
                     onClick={handleCustomSubmit}
                     disabled={isSaving || !customAmountNaira}
                     className="w-full min-h-[52px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[17px] font-extrabold active:scale-98 disabled:opacity-50 cursor-pointer"
@@ -225,7 +225,7 @@ export function PackagePaymentCard({
                       customAmountNaira ? formatNaira(Number(customAmountNaira) * 100) : formatNaira(0)
                     )}
                   </button>
-                </form>
+                </div>
               )}
             </div>
           </div>
