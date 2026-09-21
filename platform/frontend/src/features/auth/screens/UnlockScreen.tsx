@@ -1,87 +1,134 @@
 import * as React from 'react';
-import { AuthStrings } from '@/features/auth/strings';
-import { PinInput } from '@/features/auth/components/PinInput';
-import { AuthLayout } from '@/features/auth/components/AuthLayout';
-import { Button } from '@/design-system';
+import { AuthShell } from '../components/AuthShell';
+import { PinPad } from '../components/PinPad';
+import { Notice } from '../components/Notice';
+import { HelpSheet } from '../components/HelpSheet';
+import { AuthStrings } from '../strings';
+import { MAX_PIN_ATTEMPTS } from '../config';
 import { verifyPin } from '@/lib/pin';
 import type { DeviceMeta } from '@/lib/db';
+import { cn } from '@/lib/utils';
 
-interface UnlockScreenProps {
+export interface UnlockScreenProps {
   deviceMeta: DeviceMeta;
   onUnlocked: () => void;
-  onLogout: () => void;
-  onForgotPin?: () => void;
+  onForgotPin: () => void;
+  onNotYou: () => void;
+  /** Called after too many wrong tries, to fall back to a code. */
+  onTooManyAttempts?: () => void;
 }
 
-export function UnlockScreen({ deviceMeta, onUnlocked, onLogout, onForgotPin }: UnlockScreenProps) {
+/**
+ * Screen 7. The screen an existing user sees every single day.
+ *
+ * It works entirely offline: the PIN is checked against a hash held on this
+ * phone, so a user with no data can still open the app and look up a package.
+ * That is the whole point of having a PIN rather than signing in each time.
+ *
+ * After five wrong tries we ask for a code instead of locking the account.
+ * A lockout would strand a legitimate owner mid-shift with customers waiting,
+ * which is a worse outcome than the one it protects against on a device that
+ * is already in their hands.
+ */
+export function UnlockScreen({
+  deviceMeta,
+  onUnlocked,
+  onForgotPin,
+  onNotYou,
+  onTooManyAttempts,
+}: UnlockScreenProps) {
   const [pin, setPin] = React.useState('');
   const [error, setError] = React.useState('');
-  const [isVerifying, setIsVerifying] = React.useState(false);
+  const [attempts, setAttempts] = React.useState(0);
+  const [checking, setChecking] = React.useState(false);
+  const [helpOpen, setHelpOpen] = React.useState(false);
 
-  const handleComplete = async (val: string) => {
-    if (val.length === 4 && deviceMeta.pin_hash && deviceMeta.pin_salt) {
-      setIsVerifying(true);
-      setError('');
-      
-      const isValid = await verifyPin(val, deviceMeta.pin_hash, deviceMeta.pin_salt);
-      
-      if (isValid) {
-        onUnlocked();
-      } else {
-        setError(AuthStrings.incorrectPin);
-        setPin(''); // Reset to try again
-      }
-      setIsVerifying(false);
+  const name = deviceMeta.first_name || 'there';
+
+  const handleComplete = async (value: string) => {
+    if (!deviceMeta.pin_hash || !deviceMeta.pin_salt) return;
+
+    setChecking(true);
+    const valid = await verifyPin(value, deviceMeta.pin_hash, deviceMeta.pin_salt);
+    setChecking(false);
+
+    if (valid) {
+      onUnlocked();
+      return;
     }
+
+    const used = attempts + 1;
+    setAttempts(used);
+    navigator.vibrate?.(60);
+
+    if (used >= MAX_PIN_ATTEMPTS) {
+      setError(AuthStrings.pinAttemptsUsed);
+      onTooManyAttempts?.();
+      return;
+    }
+
+    setError(AuthStrings.pinWrong);
+    window.setTimeout(() => setPin(''), 320);
   };
 
+  const linkClass = cn(
+    'inline-flex items-center justify-center min-h-[var(--pd-tap-min)] px-4 rounded-full',
+    'text-[var(--pd-size-chip)] font-extrabold text-[var(--pd-blue-hover)]',
+    'hover:bg-[var(--pd-tint)] active:scale-[0.97]',
+    'transition-[transform,background-color] duration-[var(--pd-motion-fast)]',
+    'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/30'
+  );
+
   return (
-    <AuthLayout showBack={false}>
-      <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="mb-5">
-          <div className="w-14 h-14 bg-[var(--color-proto-tint)] rounded-full flex items-center justify-center mx-auto mb-3">
-            <span className="text-xl font-bold text-[var(--color-proto-blue-d)]">{deviceMeta.first_name[0]}</span>
+    <>
+      <AuthShell
+        size="medium"
+        avatarInitial={name.charAt(0)}
+        onHelp={() => setHelpOpen(true)}
+        showHero={false}
+        foot={
+          <div className="flex items-center justify-center gap-2">
+            <button type="button" onClick={onForgotPin} className={linkClass}>
+              {AuthStrings.forgotPin}
+            </button>
+            <span className="text-[var(--pd-line)]" aria-hidden="true">
+              •
+            </span>
+            <button type="button" onClick={onNotYou} className={linkClass}>
+              {AuthStrings.notYou}
+            </button>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-center text-text-primary mb-1">
-            {AuthStrings.unlockTitle(deviceMeta.first_name)}
-          </h1>
-          <p className="text-sm font-medium text-center text-text-secondary m-0">{AuthStrings.unlockSubtitle}</p>
-        </div>
+        }
+      >
+        <h1 className="m-0 mb-2 text-[var(--pd-size-title)] font-extrabold leading-[1.15] tracking-[-0.025em] text-[var(--pd-navy)] text-balance">
+          {AuthStrings.welcomeBack(name)}
+        </h1>
+        <p className="m-0 text-[var(--pd-size-body)] font-semibold text-[var(--pd-muted)] leading-[1.45]">
+          {AuthStrings.unlockSubtitle}
+        </p>
 
-        <div className="flex flex-col items-center flex-1">
-          <PinInput 
-            length={4} 
-            value={pin} 
-            onChange={(val) => {
-              setPin(val);
-              if (error) setError('');
-            }} 
-            onComplete={handleComplete} 
-            secure 
-            disabled={isVerifying}
+        {error && (
+          <Notice tone="error" className="mt-4">
+            {error}
+          </Notice>
+        )}
+
+        <div className="mt-7 pb-6">
+          <PinPad
+            value={pin}
+            onChange={(value) => {
+              setPin(value);
+              if (error && attempts < MAX_PIN_ATTEMPTS) setError('');
+            }}
+            onComplete={handleComplete}
             error={!!error}
+            disabled={checking || attempts >= MAX_PIN_ATTEMPTS}
+            label={AuthStrings.unlockSubtitle}
           />
-          
-          {error && <p className="text-sm text-status-danger font-medium mt-4">{error}</p>}
-
-          <div className="mt-auto flex flex-col w-full gap-3 pb-8">
-            {onForgotPin && (
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full text-sm font-semibold text-action-primary hover:bg-action-primary/10"
-                onClick={onForgotPin}
-              >
-                {AuthStrings.forgotPin}
-              </Button>
-            )}
-
-            <Button variant="ghost" className="w-full text-text-secondary" onClick={onLogout}>
-              Not {deviceMeta.first_name}? Sign out
-            </Button>
-          </div>
         </div>
-      </div>
-    </AuthLayout>
+      </AuthShell>
+
+      <HelpSheet open={helpOpen} onOpenChange={setHelpOpen} screenName="Welcome back" />
+    </>
   );
 }
