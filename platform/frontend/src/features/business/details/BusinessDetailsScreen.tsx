@@ -157,6 +157,10 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
       const pickupPointName = details.current_pickup_point.name;
       const parkName = details.current_pickup_point.park_name || 'Park';
       const canonicalPhone = toCanonicalPhone(phoneInput);
+      if (!canonicalPhone) {
+        setPhoneError('Enter a valid 11-digit phone number.');
+        return;
+      }
       const displayPhone = formatPhoneDisplay(canonicalPhone);
       const result = renderCustomerSms({
         pickupPointName,
