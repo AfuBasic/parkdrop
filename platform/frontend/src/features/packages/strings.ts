@@ -89,6 +89,7 @@ export const PackagesStrings = {
   partPaymentOption: 'Part payment',
   recordAmountButton: (amountStr: string) => `Record ${amountStr}`,
   paymentRecordedToast: 'Payment recorded',
+  paymentHistoryTitle: 'Payment history',
 
   // Photo card
   photoCardTitle: 'Photo',
