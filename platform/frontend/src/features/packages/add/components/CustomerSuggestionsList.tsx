@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { formatNationalDisplay } from '@/features/auth/lib/phone';
-import type { CustomerSuggestion } from '../hooks/useCustomerLookup';
-import { AddPackageStrings } from '../strings';
+import type { CustomerSuggestion } from '@/features/packages/add/hooks/useCustomerLookup';
+import { AddPackageStrings } from '@/features/packages/add/strings';
 
 export interface CustomerSuggestionsListProps {
   suggestions: CustomerSuggestion[];
