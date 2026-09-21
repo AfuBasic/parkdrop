@@ -20,6 +20,11 @@ class Package extends Model
         'pickup_code',
         'amount_due_minor',
         'status',
+        'returned_at',
+        'cancelled_at',
+        'terminal_reason',
+        'terminal_reason_note',
+        'terminal_actor_name',
         'created_by_user_id',
         'created_by_device_uuid',
         'client_created_at',
@@ -28,6 +33,8 @@ class Package extends Model
 
     protected $casts = [
         'client_created_at' => 'datetime',
+        'returned_at' => 'datetime',
+        'cancelled_at' => 'datetime',
         'amount_due_minor' => 'integer',
         'version' => 'integer',
     ];
@@ -65,5 +72,10 @@ class Package extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function lifecycleEvent()
+    {
+        return $this->hasOne(PackageLifecycleEvent::class);
     }
 }

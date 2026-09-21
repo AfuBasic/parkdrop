@@ -11,9 +11,13 @@ import { PackageActionSlots } from './components/PackageActionSlots';
 import { PaymentSummaryCard } from '@/features/payments/components/PaymentSummaryCard';
 import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
 import { RecordPaymentSheet } from '@/features/payments/components/RecordPaymentSheet';
+import { ReturnPackageSheet } from '@/features/packages/lifecycle/components/ReturnPackageSheet';
+import { CancelPackageSheet } from '@/features/packages/lifecycle/components/CancelPackageSheet';
 import { PaymentRepository } from '@/offline/repositories/PaymentRepository';
+import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecycleRepository';
 import { connectivityManager } from '@/offline/sync/connectivity-manager';
 import type { PaymentMethod } from '@/offline/db/schema';
+import type { ReturnReason, CancelReason } from '@/features/packages/lifecycle/domain/lifecycle-reasons';
 
 interface PackageDetailScreenProps {
   packageId: string;
@@ -28,6 +32,8 @@ export function PackageDetailScreen({
 }: PackageDetailScreenProps) {
   const [isOnline, setIsOnline] = useState(() => connectivityManager.getState() !== 'UNREACHABLE');
   const [isRecordSheetOpen, setIsRecordSheetOpen] = useState(false);
+  const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
+  const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
 
   useEffect(() => {
     return connectivityManager.subscribe(connState => {
@@ -94,6 +100,26 @@ export function PackageDetailScreen({
     });
   };
 
+  const handleConfirmReturn = async (reason: ReturnReason, note?: string | null) => {
+    await PackageLifecycleRepository.returnPackageLocally({
+      businessId,
+      pickupPointId: pkg.pickup_point_id,
+      packageId: pkg.id,
+      reason,
+      reasonNote: note,
+    });
+  };
+
+  const handleConfirmCancel = async (reason: CancelReason, note?: string | null) => {
+    await PackageLifecycleRepository.cancelPackageLocally({
+      businessId,
+      pickupPointId: pkg.pickup_point_id,
+      packageId: pkg.id,
+      reason,
+      reasonNote: note,
+    });
+  };
+
   const canRecordPayment = pkg.status === 'WAITING';
 
   return (
@@ -128,11 +154,13 @@ export function PackageDetailScreen({
         {/* Activity Timeline */}
         <PackageActivitySection timeline={activityTimeline} />
 
-        {/* Action Slots / Release Boundary */}
+        {/* Action Slots / Release & Terminal Boundary */}
         <PackageActionSlots
           pkg={pkg}
           paymentSummary={paymentSummary}
           onOpenRecordPayment={() => setIsRecordSheetOpen(true)}
+          onOpenReturn={() => setIsReturnSheetOpen(true)}
+          onOpenCancel={() => setIsCancelSheetOpen(true)}
         />
       </main>
 
@@ -142,6 +170,28 @@ export function PackageDetailScreen({
         onClose={() => setIsRecordSheetOpen(false)}
         remainingBalanceMinor={paymentSummary.balanceMinor}
         onRecord={handleRecordPayment}
+      />
+
+      {/* Return Package Bottom Sheet */}
+      <ReturnPackageSheet
+        isOpen={isReturnSheetOpen}
+        onClose={() => setIsReturnSheetOpen(false)}
+        pkg={pkg}
+        customer={customer}
+        paymentSummary={paymentSummary}
+        onConfirmReturn={handleConfirmReturn}
+        isOnline={isOnline}
+      />
+
+      {/* Cancel Package Bottom Sheet */}
+      <CancelPackageSheet
+        isOpen={isCancelSheetOpen}
+        onClose={() => setIsCancelSheetOpen(false)}
+        pkg={pkg}
+        customer={customer}
+        paymentSummary={paymentSummary}
+        onConfirmCancel={handleConfirmCancel}
+        isOnline={isOnline}
       />
     </div>
   );

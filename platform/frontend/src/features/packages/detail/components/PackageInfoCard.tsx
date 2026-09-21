@@ -69,6 +69,61 @@ export function PackageInfoCard({ pkg }: PackageInfoCardProps) {
             Delivered
           </span>
         </div>
+
+        {/* Terminal Outcome Context */}
+        {pkg.status === 'RETURNED' && (
+          <>
+            <div className="flex items-center justify-between py-2.5">
+              <span className="text-text-secondary">Return Reason</span>
+              <span className="font-semibold text-status-warning-text">
+                {pkg.terminal_reason ? pkg.terminal_reason.replace(/_/g, ' ') : 'Returned'}
+              </span>
+            </div>
+            {pkg.terminal_reason_note && (
+              <div className="flex flex-col gap-1 py-2.5">
+                <span className="text-text-secondary">Return Note</span>
+                <p className="text-xs text-text-primary bg-surface-subtle p-2.5 rounded-xl border border-border-subtle">
+                  {pkg.terminal_reason_note}
+                </p>
+              </div>
+            )}
+            {pkg.terminal_actor_name && (
+              <div className="flex items-center justify-between py-2.5">
+                <span className="text-text-secondary">Handled by</span>
+                <span className="font-semibold text-text-primary">
+                  {pkg.terminal_actor_name}
+                </span>
+              </div>
+            )}
+          </>
+        )}
+
+        {pkg.status === 'CANCELLED' && (
+          <>
+            <div className="flex items-center justify-between py-2.5">
+              <span className="text-text-secondary">Cancellation Reason</span>
+              <span className="font-semibold text-status-danger-text">
+                {pkg.terminal_reason ? pkg.terminal_reason.replace(/_/g, ' ') : 'Cancelled'}
+              </span>
+            </div>
+            {pkg.terminal_reason_note && (
+              <div className="flex flex-col gap-1 py-2.5">
+                <span className="text-text-secondary">Cancellation Note</span>
+                <p className="text-xs text-text-primary bg-surface-subtle p-2.5 rounded-xl border border-border-subtle">
+                  {pkg.terminal_reason_note}
+                </p>
+              </div>
+            )}
+            {pkg.terminal_actor_name && (
+              <div className="flex items-center justify-between py-2.5">
+                <span className="text-text-secondary">Cancelled by</span>
+                <span className="font-semibold text-text-primary">
+                  {pkg.terminal_actor_name}
+                </span>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

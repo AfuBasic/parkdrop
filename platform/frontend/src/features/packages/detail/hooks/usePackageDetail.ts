@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/offline/db/database';
 import { calculatePaymentSummary } from '@/features/payments/domain/payment-summary';
-import type { PackageDetailData, PackageDetailActivityItem } from '../package-detail-types';
+import type { PackageDetailData, PackageDetailActivityItem } from '@/features/packages/detail/package-detail-types';
 
 export interface UsePackageDetailResult {
   data: PackageDetailData | null;
@@ -106,7 +106,28 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
         }
       }
 
-      // 4. Sync status
+      // 4. Lifecycle Terminal Events
+      if (pkg.status === 'RETURNED' && pkg.returned_at) {
+        timeline.push({
+          id: `return-${pkg.id}`,
+          type: 'PACKAGE_RETURNED',
+          title: 'Package returned',
+          description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` — ${pkg.terminal_reason_note}` : ''}` : undefined,
+          timestamp: pkg.returned_at,
+          actorName: pkg.terminal_actor_name || undefined,
+        });
+      } else if (pkg.status === 'CANCELLED' && pkg.cancelled_at) {
+        timeline.push({
+          id: `cancel-${pkg.id}`,
+          type: 'PACKAGE_CANCELLED',
+          title: 'Package cancelled',
+          description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` — ${pkg.terminal_reason_note}` : ''}` : undefined,
+          timestamp: pkg.cancelled_at,
+          actorName: pkg.terminal_actor_name || undefined,
+        });
+      }
+
+      // 5. Sync status
       if (pkg.sync_status === 'SYNCED' && pkg.server_received_at) {
         timeline.push({
           id: `sync-${pkg.id}`,

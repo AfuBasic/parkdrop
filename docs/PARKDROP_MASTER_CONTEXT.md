@@ -13,8 +13,9 @@
 **Build 12 — Packages List (Local-First Operational Package Queue + Status Filtering): COMPLETED**
 **Build 13 — Package Detail (Single Operational Package Record + Customer + Photo + SMS + Payment + Activity): COMPLETED**
 **Build 14 — Payments (Append-Only Payment Recording + Offline Support + Derived Payment State + Concurrency Safety): COMPLETED**
+**Build 16 — Return & Cancel Package Lifecycle (Deliberate Terminal Actions + Reasons + Offline Support + Concurrency Safety): COMPLETED**
 
-Next build: Build 15 (Release / Collect Package).
+Next build: Build 17.
 
 ## Core Architecture Decisions
 

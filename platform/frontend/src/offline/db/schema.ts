@@ -65,6 +65,11 @@ export interface LocalPackage {
   sync_status: SyncStatus;
   creator_name?: string | null;
   pickup_point_name?: string | null;
+  returned_at?: string | null;
+  cancelled_at?: string | null;
+  terminal_reason?: string | null;
+  terminal_reason_note?: string | null;
+  terminal_actor_name?: string | null;
 }
 
 export interface LocalCustomer {

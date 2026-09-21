@@ -90,6 +90,27 @@ PackageListRow[] (deterministic recency order, reactive to local mutations and s
 ```
 The operational queue defaults to `WAITING` parcels. Attendants can tap any package row to navigate toward the canonical package detail boundary. When background sync or local creation occurs, counts and list items update reactively without a full reload.
 
+### Package Lifecycle & Terminal Transitions (Build 16)
+```
+Package Detail Screen
+        ↓
+[Return package] or [Cancel package]
+        ↓
+ReturnPackageSheet / CancelPackageSheet (Reason selection, note for OTHER, payment warning)
+        ↓
+PackageLifecycleRepository (Atomic Dexie transaction: Package.status = RETURNED/CANCELLED, enqueue mutation)
+        ↓
+SyncEngine Push (RETURN_PACKAGE / CANCEL_PACKAGE)
+        ↓
+Laravel ReturnPackageAction / CancelPackageAction (Package::lockForUpdate(), status validation, ActivityLog, SyncChange)
+        ↓
+Reverb SyncHint broadcast & other devices reconcile
+```
+**Terminal Transition Rules:**
+* Valid transitions: `WAITING → RETURNED`, `WAITING → CANCELLED`.
+* Invariant: First valid terminal transition committed by the server wins. Competing attempts receive structured conflict `PACKAGE_ALREADY_RETURNED` / `PACKAGE_ALREADY_CANCELLED` / `PACKAGE_ALREADY_COLLECTED`.
+* Payments remain: Returning or cancelling preserves recorded payment history without automatic refunds. Ordinary new payments are forbidden on terminal packages.
+
 
 
 ## Media Architecture (Cloudinary)

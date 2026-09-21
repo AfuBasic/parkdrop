@@ -11,6 +11,9 @@
   - `pickup_point_id` (integer): Optional scope.
 - **Idempotency**: The server tracks `sync_mutation_receipts` using the `mutation_id`. If a duplicate request arrives, the server returns the cached result without re-executing.
 - **Result Statuses**: `APPLIED`, `REJECTED`, `RETRYABLE`, `CONFLICT`.
+- **Terminal Lifecycle Operations (Build 16)**:
+  - `RETURN_PACKAGE`: `{ event_id, package_id, reason, reason_note, client_event_at }`. Enforces `WAITING` row-lock constraint. Rejects with `CONFLICT` (`PACKAGE_ALREADY_COLLECTED`, `PACKAGE_ALREADY_RETURNED`, `PACKAGE_ALREADY_CANCELLED`) if package transitioned on another device.
+  - `CANCEL_PACKAGE`: `{ event_id, package_id, reason, reason_note, client_event_at }`. Same terminal race locking. First valid terminal transition committed by the server wins.
 
 ## Pull Protocol
 - **Endpoint**: `GET /api/v1/sync/pull`

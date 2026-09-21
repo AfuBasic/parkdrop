@@ -1,7 +1,7 @@
-import { db } from '../db/database';
-import { MutationQueue } from '../mutations/mutation-queue';
-import { generatePublicPackageId, generatePickupCode } from '../../features/packages/domain/PackageCodeGenerator';
-import type { LocalPackage, LocalPackageMedia } from '../db/schema';
+import { db } from '@/offline/db/database';
+import { MutationQueue } from '@/offline/mutations/mutation-queue';
+import { generatePublicPackageId, generatePickupCode } from '@/features/packages/domain/PackageCodeGenerator';
+import type { LocalPackage, LocalPackageMedia } from '@/offline/db/schema';
 
 export class PackageRepository {
   /**
@@ -151,9 +151,20 @@ export class PackageRepository {
         .toArray();
     }
 
-    // Deterministic sort by client_created_at desc, with id tie-breaker
+    // Deterministic sort: use terminal timestamp when available for RETURNED / CANCELLED, else client_created_at
     pkgs.sort((a, b) => {
-      const diff = new Date(b.client_created_at).getTime() - new Date(a.client_created_at).getTime();
+      let timeA = new Date(a.client_created_at).getTime();
+      let timeB = new Date(b.client_created_at).getTime();
+
+      if (status === 'RETURNED') {
+        timeA = new Date(a.returned_at || a.client_created_at).getTime();
+        timeB = new Date(b.returned_at || b.client_created_at).getTime();
+      } else if (status === 'CANCELLED') {
+        timeA = new Date(a.cancelled_at || a.client_created_at).getTime();
+        timeB = new Date(b.cancelled_at || b.client_created_at).getTime();
+      }
+
+      const diff = timeB - timeA;
       if (diff !== 0) return diff;
       return b.id.localeCompare(a.id);
     });

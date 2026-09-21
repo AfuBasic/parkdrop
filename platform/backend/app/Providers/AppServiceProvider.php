@@ -8,9 +8,11 @@ use App\Services\Payments\FakePaymentGateway;
 use App\Services\Payments\FlutterwavePaymentGateway;
 use App\Services\Payments\PaystackPaymentGateway;
 use App\Services\Sms\TermiiSmsProvider;
+use App\Services\Sync\Handlers\CancelPackageMutationHandler;
 use App\Services\Sync\Handlers\CreateCustomerMutationHandler;
 use App\Services\Sync\Handlers\CreatePackageMutationHandler;
 use App\Services\Sync\Handlers\RecordPaymentMutationHandler;
+use App\Services\Sync\Handlers\ReturnPackageMutationHandler;
 use App\Services\Sync\Handlers\TestOnlyMutationHandler;
 use App\Services\Sync\MutationRegistry;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -35,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
             $registry->register(new CreateCustomerMutationHandler);
             $registry->register(new CreatePackageMutationHandler);
             $registry->register($app->make(RecordPaymentMutationHandler::class));
+            $registry->register($app->make(ReturnPackageMutationHandler::class));
+            $registry->register($app->make(CancelPackageMutationHandler::class));
 
             return $registry;
         });

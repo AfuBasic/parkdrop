@@ -1,7 +1,8 @@
-import { db } from '../db/database';
-import { MutationQueue } from '../mutations/mutation-queue';
+import { db } from '@/offline/db/database';
+import { MutationQueue } from '@/offline/mutations/mutation-queue';
 import { connectivityManager } from './connectivity-manager';
-import { getDeviceUuid } from '../device/device-identity';
+import { getDeviceUuid } from '@/offline/device/device-identity';
+import type { LocalPackage } from '@/offline/db/schema';
 
 export class SyncEngine {
   private static isSyncing = false;
@@ -137,6 +138,29 @@ export class SyncEngine {
               await db.payments.update(paymentId, {
                 sync_status: 'NEEDS_ATTENTION',
                 sync_error: (result.metadata?.user_message as string) || (result.metadata?.error as string) || 'Payment rejected by server',
+              });
+            }
+          }
+        }
+
+        // Handle RETURN_PACKAGE and CANCEL_PACKAGE mutation responses
+        if (originalMutation && (originalMutation.operation === 'RETURN_PACKAGE' || originalMutation.operation === 'CANCEL_PACKAGE')) {
+          const packageId = originalMutation.payload.package_id as string;
+          if (result.status === 'APPLIED') {
+            const existing = await db.packages.get(packageId);
+            if (existing) {
+              await db.packages.update(packageId, {
+                sync_status: 'SYNCED',
+              });
+            }
+          } else if (result.status === 'CONFLICT') {
+            // Reconcile to canonical status if server reports already collected/returned/cancelled
+            const canonicalStatus = (result.metadata?.current_status as LocalPackage['status']) || 'COLLECTED';
+            const existing = await db.packages.get(packageId);
+            if (existing) {
+              await db.packages.update(packageId, {
+                status: canonicalStatus,
+                sync_status: 'SYNCED',
               });
             }
           }

@@ -1,5 +1,5 @@
-import { CheckCircle2, DollarSign, Camera, CloudUpload } from 'lucide-react';
-import type { PackageDetailActivityItem } from '../package-detail-types';
+import { CheckCircle2, DollarSign, Camera, CloudUpload, RotateCcw, Ban, PackageCheck } from 'lucide-react';
+import type { PackageDetailActivityItem } from '@/features/packages/detail/package-detail-types';
 
 interface PackageActivitySectionProps {
   timeline: PackageDetailActivityItem[];
@@ -14,6 +14,12 @@ export function PackageActivitySection({ timeline }: PackageActivitySectionProps
         return <DollarSign className="w-3.5 h-3.5 text-action-primary" />;
       case 'PHOTO_ATTACHED':
         return <Camera className="w-3.5 h-3.5 text-text-secondary" />;
+      case 'PACKAGE_COLLECTED':
+        return <PackageCheck className="w-3.5 h-3.5 text-status-success-text" />;
+      case 'PACKAGE_RETURNED':
+        return <RotateCcw className="w-3.5 h-3.5 text-status-warning-text" />;
+      case 'PACKAGE_CANCELLED':
+        return <Ban className="w-3.5 h-3.5 text-status-danger-text" />;
       case 'SYNCED':
         return <CloudUpload className="w-3.5 h-3.5 text-status-success-text" />;
       case 'PACKAGE_RECORDED':
