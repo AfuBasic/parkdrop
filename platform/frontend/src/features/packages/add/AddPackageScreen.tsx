@@ -12,18 +12,18 @@ import { CustomerDirectoryRepository } from '@/features/customers/services/Custo
 import { db } from '@/offline/db/database';
 import type { LocalPackage } from '@/offline/db/schema';
 import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
-import { AddPackageHeader } from './components/AddPackageHeader';
-import { PhoneInputGroup } from './components/PhoneInputGroup';
-import { CustomerSuggestionsList } from './components/CustomerSuggestionsList';
-import { CustomerMatchChip } from './components/CustomerMatchChip';
-import { AmountInputGroup } from './components/AmountInputGroup';
-import { AmountChips } from './components/AmountChips';
-import { DiscardConfirmDialog } from './components/DiscardConfirmDialog';
-import { PackageSavedScreen } from './components/PackageSavedScreen';
-import { useCustomerLookup, type CustomerSuggestion } from './hooks/useCustomerLookup';
-import { useRecentAmounts } from './hooks/useRecentAmounts';
-import { AddPackageStrings } from './strings';
-import { REQUIRE_CUSTOMER_NAME } from './config';
+import { AddPackageHeader } from '@/features/packages/add/components/AddPackageHeader';
+import { PhoneInputGroup } from '@/features/packages/add/components/PhoneInputGroup';
+import { CustomerSuggestionsList } from '@/features/packages/add/components/CustomerSuggestionsList';
+import { CustomerMatchChip } from '@/features/packages/add/components/CustomerMatchChip';
+import { AmountInputGroup } from '@/features/packages/add/components/AmountInputGroup';
+import { AmountChips } from '@/features/packages/add/components/AmountChips';
+import { DiscardConfirmDialog } from '@/features/packages/add/components/DiscardConfirmDialog';
+import { PackageSavedScreen } from '@/features/packages/add/components/PackageSavedScreen';
+import { useCustomerLookup, type CustomerSuggestion } from '@/features/packages/add/hooks/useCustomerLookup';
+import { useRecentAmounts } from '@/features/packages/add/hooks/useRecentAmounts';
+import { AddPackageStrings } from '@/features/packages/add/strings';
+import { REQUIRE_CUSTOMER_NAME } from '@/features/packages/add/config';
 
 export interface AddPackageScreenProps {
   onNavigate?: (path: string) => void;
