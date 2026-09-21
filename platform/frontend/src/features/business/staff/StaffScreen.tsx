@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ChevronLeft, UserPlus, WifiOff, AlertCircle, RefreshCw } from 'lucide-react';
+import { ChevronLeft, UserPlus, WifiOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/auth/AuthContext';
 import { businessApi, type StaffMember, type PendingInvitation } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/api/business-api';
 import type { BusinessRole } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
