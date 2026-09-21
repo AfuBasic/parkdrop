@@ -78,10 +78,49 @@ class RenamePickupPointAction
             }
 
             $oldName = $locked->name;
-            $locked->update([
+            $oldPhone = $locked->contact_phone;
+            $updates = [
                 'name' => $name,
                 'park_name' => $parkName,
-            ]);
+            ];
+
+            $phoneChanged = false;
+            if (array_key_exists('contact_phone', $payload)) {
+                $rawPhone = $payload['contact_phone'] !== null ? trim($payload['contact_phone']) : null;
+                $newPhone = null;
+                if ($rawPhone) {
+                    $digits = preg_replace('/\D/', '', $rawPhone);
+                    if (str_starts_with($digits, '0') && strlen($digits) === 11) {
+                        $newPhone = '234'.substr($digits, 1);
+                    } elseif (str_starts_with($digits, '234') && strlen($digits) === 13) {
+                        $newPhone = $digits;
+                    } elseif (strlen($digits) === 10) {
+                        $newPhone = '234'.$digits;
+                    }
+                }
+
+                if ($newPhone !== $oldPhone) {
+                    $phoneChanged = true;
+                    $updates['contact_phone'] = $newPhone;
+                    $updates['contact_phone_confirmed_at'] = $newPhone ? now() : null;
+                    $updates['contact_phone_source'] = $newPhone ? 'entered' : null;
+
+                    // Audit the phone change with masked phones (last 4 digits)
+                    $oldMasked = $oldPhone ? '...'.substr($oldPhone, -4) : null;
+                    $newMasked = $newPhone ? '...'.substr($newPhone, -4) : null;
+
+                    \App\Models\PickupPointPhoneAudit::create([
+                        'business_id' => $business->id,
+                        'pickup_point_id' => $locked->id,
+                        'user_id' => $actor->id,
+                        'old_phone_masked' => $oldMasked,
+                        'new_phone_masked' => $newMasked ?? 'NONE',
+                        'ip_address' => request()->ip(),
+                    ]);
+                }
+            }
+
+            $locked->update($updates);
 
             ActivityLog::create([
                 'business_id' => $business->id,
