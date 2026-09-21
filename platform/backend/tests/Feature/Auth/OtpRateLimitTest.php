@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\AuthChallenge;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
@@ -137,15 +139,15 @@ class OtpRateLimitTest extends TestCase
         ])->assertStatus(429);
 
         // Retrieve generated challenge code
-        $challenge = \App\Models\AuthChallenge::where('email', $email)->first();
+        $challenge = AuthChallenge::where('email', $email)->first();
         $this->assertNotNull($challenge);
 
         // 2. Successfully verify with the challenge (simulate correct code verification)
-        \App\Models\AuthChallenge::where('email', $email)->delete();
+        AuthChallenge::where('email', $email)->delete();
 
-        $knownChallenge = \App\Models\AuthChallenge::create([
+        $knownChallenge = AuthChallenge::create([
             'email' => $email,
-            'code_hash' => \Illuminate\Support\Facades\Hash::make('654321'),
+            'code_hash' => Hash::make('654321'),
             'purpose' => 'auth',
             'expires_at' => now()->addMinutes(10),
             'max_attempts' => 5,
