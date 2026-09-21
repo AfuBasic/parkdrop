@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MessageCircle, Phone, RotateCw, Mail } from 'lucide-react';
+import { Loader2, MessageCircle, Phone, RotateCw, Mail } from 'lucide-react';
 import { AuthShell } from '../components/AuthShell';
 import { CodeField } from '../components/CodeField';
 import { BigButton } from '../components/BigButton';
@@ -65,6 +65,10 @@ export function CodeScreen({
   const isPhone = mode === 'phone';
   const shownError = error || localError;
   const webmail = isPhone ? null : webmailProviderFor(identifier);
+  // A retry button only earns a place once there is something to retry: the
+  // request timed out, or the last code came back wrong. Otherwise the 6th
+  // digit submits on its own and a button here would just sit there unused.
+  const needsManualRetry = timedOut || !!shownError;
 
   // Clear the boxes when the server rejects the code, so the next attempt
   // starts from empty rather than making them delete six digits by hand.
@@ -136,10 +140,15 @@ export function CodeScreen({
       step={step}
       totalSteps={totalSteps}
       stepLabelOverride={stepLabelOverride}
+      // The 6th digit submits on its own, so a button pinned here for every
+      // half-filled attempt is dead weight sitting next to the resend card.
+      // It only earns its place back when there is something to retry.
       foot={
-        <BigButton onClick={submit} busy={busy} busyLabel={AuthStrings.checking}>
-          {AuthStrings.continue}
-        </BigButton>
+        needsManualRetry ? (
+          <BigButton onClick={submit} busy={busy} busyLabel={AuthStrings.checking}>
+            {timedOut ? AuthStrings.tryAgain : AuthStrings.continue}
+          </BigButton>
+        ) : undefined
       }
     >
       <h1 className="m-0 mb-2 text-[var(--pd-size-title)] font-extrabold leading-[1.15] tracking-[-0.025em] text-[var(--pd-navy)]">
@@ -189,6 +198,16 @@ export function CodeScreen({
           inputRef={inputRef}
         />
       </div>
+
+      {busy && !shownError && (
+        <p
+          role="status"
+          className="m-0 mt-3 flex items-center gap-2 text-[var(--pd-size-helper)] font-extrabold text-[var(--pd-blue-hover)]"
+        >
+          <Loader2 className="w-[18px] h-[18px] animate-spin" strokeWidth={3} aria-hidden="true" />
+          {AuthStrings.checking}
+        </p>
+      )}
 
       {shownError && (
         <Notice tone="error" plain className="mt-3">
