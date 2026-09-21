@@ -1,86 +1,121 @@
-import { AuthStrings } from '@/features/auth/strings';
-import { Button } from '@/design-system';
-import { User, ArrowRight } from 'lucide-react';
+import { Store } from 'lucide-react';
+import { AuthShell } from '../components/AuthShell';
+import { BigButton } from '../components/BigButton';
+import { Notice } from '../components/Notice';
+import { AuthStrings } from '../strings';
+import { AUTH_IDENTIFIER } from '../config';
+import { formatNationalDisplay } from '../lib/phone';
 import type { RememberedIdentity } from '@/lib/db';
+import { cn } from '@/lib/utils';
 
-interface RememberedReauthScreenProps {
+export interface RememberedReauthScreenProps {
   identity: RememberedIdentity;
-  onContinue: (email: string) => void;
+  onContinue: (identifier: string) => void;
   onSwitchAccount: () => void;
-  isLoading?: boolean;
+  onHelp: () => void;
+  busy?: boolean;
+  error?: string;
+  slowNetwork?: boolean;
 }
 
+/**
+ * Shown when we still know who this is but the session has run out.
+ *
+ * They do not need to type their phone or email again — we already have it —
+ * so the screen is one tap plus a way out if the name shown is not theirs.
+ */
 export function RememberedReauthScreen({
   identity,
   onContinue,
   onSwitchAccount,
-  isLoading,
+  onHelp,
+  busy,
+  error,
+  slowNetwork,
 }: RememberedReauthScreenProps) {
+  const name = identity.name || '';
+  const isPhone = AUTH_IDENTIFIER === 'phone';
+  const shownIdentifier = isPhone ? formatNationalDisplay(identity.email) : identity.email;
+
   return (
-    <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-bottom-3 duration-300">
-      <div className="mb-5 text-left">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-text-primary">
-          {AuthStrings.reauthTitle(identity.name)}
-        </h1>
-        <p className="text-sm font-medium text-text-secondary m-0 leading-relaxed">
-          Your session expired. Confirm your identity to continue.
-        </p>
-      </div>
-
-      <div className="flex flex-col flex-1 gap-6">
-        {/* Identity preview card */}
-        <div className="flex items-center gap-4 p-4 rounded-2xl bg-pd-blue-50/60 border border-pd-blue-100">
-          <div className="w-12 h-12 rounded-xl bg-pd-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-            {identity.name ? identity.name.charAt(0).toUpperCase() : <User className="w-6 h-6" />}
-          </div>
-          <div className="flex flex-col min-w-0 flex-1">
-            {identity.name && (
-              <span className="font-semibold text-text-primary text-base truncate">
-                {identity.name}
-              </span>
-            )}
-            <span className="text-text-secondary text-sm truncate">
-              {identity.email}
-            </span>
-            {identity.business_name && (
-              <span className="text-xs text-text-muted truncate mt-0.5">
-                {identity.business_name}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-auto pt-6 flex flex-col gap-3 items-center">
-          <Button
-            type="button"
-            className="w-full h-12 text-base font-semibold flex items-center justify-center gap-2"
-            size="lg"
-            disabled={isLoading}
-            loading={isLoading}
+    <AuthShell
+      size="medium"
+      avatarInitial={name.charAt(0) || '?'}
+      onHelp={onHelp}
+      showHero={false}
+      foot={
+        <div className="flex flex-col gap-3">
+          <BigButton
             onClick={() => onContinue(identity.email)}
+            busy={busy}
+            busyLabel={AuthStrings.sendingCode}
           >
-            <span>{AuthStrings.continue}</span>
-            {!isLoading && <ArrowRight className="w-4 h-4" />}
-          </Button>
+            {AuthStrings.continue}
+          </BigButton>
 
-          <Button
+          <button
             type="button"
-            variant="ghost"
-            className="w-full h-10 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-subtle"
-            disabled={isLoading}
             onClick={onSwitchAccount}
+            className={cn(
+              'w-full min-h-[var(--pd-tap-min)] rounded-full',
+              'text-[var(--pd-size-chip)] font-extrabold text-[var(--pd-blue-hover)]',
+              'hover:bg-[var(--pd-tint)] active:scale-[0.98]',
+              'transition-[transform,background-color] duration-[var(--pd-motion-fast)]',
+              'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/30'
+            )}
           >
-            {AuthStrings.useDifferentEmail}
-          </Button>
+            {AuthStrings.notYou}
+          </button>
+        </div>
+      }
+    >
+      <h1 className="m-0 mb-2 text-[var(--pd-size-title)] font-extrabold leading-[1.15] tracking-[-0.025em] text-[var(--pd-navy)] text-balance">
+        {name ? AuthStrings.welcomeBack(name) : 'Welcome back'}
+      </h1>
+      <p className="m-0 text-[var(--pd-size-body)] font-semibold text-[var(--pd-muted)] leading-[1.45]">
+        {AuthStrings.reauthSubtitle(AUTH_IDENTIFIER)}
+      </p>
 
-          <a
-            href="mailto:support@parkdrop.com.ng?subject=ParkDrop%20Reauth%20Help"
-            className="text-xs sm:text-sm text-text-muted hover:text-action-primary transition-colors py-1 mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary rounded"
+      <div className="mt-6 p-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-line-2)] bg-white">
+        <div className="flex items-start gap-3.5">
+          <span
+            className="flex-none grid place-items-center w-11 h-11 rounded-[13px] bg-[var(--pd-tint)] text-[var(--pd-blue-hover)]"
+            aria-hidden="true"
           >
-            {AuthStrings.problemLoggingIn}
-          </a>
+            <Store className="w-[22px] h-[22px]" strokeWidth={2.5} />
+          </span>
+
+          <div className="flex-1 min-w-0">
+            <p
+              className={cn(
+                'm-0 text-[var(--pd-size-body)] font-extrabold text-[var(--pd-navy)] break-all',
+                isPhone && 'pd-nums'
+              )}
+            >
+              {shownIdentifier}
+            </p>
+            {identity.business_name && (
+              <p className="m-0 mt-0.5 text-[var(--pd-size-helper)] font-semibold text-[var(--pd-muted)] break-words">
+                {identity.business_name}
+              </p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {error && (
+        <Notice tone="error" className="mt-4">
+          {error}
+        </Notice>
+      )}
+
+      {slowNetwork && (
+        <Notice tone="info" className="mt-4">
+          {AuthStrings.slowNetwork}
+        </Notice>
+      )}
+
+      <div className="h-4" />
+    </AuthShell>
   );
 }
