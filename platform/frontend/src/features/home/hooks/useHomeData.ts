@@ -14,6 +14,8 @@ export interface HomePackageRow {
   customerName: string;
   customerPhone: string;
   pickupCode: string;
+  /** What the package costs, in kobo. */
+  amountDueMinor: number;
   /** What is still owed, in kobo. Zero when the package is paid off. */
   balanceMinor: number;
   paymentState: PaymentState;
@@ -118,6 +120,7 @@ function buildSnapshot(
       customerName: customer?.name?.trim() || pkg.pickup_code,
       customerPhone: customer?.phone ?? '',
       pickupCode: pkg.pickup_code,
+      amountDueMinor: summary.amountDueMinor,
       balanceMinor: summary.balanceMinor,
       paymentState: summary.paymentState,
       age: describeAge(pkg.client_created_at, now),
