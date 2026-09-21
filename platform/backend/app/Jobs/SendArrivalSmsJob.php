@@ -107,7 +107,7 @@ class SendArrivalSmsJob implements ShouldQueue
                 'error' => $result->errorMessage,
             ]);
 
-            $this->markNeedsReconciliation('SMS status could not be confirmed — it may have been sent. No automatic re-send attempted.');
+            $this->markNeedsReconciliation('SMS status could not be confirmed. It may have been sent. No automatic re-send attempted.');
 
             // Release to prevent further automatic retries with duplicate send risk
             $this->release();
