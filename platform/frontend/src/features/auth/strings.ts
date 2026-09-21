@@ -143,6 +143,11 @@ export const AuthStrings = {
   pinWrong: 'That PIN is not right. Try again.',
   pinAttemptsUsed: 'For your safety, type the code we sent you instead.',
 
+  reauthSubtitle: (mode: IdentifierMode) =>
+    mode === 'phone'
+      ? 'We will send a new code to your phone.'
+      : 'We will send a new code to your email.',
+
   resetPinTitle: 'Reset your PIN',
   newPinTitle: 'Choose a new PIN',
   newPinSubtitle: '4 numbers you will remember.',
