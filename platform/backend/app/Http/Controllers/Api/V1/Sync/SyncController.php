@@ -15,13 +15,24 @@ class SyncController extends Controller
 {
     public function push(PushMutationsRequest $request, PushMutationsAction $action): JsonResponse
     {
-        $business = $request->user()->business ?? $request->user()->memberships()->first()->business;
+        $user = $request->user();
+        $requestedBusinessId = $request->validated('business_id');
+
+        $membership = $requestedBusinessId
+            ? $user->businessMemberships()->where('business_id', $requestedBusinessId)->where('status', 'active')->first()
+            : $user->businessMemberships()->where('status', 'active')->first();
+
+        if (! $membership || ! $membership->business) {
+            return response()->json(['message' => 'Unauthorized or no active business membership found.'], 403);
+        }
+
+        $business = $membership->business;
 
         $results = $action->execute(
             $request->validated('mutations'),
             $request->validated('device_uuid'),
             $business,
-            $request->user()->id
+            $user->id
         );
 
         return response()->json(new PushResultResource($results));
@@ -29,7 +40,18 @@ class SyncController extends Controller
 
     public function pull(PullChangesRequest $request, PullChangesAction $action): JsonResponse
     {
-        $business = $request->user()->business ?? $request->user()->memberships()->first()->business;
+        $user = $request->user();
+        $requestedBusinessId = $request->validated('business_id');
+
+        $membership = $requestedBusinessId
+            ? $user->businessMemberships()->where('business_id', $requestedBusinessId)->where('status', 'active')->first()
+            : $user->businessMemberships()->where('status', 'active')->first();
+
+        if (! $membership || ! $membership->business) {
+            return response()->json(['message' => 'Unauthorized or no active business membership found.'], 403);
+        }
+
+        $business = $membership->business;
 
         $result = $action->execute(
             $business,
