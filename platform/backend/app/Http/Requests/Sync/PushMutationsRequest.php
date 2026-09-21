@@ -17,6 +17,7 @@ class PushMutationsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'business_id' => ['nullable', 'integer', 'exists:businesses,id'],
             'device_uuid' => ['required', 'string', 'uuid'],
             'mutations' => ['required', 'array', 'max:100'],
             'mutations.*.mutation_id' => ['required', 'string', 'uuid'],
