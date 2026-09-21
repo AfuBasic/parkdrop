@@ -14,6 +14,17 @@ class PickupPoint extends Model
         'status',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($pickupPoint) {
+            if (empty($pickupPoint->public_id)) {
+                $pickupPoint->public_id = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
+
     public function business()
     {
         return $this->belongsTo(Business::class);
