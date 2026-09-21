@@ -1,6 +1,7 @@
 import { useState, useId } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Search, X, Users, PackagePlus } from 'lucide-react';
+import { Logo } from '@/features/auth/components/Logo';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useCustomerDirectory } from '@/features/customers/hooks/useCustomerDirectory';
 import { CustomerListItem } from '@/features/customers/list/components/CustomerListItem';
@@ -58,14 +59,17 @@ export function CustomersScreen({
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={handleNavigateToAdd}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
-          >
-            <PackagePlus className="w-4 h-4" />
-            <span>Add package</span>
-          </button>
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={handleNavigateToAdd}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
+            >
+              <PackagePlus className="w-4 h-4" />
+              <span>Add package</span>
+            </button>
+            <Logo tone="light" markOnly />
+          </div>
         </div>
 
         {/* Search Input */}
