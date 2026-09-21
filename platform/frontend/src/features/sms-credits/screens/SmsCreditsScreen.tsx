@@ -4,9 +4,9 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { db } from '@/offline/db/database';
 import { SyncEngine } from '@/offline/sync/sync-engine';
 import { useSyncState } from '@/offline/hooks/useSyncState';
-import { SmsCreditBalance } from '../components/SmsCreditBalance';
-import { SmsCreditWarning } from '../components/SmsCreditWarning';
-import { SmsCreditActivityList } from '../components/SmsCreditActivityList';
+import { SmsCreditBalance } from '@/features/sms-credits/components/SmsCreditBalance';
+import { SmsCreditWarning } from '@/features/sms-credits/components/SmsCreditWarning';
+import { SmsCreditActivityList } from '@/features/sms-credits/components/SmsCreditActivityList';
 
 interface SmsCreditsScreenProps {
   onBack: () => void;
