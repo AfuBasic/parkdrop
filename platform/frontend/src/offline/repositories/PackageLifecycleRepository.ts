@@ -164,6 +164,7 @@ export class PackageLifecycleRepository {
         ...existing,
         status: 'COLLECTED',
         terminal_actor_name: actorName || 'Staff',
+        collected_at: now,
       };
 
       await db.packages.put(updatedPackage);
