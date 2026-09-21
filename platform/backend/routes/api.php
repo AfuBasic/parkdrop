@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\Reports\DailyOperationsReportController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
+use App\Http\Controllers\Webhooks\TermiiWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -108,3 +109,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Public Payment Provider Webhooks (Signature verified)
 Route::post('/webhooks/payments/{provider}', [PaymentWebhookController::class, 'handle']);
+
+// Termii SMS Delivery Status Webhooks (HMAC SHA-512 verified)
+Route::post('/webhooks/termii/delivery', [TermiiWebhookController::class, 'handle']);
