@@ -1,4 +1,4 @@
-import type { SmsCreditBundle } from '../types';
+import type { SmsCreditBundle } from '@/features/sms-credits/purchase/types';
 import { formatMoney } from '@/lib/formatters';
 
 interface SmsCreditBundleOptionProps {
