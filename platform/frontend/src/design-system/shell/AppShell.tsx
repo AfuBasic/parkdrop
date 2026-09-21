@@ -10,11 +10,12 @@ interface AppShellProps {
   onNavigate?: (path: string) => void
   /**
    * Let the screen paint to the edges and supply its own padding.
-   *
-   * Home does: its blue header has to reach the edges of the phone, and the
-   * shell's own 16px gutter would leave a page-coloured frame around it.
    */
   bleed?: boolean
+  /**
+   * Dedicated full-screen modal task (e.g. /packages/new): hides bottom nav.
+   */
+  fullScreenTask?: boolean
 }
 
 /**
@@ -32,7 +33,13 @@ const navConfig = [
   { path: "/more", label: HomeStrings.navMore, icon: <Menu className="h-6 w-6" strokeWidth={2.25} /> },
 ]
 
-export function AppShell({ children, currentPath = "/", onNavigate, bleed = false }: AppShellProps) {
+export function AppShell({
+  children,
+  currentPath = "/",
+  onNavigate,
+  bleed = false,
+  fullScreenTask = false,
+}: AppShellProps) {
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     e.preventDefault()
@@ -44,13 +51,46 @@ export function AppShell({ children, currentPath = "/", onNavigate, bleed = fals
   return (
     <div className="flex min-h-screen flex-col sm:flex-row bg-surface-page">
       {/* Desktop Sidebar */}
-      <aside className="hidden w-64 flex-col border-r border-border-default bg-surface-default sm:flex">
-        <div className="flex h-16 items-center border-b border-border-default px-6">
-          <span className="text-xl font-bold tracking-tight text-action-primary">
-            {HomeStrings.brand}
-          </span>
+      {!fullScreenTask && (
+        <aside className="hidden w-64 flex-col border-r border-border-default bg-surface-default sm:flex">
+          <div className="flex h-16 items-center border-b border-border-default px-6">
+            <span className="text-xl font-bold tracking-tight text-action-primary">
+              {HomeStrings.brand}
+            </span>
+          </div>
+          <nav className="flex-1 space-y-1 p-4">
+            {navConfig.map((item) => (
+              <NavItem
+                key={item.path}
+                href={item.path}
+                icon={item.icon}
+                label={item.label}
+                isActive={currentPath === item.path}
+                onClick={(e) => handleNav(e, item.path)}
+              />
+            ))}
+          </nav>
+        </aside>
+      )}
+
+      {/* Main Content Area */}
+      <main className={cn("flex-1 overflow-y-auto", !fullScreenTask && "pb-24 sm:pb-0")}>
+        <div className={cn(!bleed && !fullScreenTask && "mx-auto max-w-5xl p-4 sm:p-6 lg:p-8")}>
+          {children}
         </div>
-        <nav className="flex-1 space-y-1 p-4">
+      </main>
+
+      {/* Mobile Bottom Navigation */}
+      {!fullScreenTask && (
+        <nav
+          className={cn(
+            "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
+            "flex items-stretch justify-around gap-2 px-2 pt-1.5",
+            "min-h-[var(--pd-nav-h)]",
+            "border-t border-[var(--pd-line-2)] bg-white"
+          )}
+          style={{ paddingBottom: "max(env(safe-area-inset-bottom), 6px)" }}
+        >
           {navConfig.map((item) => (
             <NavItem
               key={item.path}
@@ -62,39 +102,7 @@ export function AppShell({ children, currentPath = "/", onNavigate, bleed = fals
             />
           ))}
         </nav>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto pb-24 sm:pb-0">
-        <div className={cn(!bleed && "mx-auto max-w-5xl p-4 sm:p-6 lg:p-8")}>
-          {children}
-        </div>
-      </main>
-
-      {/* Mobile Bottom Navigation */}
-      <nav
-        className={cn(
-          "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
-          "flex items-stretch justify-around gap-2 px-2 pt-1.5",
-          "min-h-[var(--pd-nav-h)]",
-          "border-t border-[var(--pd-line-2)] bg-white"
-        )}
-        // `pb-safe` was never a real utility in this project, so the bar sat
-        // under the gesture bar on phones that have one. Read the inset
-        // directly instead.
-        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 6px)" }}
-      >
-        {navConfig.map((item) => (
-          <NavItem
-            key={item.path}
-            href={item.path}
-            icon={item.icon}
-            label={item.label}
-            isActive={currentPath === item.path}
-            onClick={(e) => handleNav(e, item.path)}
-          />
-        ))}
-      </nav>
+      )}
     </div>
   )
 }
