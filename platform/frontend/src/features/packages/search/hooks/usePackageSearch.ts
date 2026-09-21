@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PackageSearchRepository } from '@/offline/repositories/package-search-repository';
-import type { PackageSearchResult } from '../package-search-types';
+import type { PackageSearchResult } from '@/features/packages/search/package-search-types';
 
 interface UsePackageSearchProps {
   businessId: number;
