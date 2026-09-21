@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { X, ArrowLeft } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/features/auth/components/Logo';
 import { AddPackageStrings } from '../strings';
@@ -16,7 +15,12 @@ export interface AddPackageHeaderProps {
  */
 export function AddPackageHeader({ onClose, collapsed = false }: AddPackageHeaderProps) {
   return (
-    <header className="bg-[var(--pd-blue)] text-white relative flex-none px-4 pt-3 pb-8 transition-all">
+    <header
+      className={cn(
+        'bg-[var(--pd-blue)] text-white relative flex-none px-4 pt-3 transition-all',
+        collapsed ? 'pb-4' : 'pb-8'
+      )}
+    >
       <div className="mx-auto w-full max-w-[480px] flex items-center justify-between min-h-[var(--pd-tap-min)]">
         <button
           type="button"
