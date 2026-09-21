@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Camera, Loader2 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useKeyboardOpen } from '@/features/auth/lib/useKeyboardOpen';
 import { toNationalDigits, isCompletePhone, toE164 } from '@/features/auth/lib/phone';
@@ -10,6 +11,7 @@ import { CustomerRepository } from '@/offline/repositories/CustomerRepository';
 import { CustomerDirectoryRepository } from '@/features/customers/services/CustomerDirectoryRepository';
 import { db } from '@/offline/db/database';
 import type { LocalPackage } from '@/offline/db/schema';
+import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
 import { AddPackageHeader } from './components/AddPackageHeader';
 import { PhoneInputGroup } from './components/PhoneInputGroup';
 import { CustomerSuggestionsList } from './components/CustomerSuggestionsList';
@@ -62,6 +64,12 @@ export function AddPackageScreen({
   const [isSaving, setIsSaving] = React.useState(false);
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [showDiscardConfirm, setShowDiscardConfirm] = React.useState(false);
+
+  // Optional Photo State
+  const [photoBlob, setPhotoBlob] = React.useState<Blob | null>(null);
+  const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
+  const [isProcessingPhoto, setIsProcessingPhoto] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Success state
   const [savedPackage, setSavedPackage] = React.useState<LocalPackage | null>(null);
@@ -161,6 +169,39 @@ export function AddPackageScreen({
     setAmountError(null);
   };
 
+  // Optional Photo Handlers
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessingPhoto(true);
+    try {
+      const processedBlob = await processPackagePhoto(file, {
+        maxLongEdge: 1024,
+        quality: 0.7,
+        outputFormat: 'image/jpeg',
+      });
+      setPhotoBlob(processedBlob);
+      const url = URL.createObjectURL(processedBlob);
+      setPhotoPreview(url);
+    } catch (err) {
+      console.error('Failed to process package photo:', err);
+    } finally {
+      setIsProcessingPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoPreview(null);
+    setPhotoBlob(null);
+  };
+
   // Save action
   const handleSavePackage = async () => {
     // 1. Phone validation
@@ -217,14 +258,14 @@ export function AddPackageScreen({
       // Convert amount to minor units (Kobo)
       const amountDueMinor = Math.round(amountNumber * 100);
 
-      // Save package locally and queue mutation immediately
+      // Save package locally and queue mutation immediately (includes optional photoBlob if taken)
       const result = await PackageRepository.createLocal(
         businessId,
         pickupPointId,
         customerId,
         amountDueMinor,
         true, // sendSms
-        null  // photo taken after save
+        photoBlob
       );
 
       setSavedPackage(result.package);
@@ -242,6 +283,11 @@ export function AddPackageScreen({
     setPhone('');
     setName('');
     setAmountRaw('');
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoPreview(null);
+    setPhotoBlob(null);
     setMatchedCustomer(null);
     setUserChangedCustomer(false);
     setPhoneError(null);
@@ -254,7 +300,7 @@ export function AddPackageScreen({
 
   // Close attempt with unsaved data check
   const handleClose = () => {
-    const hasTypedData = phone.length > 0 || name.length > 0 || amountRaw.length > 0;
+    const hasTypedData = phone.length > 0 || name.length > 0 || amountRaw.length > 0 || photoBlob !== null;
     if (hasTypedData && !savedPackage) {
       setShowDiscardConfirm(true);
     } else {
@@ -281,6 +327,7 @@ export function AddPackageScreen({
         onNextPackage={handleNextPackage}
         onGoHome={() => onNavigate?.('/')}
         onPackageVoided={() => onNavigate?.('/')}
+        initialPhotoPreview={photoPreview}
       />
     );
   }
@@ -378,7 +425,61 @@ export function AddPackageScreen({
                 />
               </div>
 
-              {/* 4. Non-blocking Duplicate Waiting Notice */}
+              {/* 4. Optional Package Photo */}
+              <div className="flex flex-col gap-1.5">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handlePhotoSelect}
+                />
+                {!photoPreview ? (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isProcessingPhoto}
+                    className="w-full min-h-[48px] px-3 py-2 rounded-[var(--pd-field-radius)] border border-dashed border-[var(--pd-line)] bg-[var(--pd-page)] inline-flex items-center justify-center gap-2 text-[15px] font-bold text-[var(--pd-blue)] hover:bg-[var(--pd-tint)] active:scale-[0.98] transition-transform"
+                  >
+                    {isProcessingPhoto ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-[var(--pd-blue)]" />
+                    ) : (
+                      <Camera className="w-4 h-4 text-[var(--pd-blue)]" strokeWidth={2.5} />
+                    )}
+                    <span>{AddPackageStrings.photoLabel}</span>
+                  </button>
+                ) : (
+                  <div className="rounded-[var(--pd-field-radius)] border border-[var(--pd-line)] bg-white p-2.5 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={photoPreview}
+                        alt="Package preview"
+                        className="w-12 h-12 rounded-lg object-cover border border-[var(--pd-line)]"
+                      />
+                      <span className="text-[14px] font-bold text-[var(--pd-ok)]">Photo added</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="min-h-[48px] px-2 text-[14px] font-extrabold text-[var(--pd-blue-hover)] hover:underline"
+                      >
+                        {AddPackageStrings.retakePhotoFormAction}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemovePhoto}
+                        className="min-h-[48px] px-2 text-[14px] font-extrabold text-[var(--pd-bad)] hover:underline"
+                      >
+                        {AddPackageStrings.removePhotoFormAction}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 5. Non-blocking Duplicate Waiting Notice */}
               {lookup.waitingPackagesCount > 0 && (
                 <Notice tone="warning">
                   {AddPackageStrings.duplicateWaitingWarning(
