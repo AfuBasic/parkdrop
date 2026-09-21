@@ -58,6 +58,9 @@ class PickupPointController extends Controller
                     'public_id' => $point->public_id,
                     'name' => $point->name,
                     'park_name' => $point->park_name,
+                    'contact_phone' => $point->contact_phone,
+                    'contact_phone_confirmed_at' => $point->contact_phone_confirmed_at?->toIso8601String(),
+                    'contact_phone_source' => $point->contact_phone_source,
                     'status' => $point->status,
                     'waiting_count' => (int) ($waitingCounts[$point->id] ?? 0),
                     'created_at' => $point->created_at?->toIso8601String(),
@@ -81,7 +84,25 @@ class PickupPointController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'park_name' => ['nullable', 'string', 'max:100'],
+            'contact_phone' => ['nullable', 'string', 'regex:/^(?:\+?234|0)?[789][01]\d{8}$/'],
         ]);
+
+        // Validate 130-character SMS limit
+        $pointName = trim($validated['name']);
+        $parkName = trim($validated['park_name'] ?? '');
+        $phone = trim($validated['contact_phone'] ?? '');
+        $digits = preg_replace('/\D/', '', $phone);
+        if (str_starts_with($digits, '234') && strlen($digits) === 13) {
+            $digits = '0' . substr($digits, 3);
+        } elseif (! str_starts_with($digits, '0') && strlen($digits) === 10) {
+            $digits = '0' . $digits;
+        }
+        $callLine = $digits !== '' ? "Call: {$digits}\n" : '';
+        $place = $parkName !== '' ? "{$pointName}, {$parkName}" : $pointName;
+        $preview = "Your package is at {$place}.\nShow code ABCDEFG at pickup.\n{$callLine}ParkDrop";
+        if (mb_strlen($preview) > 130) {
+            return response()->json(['message' => 'These names are a bit long. Shorten them so your customers get one SMS.'], 422);
+        }
 
         try {
             $point = $action->execute($membership->business, $validated, $user);
@@ -93,6 +114,9 @@ class PickupPointController extends Controller
                     'public_id' => $point->public_id,
                     'name' => $point->name,
                     'park_name' => $point->park_name,
+                    'contact_phone' => $point->contact_phone,
+                    'contact_phone_confirmed_at' => $point->contact_phone_confirmed_at?->toIso8601String(),
+                    'contact_phone_source' => $point->contact_phone_source,
                     'status' => $point->status,
                     'waiting_count' => 0,
                     'created_at' => $point->created_at?->toIso8601String(),
@@ -134,32 +158,68 @@ class PickupPointController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'park_name' => ['nullable', 'string', 'max:100'],
+            'contact_phone' => ['nullable', 'string', 'regex:/^(?:\+?234|0)?[789][01]\d{8}$/'],
         ]);
+
+        // If phone is being changed, check rate limit: max 3 changes in 24 hours
+        if (array_key_exists('contact_phone', $validated)) {
+            $recentAuditCount = \App\Models\PickupPointPhoneAudit::where('pickup_point_id', $pickupPoint->id)
+                ->where('created_at', '>=', now()->subDay())
+                ->count();
+
+            if ($recentAuditCount >= 3) {
+                return response()->json([
+                    'message' => 'Phone number has been changed too many times today. Please try again tomorrow.',
+                ], 429);
+            }
+        }
+
+        // Validate 130-character SMS limit
+        $pointName = trim($validated['name']);
+        $parkName = trim($validated['park_name'] ?? ($pickupPoint->park_name ?? ''));
+        $phone = array_key_exists('contact_phone', $validated)
+            ? trim($validated['contact_phone'] ?? '')
+            : trim($pickupPoint->contact_phone ?? '');
+        $digits = preg_replace('/\D/', '', $phone);
+        if (str_starts_with($digits, '234') && strlen($digits) === 13) {
+            $digits = '0' . substr($digits, 3);
+        } elseif (! str_starts_with($digits, '0') && strlen($digits) === 10) {
+            $digits = '0' . $digits;
+        }
+        $callLine = $digits !== '' ? "Call: {$digits}\n" : '';
+        $place = $parkName !== '' ? "{$pointName}, {$parkName}" : $pointName;
+        $preview = "Your package is at {$place}.\nShow code ABCDEFG at pickup.\n{$callLine}ParkDrop";
+        if (mb_strlen($preview) > 130) {
+            return response()->json(['message' => 'These names are a bit long. Shorten them so your customers get one SMS.'], 422);
+        }
 
         try {
             $point = $action->execute($membership->business, $pickupPoint, $validated, $user);
 
             return response()->json([
-                'message' => 'Pickup point renamed successfully.',
+                'message' => 'Pickup point updated successfully.',
                 'pickup_point' => [
                     'id' => $point->id,
                     'public_id' => $point->public_id,
                     'name' => $point->name,
                     'park_name' => $point->park_name,
+                    'contact_phone' => $point->contact_phone,
+                    'contact_phone_confirmed_at' => $point->contact_phone_confirmed_at?->toIso8601String(),
+                    'contact_phone_source' => $point->contact_phone_source,
                     'status' => $point->status,
                 ],
             ]);
         } catch (DomainException $e) {
             if ($e->getMessage() === 'FORBIDDEN') {
-                return response()->json(['message' => 'Only an Owner or Manager can rename a pickup point.'], 403);
+                return response()->json(['message' => 'Only an Owner or Manager can update a pickup point.'], 403);
             }
             if ($e->getMessage() === 'DUPLICATE_NAME') {
                 return response()->json(['message' => 'An active pickup point with this name already exists.'], 422);
             }
 
-            return response()->json(['message' => 'Unable to rename pickup point.'], 422);
+            return response()->json(['message' => 'Unable to update pickup point.'], 422);
         } catch (InvalidArgumentException $e) {
-            return response()->json(['message' => 'Invalid pickup point name provided.'], 422);
+            return response()->json(['message' => 'Invalid pickup point data provided.'], 422);
         }
     }
 
