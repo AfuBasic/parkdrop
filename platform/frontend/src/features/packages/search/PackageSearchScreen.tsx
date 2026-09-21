@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Package, Search, WifiOff } from 'lucide-react';
-import { PackageSearchInput } from './components/PackageSearchInput';
-import { PackageSearchResults } from './components/PackageSearchResults';
-import { usePackageSearch } from './hooks/usePackageSearch';
+import { ArrowLeft, Package, Search } from 'lucide-react';
+import { PackageSearchInput } from '@/features/packages/search/components/PackageSearchInput';
+import { PackageSearchResults } from '@/features/packages/search/components/PackageSearchResults';
+import { usePackageSearch } from '@/features/packages/search/hooks/usePackageSearch';
 import { useAuth } from '@/features/auth/AuthContext';
-import { connectivityManager } from '@/offline/sync/connectivity-manager';
-import type { PackageSearchResult } from './package-search-types';
+import type { PackageSearchResult } from '@/features/packages/search/package-search-types';
 
 interface PackageSearchScreenProps {
   onBack?: () => void;
@@ -25,17 +24,7 @@ export function PackageSearchScreen({
   const activePickupPointId = null; // Can be wired to active pickup point when multi-point selection is added
 
   const [query, setQuery] = useState(initialQuery);
-  const [isOnline, setIsOnline] = useState(() => {
-    return connectivityManager.getState() !== 'UNREACHABLE';
-  });
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Connectivity listener
-  useEffect(() => {
-    return connectivityManager.subscribe((connState) => {
-      setIsOnline(connState !== 'UNREACHABLE');
-    });
-  }, []);
 
   // Autofocus search input on mount
   useEffect(() => {
@@ -43,15 +32,10 @@ export function PackageSearchScreen({
   }, []);
 
   const { results, isLoading, debouncedQuery } = usePackageSearch({
+    query,
     businessId,
     activePickupPointId,
-    query,
-    debounceMs: 100,
   });
-
-  const hasQuery = Boolean(query.trim());
-  const hasResults = results.length > 0;
-  const showNoResults = hasQuery && !isLoading && !hasResults && debouncedQuery.trim().length >= 2;
 
   const handleClear = () => {
     setQuery('');
@@ -67,16 +51,20 @@ export function PackageSearchScreen({
     }
   };
 
+  const hasQuery = query.trim().length > 0;
+  const hasResults = results.length > 0;
+  const showNoResults = hasQuery && !isLoading && !hasResults && debouncedQuery.trim().length >= 2;
+
   return (
-    <div className="flex flex-col min-h-screen bg-surface-page max-w-lg mx-auto pb-8">
-      {/* Sticky Header with Back action & Search field */}
-      <header className="sticky top-0 z-20 bg-surface-page/95 backdrop-blur-md px-4 pt-3 pb-3 border-b border-border-subtle flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+    <div className="flex flex-col min-h-screen bg-bg-surface-page pb-12">
+      {/* Search Header */}
+      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-border-subtle px-4 pt-3 pb-3">
+        <div className="flex items-center justify-between gap-3 mb-2.5">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onBack}
-              className="flex h-11 w-11 items-center justify-center rounded-xl text-text-secondary hover:bg-surface-subtle hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center justify-center h-10 w-10 rounded-full hover:bg-bg-action-hover active:bg-border-subtle transition-colors text-text-primary"
               aria-label="Back"
             >
               <ArrowLeft className="h-5 w-5" />
@@ -85,13 +73,6 @@ export function PackageSearchScreen({
               Find package
             </h1>
           </div>
-
-          {!isOnline && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium">
-              <WifiOff className="h-3.5 w-3.5" />
-              <span>Offline</span>
-            </div>
-          )}
         </div>
 
         {/* Operational Search Input */}
