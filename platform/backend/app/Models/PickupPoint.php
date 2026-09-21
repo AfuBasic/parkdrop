@@ -12,7 +12,14 @@ class PickupPoint extends Model
         'public_id',
         'name',
         'park_name',
+        'contact_phone',
+        'contact_phone_confirmed_at',
+        'contact_phone_source',
         'status',
+    ];
+
+    protected $casts = [
+        'contact_phone_confirmed_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -29,5 +36,10 @@ class PickupPoint extends Model
     public function business()
     {
         return $this->belongsTo(Business::class);
+    }
+
+    public function phoneAudits()
+    {
+        return $this->hasMany(PickupPointPhoneAudit::class);
     }
 }
