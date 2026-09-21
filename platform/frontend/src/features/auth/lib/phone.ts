@@ -54,6 +54,39 @@ export function isCompletePhone(input: string): boolean {
 }
 
 /**
+ * Validates a Nigerian mobile number:
+ * Must have exactly 10 national digits starting with 7, 8, or 9 (e.g. 080..., 070..., 090...).
+ */
+export function validateNigerianMobile(input: string): { valid: boolean; normalized?: string; error?: string } {
+  const digits = toNationalDigits(input);
+  if (!digits) {
+    return { valid: false, error: 'Type your phone number to continue.' };
+  }
+  if (digits.length !== NATIONAL_LENGTH) {
+    return { valid: false, error: 'Enter your 11-digit number, like 0803 123 4567.' };
+  }
+  if (!/^[789][01]\d{8}$/.test(digits)) {
+    return { valid: false, error: 'Please enter a valid Nigerian mobile number.' };
+  }
+  return { valid: true, normalized: `234${digits}` };
+}
+
+/**
+ * Canonical form for storage: 234XXXXXXXXXX.
+ */
+export function toCanonicalPhone(input: string): string | null {
+  const { valid, normalized } = validateNigerianMobile(input);
+  return valid && normalized ? normalized : null;
+}
+
+/**
+ * Format any phone number into standard display format: 0803 123 4567.
+ */
+export function formatPhoneDisplay(input: string): string {
+  return formatNationalDisplay(input);
+}
+
+/**
  * E.164 form for sending to the backend, e.g. +2348031234567.
  * Returns null when the number is not yet complete.
  */
