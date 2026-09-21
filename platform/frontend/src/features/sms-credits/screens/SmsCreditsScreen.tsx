@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ChevronLeft, Info, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -9,11 +10,14 @@ import { SmsCreditWarning } from '@/features/sms-credits/components/SmsCreditWar
 import { SmsCreditActivityList } from '@/features/sms-credits/components/SmsCreditActivityList';
 
 interface SmsCreditsScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
   onNavigateToBuy?: () => void;
 }
 
 export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
+  const handleNavigateToBuy = onNavigateToBuy ?? (() => routerNavigate({ to: '/more/sms-credits/buy' }));
   const { business } = useAuth();
   const businessId = business?.id;
   const syncState = useSyncState(businessId);
@@ -53,7 +57,7 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
       <header className="sticky top-0 z-10 bg-surface-page/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center justify-between shrink-0">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center text-text-secondary hover:text-text-primary transition-colors py-2 pr-4 -ml-2 cursor-pointer"
         >
           <ChevronLeft className="h-6 w-6" />
@@ -92,15 +96,13 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
         <SmsCreditBalance balance={balance} variant="hero" />
 
         {/* Buy Credits CTA */}
-        {onNavigateToBuy && (
-          <button
-            type="button"
-            onClick={onNavigateToBuy}
-            className="w-full h-13 bg-action-primary hover:bg-action-primary/95 active:scale-[0.99] text-white font-semibold text-[15px] rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Buy SMS credits</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleNavigateToBuy}
+          className="w-full h-13 bg-action-primary hover:bg-action-primary/95 active:scale-[0.99] text-white font-semibold text-[15px] rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Buy SMS credits</span>
+        </button>
 
         {/* Info card regarding package notifications */}
         <div className="bg-surface-subtle border border-border-subtle rounded-[var(--radius-xl)] p-4 text-xs text-text-secondary flex flex-col gap-1.5">
