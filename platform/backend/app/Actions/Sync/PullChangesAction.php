@@ -8,6 +8,7 @@ use App\Models\Package;
 use App\Models\PackageMedia;
 use App\Models\Payment;
 use App\Models\SmsCreditTransaction;
+use App\Models\SmsMessage;
 use App\Models\SmsWallet;
 use App\Models\SyncChange;
 
@@ -64,6 +65,16 @@ class PullChangesAction
                                 $data = $pkg->toArray();
                                 $data['creator_name'] = $pkg->creator?->first_name ?: ($pkg->creator?->email ? explode('@', $pkg->creator->email)[0] : null);
                                 $data['pickup_point_name'] = $pkg->pickupPoint?->name;
+
+                                // Attach the latest SMS delivery status so the frontend
+                                // can display a truthful status on the activity timeline.
+                                // Only the most recent sms_messages row for this package is used.
+                                $smsRecord = SmsMessage::where('package_id', $pkg->id)
+                                    ->orderByDesc('created_at')
+                                    ->first(['status', 'sent_at']);
+                                $data['arrival_sms_status'] = $smsRecord?->status;
+                                $data['arrival_sms_sent_at'] = $smsRecord?->sent_at?->toISOString();
+
                                 $payload = $data;
                             }
                             break;
