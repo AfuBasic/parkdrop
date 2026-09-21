@@ -3,7 +3,7 @@ import { db } from '@/offline/db/database';
 import { normalizePhone } from '@/offline/helpers/phoneNormalizer';
 import { toNationalDigits, toE164, isCompletePhone } from '@/features/auth/lib/phone';
 import type { LocalCustomer } from '@/offline/db/schema';
-import { MAX_PHONE_SUGGESTIONS } from '../config';
+import { MAX_PHONE_SUGGESTIONS } from '@/features/packages/add/config';
 
 export interface CustomerSuggestion {
   customer: LocalCustomer;
