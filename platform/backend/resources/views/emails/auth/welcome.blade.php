@@ -36,7 +36,7 @@
                 Add a package in seconds
             </div>
             <div style="color: #64748B; font-size: 14px; font-weight: 500; line-height: 1.45;">
-                Works even with no signal — it saves on the phone and sends once you are back online.
+                Works even with no signal. It saves on the phone and sends once you are back online.
             </div>
         </td>
     </tr>
