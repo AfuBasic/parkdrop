@@ -73,10 +73,25 @@
   --pd-header-mid: clamp(150px, 25vh, 206px);
 }
 
-/* Short screens: step the title and PIN keys down rather than clipping. */
+/* Short screens: step the title, PIN keys and header down rather than
+   clipping. The header minimums matter most here — a fixed 150px band on a
+   640px phone is a fifth of the screen, and on a landscape or split-screen
+   viewport it swallows the content entirely. */
 @media (max-height: 700px) {
   :root {
     --pd-size-title: var(--pd-size-title-short);
+    --pd-pin-key-h: var(--pd-pin-key-h-short);
+    --pd-header-big: clamp(140px, 26vh, 200px);
+    --pd-header-mid: clamp(112px, 20vh, 156px);
+  }
+}
+
+/* Very short: landscape, split screen, or a large text size on a small
+   phone. The header becomes a title bar and the content takes the rest. */
+@media (max-height: 460px) {
+  :root {
+    --pd-header-big: 0px;
+    --pd-header-mid: 0px;
     --pd-pin-key-h: var(--pd-pin-key-h-short);
   }
 }
