@@ -48,7 +48,7 @@ export function AuthShell({
   onBack,
   onHelp,
   step,
-  totalSteps = 5,
+  totalSteps = 6,
   stepLabelOverride,
   success,
   avatarInitial,
