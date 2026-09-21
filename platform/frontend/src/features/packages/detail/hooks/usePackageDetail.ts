@@ -84,7 +84,52 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
         });
       }
 
-      // 3. Payment events
+      // 3. Arrival SMS status (truthful — never claims delivered unless Termii confirmed it)
+      if (pkg.arrival_sms_status) {
+        const smsTimestamp = pkg.arrival_sms_sent_at || pkg.client_created_at || new Date().toISOString();
+        type SmsActivityType = PackageDetailActivityItem['type'];
+        const smsStatusMap: Record<string, { type: SmsActivityType; title: string; description?: string }> = {
+          PENDING: {
+            type: 'ARRIVAL_SMS_QUEUED',
+            title: 'SMS sending to customer',
+            description: 'Waiting for network',
+          },
+          SENT: {
+            type: 'ARRIVAL_SMS_SENT',
+            title: 'SMS sent to customer',
+            description: 'Waiting for delivery confirmation',
+          },
+          DELIVERED: {
+            type: 'ARRIVAL_SMS_DELIVERED',
+            title: 'SMS delivered to customer',
+          },
+          FAILED: {
+            type: 'ARRIVAL_SMS_FAILED',
+            title: 'SMS failed to send',
+            description: 'Customer was not notified by text',
+          },
+          UNDELIVERED: {
+            type: 'ARRIVAL_SMS_UNDELIVERED',
+            title: 'SMS not delivered',
+            description: 'Customer\'s phone could not receive the message',
+          },
+          NEEDS_RECONCILIATION: {
+            type: 'ARRIVAL_SMS_NEEDS_RECONCILIATION',
+            title: 'SMS status unknown',
+            description: 'Could not confirm if the message was sent',
+          },
+        };
+        const smsEntry = smsStatusMap[pkg.arrival_sms_status];
+        if (smsEntry) {
+          timeline.push({
+            id: `sms-${pkg.id}`,
+            ...smsEntry,
+            timestamp: smsTimestamp,
+          });
+        }
+      }
+
+      // 4. Payment events
       for (const p of payments) {
         if (p.status === 'COMPLETED') {
           timeline.push({
