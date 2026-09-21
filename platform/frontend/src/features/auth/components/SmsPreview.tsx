@@ -44,7 +44,10 @@ export function SmsPreview({ message, highlight, overBudget, className }: SmsPre
             part.highlighted ? (
               <mark
                 key={index}
-                className="bg-[var(--pd-tint-2)] text-[var(--pd-blue-dark)] font-extrabold rounded-[4px] px-[3px] py-[1px]"
+                // No horizontal padding: it would push the following comma or
+                // full stop away from the name and make the sentence read as
+                // though it were punctuated wrongly.
+                className="bg-[var(--pd-tint-2)] text-[var(--pd-blue-dark)] font-extrabold rounded-[4px] py-[2px]"
               >
                 {part.text}
               </mark>
