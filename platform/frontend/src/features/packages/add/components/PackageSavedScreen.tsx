@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect, type ChangeEvent } from 'react';
-import { Check, Camera, MessageSquare, RefreshCw, Loader2, CloudOff } from 'lucide-react';
+import { Check, Camera, MessageSquare, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/features/auth/components/Logo';
 import { BigButton } from '@/features/auth/components/BigButton';
 import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
 import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecycleRepository';
 import { db } from '@/offline/db/database';
-import { AddPackageStrings } from '../strings';
-import { UNDO_WINDOW_SECONDS } from '../config';
+import { AddPackageStrings } from '@/features/packages/add/strings';
+import { UNDO_WINDOW_SECONDS } from '@/features/packages/add/config';
 
 export interface PackageSavedScreenProps {
   packageId: string;
@@ -210,21 +210,10 @@ export function PackageSavedScreen({
 
           {/* SMS Status Line */}
           <div className="flex items-center gap-2 text-[15px] font-bold px-1">
-            {isOnline ? (
-              <>
-                <Check className="w-5 h-5 text-[var(--pd-ok)] flex-none" strokeWidth={2.75} />
-                <span className="text-[var(--pd-ok)]">
-                  {AddPackageStrings.smsSent(customerPhone)}
-                </span>
-              </>
-            ) : (
-              <>
-                <CloudOff className="w-5 h-5 text-[var(--pd-warn)] flex-none" strokeWidth={2.5} />
-                <span className="text-[var(--pd-warn)]">
-                  {AddPackageStrings.smsOffline}
-                </span>
-              </>
-            )}
+            <Check className="w-5 h-5 text-[var(--pd-ok)] flex-none" strokeWidth={2.75} />
+            <span className="text-[var(--pd-ok)]">
+              {AddPackageStrings.smsSent(customerPhone)}
+            </span>
           </div>
 
           {/* Primary Action: Next Package */}
