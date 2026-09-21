@@ -1,6 +1,6 @@
-import { Calendar, MapPin, UserCheck, CloudUpload, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, UserCheck, CloudUpload } from 'lucide-react';
 import type { LocalPackage } from '@/offline/db/schema';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '../../strings';
 
 export interface PackageInfoCardProps {
   pkg: LocalPackage;
