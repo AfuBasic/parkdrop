@@ -4,6 +4,7 @@ import { CodeScreen } from '@/features/auth/screens/CodeScreen';
 import { NameScreen } from '@/features/auth/screens/NameScreen';
 import { PinSetupScreen } from '@/features/auth/screens/PinSetupScreen';
 import { PickupPointScreen } from '@/features/auth/screens/PickupPointScreen';
+import { PhoneNumberScreen } from '@/features/auth/screens/PhoneNumberScreen';
 import { ReadyScreen } from '@/features/auth/screens/ReadyScreen';
 import { HelpSheet } from './HelpSheet';
 import { InstallSheet, useInstallPrompt } from './InstallSheet';
@@ -16,9 +17,10 @@ import { AUTH_IDENTIFIER } from '@/features/auth/config';
 import { useSlowRequest } from '@/features/auth/lib/useSlowRequest';
 import { useOnline } from '@/features/auth/lib/useOnline';
 import { AuthStrings } from '@/features/auth/strings';
+import { formatPhoneDisplay } from '@/features/auth/lib/phone';
 import type { AuthUser, AuthBusiness } from '@/features/auth/types';
 
-type Step = 'identifier' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
+type Step = 'identifier' | 'code' | 'name' | 'pin' | 'pickup' | 'phone' | 'ready';
 
 const STEP_NUMBER: Record<Step, number> = {
   identifier: 1,
@@ -26,7 +28,8 @@ const STEP_NUMBER: Record<Step, number> = {
   name: 3,
   pin: 4,
   pickup: 5,
-  ready: 5,
+  phone: 6,
+  ready: 6,
 };
 
 const SCREEN_NAME: Record<Step, string> = {
@@ -35,6 +38,7 @@ const SCREEN_NAME: Record<Step, string> = {
   name: 'Your name',
   pin: 'Choose a PIN',
   pickup: 'Your pickup point',
+  phone: 'Contact phone number',
   ready: 'You are ready',
 };
 
@@ -44,7 +48,7 @@ const SCREEN_NAME: Record<Step, string> = {
  * sessionStorage goes with it. Someone who takes a call halfway through
  * setup should come back to what they typed, not to an empty first screen.
  */
-const DRAFT_KEY = 'parkdrop_onboarding_draft_v2';
+const DRAFT_KEY = 'parkdrop_onboarding_draft_v3';
 
 interface OnboardingDraft {
   step: Step;
@@ -54,6 +58,7 @@ interface OnboardingDraft {
   pin: string;
   pickupPointName: string;
   parkName: string;
+  contactPhone: string;
 }
 
 const EMPTY_DRAFT: OnboardingDraft = {
@@ -64,6 +69,7 @@ const EMPTY_DRAFT: OnboardingDraft = {
   pin: '',
   pickupPointName: '',
   parkName: '',
+  contactPhone: '',
 };
 
 function loadDraft(): OnboardingDraft | null {
@@ -117,6 +123,9 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   const [pin, setPin] = React.useState(restored?.pin || '');
   const [pickupPointName, setPickupPointName] = React.useState(restored?.pickupPointName || '');
   const [parkName, setParkName] = React.useState(restored?.parkName || '');
+  const [contactPhone, setContactPhone] = React.useState(
+    restored?.contactPhone || (AUTH_IDENTIFIER === 'phone' ? identifier : '')
+  );
 
   const [error, setError] = React.useState('');
   const [helpOpen, setHelpOpen] = React.useState(false);
@@ -125,11 +134,6 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
 
   /**
    * Who we just created, held until the user taps through the Ready screen.
-   *
-   * Signing them in immediately would flip the app over to the dashboard and
-   * unmount this flow, so the Ready screen — the confirmation, the summary of
-   * the names their customers will see, and the add-to-home-screen prompt —
-   * would never be shown at all.
    */
   const [completed, setCompleted] = React.useState<{
     user: AuthUser;
@@ -140,18 +144,18 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   // rotation or the tab being killed never costs the user their typing.
   React.useEffect(() => {
     if (step === 'ready') return;
-    persistDraft({ step, identifier, challengeId, firstName, pin, pickupPointName, parkName });
-  }, [step, identifier, challengeId, firstName, pin, pickupPointName, parkName]);
+    persistDraft({
+      step,
+      identifier,
+      challengeId,
+      firstName,
+      pin,
+      pickupPointName,
+      parkName,
+      contactPhone,
+    });
+  }, [step, identifier, challengeId, firstName, pin, pickupPointName, parkName, contactPhone]);
 
-  /**
-   * Server messages are written for developers, not for this audience: they
-   * say things like "Invalid or expired code", which is both jargon and
-   * blame-shaped. We always show our own copy instead, and keep the server's
-   * text in the console for debugging rather than on the screen.
-   *
-   * The one exception is rate limiting, where the server knows something we
-   * genuinely cannot work out on the client.
-   */
   const readableError = (err: unknown, ours: string) => {
     if (err instanceof ApiError && err.status === 429) {
       return 'Too many tries. Wait a minute, then try again.';
@@ -163,13 +167,16 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   };
 
   const sendCode = async (target: string) => {
-    if (request.busy) return; // a double tap must not send two codes
+    if (request.busy) return;
     setError('');
     request.start();
 
     try {
       await authApi.requestCode({ email: target, purpose: 'auth' });
       setIdentifier(target);
+      if (AUTH_IDENTIFIER === 'phone' && !contactPhone) {
+        setContactPhone(target);
+      }
       request.finish();
       setStep('code');
     } catch (err) {
@@ -203,10 +210,16 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
     }
   };
 
-  const completeSetup = async (pickup: string, park: string) => {
-    if (request.busy) return;
+  const proceedFromPickup = (pickup: string, park: string) => {
     setPickupPointName(pickup);
     setParkName(park);
+    setError('');
+    setStep('phone');
+  };
+
+  const completeSetup = async (phoneToSave: string) => {
+    if (request.busy) return;
+    setContactPhone(phoneToSave);
     setError('');
     request.start();
 
@@ -216,8 +229,9 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
       const result = await authApi.completeOnboarding({
         email: identifier,
         first_name: firstName,
-        pickup_point_name: pickup,
-        park_name: park,
+        pickup_point_name: pickupPointName,
+        park_name: parkName,
+        contact_phone: phoneToSave,
         challenge_id: challengeId ?? 0,
         device_uuid: deviceUuid,
         device_name: navigator.userAgent.substring(0, 255),
@@ -250,7 +264,6 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   const goBack = () => {
     setError('');
     request.reset();
-    // Values are kept in state, so stepping back always shows what was typed.
     switch (step) {
       case 'code':
         setStep('identifier');
@@ -263,6 +276,9 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
         break;
       case 'pickup':
         setStep('pin');
+        break;
+      case 'phone':
+        setStep('pickup');
         break;
       default:
         break;
@@ -301,6 +317,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
           busy={request.busy}
           error={error}
           step={STEP_NUMBER.code}
+          totalSteps={6}
           slowNetwork={request.showReassurance}
           timedOut={request.timedOut}
         />
@@ -316,6 +333,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
           onBack={goBack}
           onHelp={openHelp}
           step={STEP_NUMBER.name}
+          totalSteps={6}
         />
       )}
 
@@ -329,6 +347,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
           onHelp={openHelp}
           phone={AUTH_IDENTIFIER === 'phone' ? identifier : null}
           step={STEP_NUMBER.pin}
+          totalSteps={6}
         />
       )}
 
@@ -336,7 +355,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
         <PickupPointScreen
           initialPickupName={pickupPointName}
           initialParkName={parkName}
-          onContinue={completeSetup}
+          onContinue={proceedFromPickup}
           onBack={goBack}
           onHelp={openHelp}
           busy={request.busy}
@@ -344,6 +363,24 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
           slowNetwork={request.showReassurance}
           timedOut={request.timedOut}
           step={STEP_NUMBER.pickup}
+          totalSteps={6}
+        />
+      )}
+
+      {step === 'phone' && (
+        <PhoneNumberScreen
+          initialPhone={contactPhone}
+          pickupPointName={pickupPointName}
+          parkName={parkName}
+          onContinue={completeSetup}
+          onBack={goBack}
+          onHelp={openHelp}
+          busy={request.busy}
+          requestError={error}
+          slowNetwork={request.showReassurance}
+          timedOut={request.timedOut}
+          step={STEP_NUMBER.phone}
+          totalSteps={6}
         />
       )}
 
@@ -352,16 +389,13 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
           firstName={firstName}
           pickupPointName={pickupPointName}
           parkName={parkName}
+          phone={formatPhoneDisplay(contactPhone)}
           onStart={async () => {
-            // Entering the app is what signs them in, so the Ready screen got
-            // its moment first. No page reload: that would re-download
-            // everything on a connection they are paying for.
             if (completed) await setAuthenticatedUser(completed.user, completed.business);
           }}
           onEditPickupPoint={() => setStep('pickup')}
+          onEditPhone={() => setStep('phone')}
           onShowInstall={async () => {
-            // Prefer the browser's own one-tap install dialog; fall back to
-            // showing the steps when it is not on offer.
             if (canInstall && (await install())) return;
             setInstallOpen(true);
           }}
