@@ -1,5 +1,5 @@
 import { normalizePhone } from '@/offline/helpers/phoneNormalizer';
-import type { QueryType } from './package-search-types';
+import type { QueryType } from '@/features/packages/search/package-search-types';
 
 // ParkDrop canonical ambiguity-safe alphabet, excluding 0, O, 1, I, L
 const SAFE_ALPHABET_SET = new Set('23456789ABCDEFGHJKMNPQRSTUVWXYZ');
