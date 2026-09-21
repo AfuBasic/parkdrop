@@ -138,24 +138,28 @@ class AppServiceProvider extends ServiceProvider
         // Offline reconnect sync rate limiter (device/user aware, high burst allowed for legitimate batch catch-up)
         RateLimiter::for('sync', function (Request $request) {
             $key = $request->user()?->id ?: $request->input('device_uuid', $request->ip());
+
             return Limit::perMinute(120)->by($key);
         });
 
         // Report CSV export rate limiter (prevents resource exhaustion)
         RateLimiter::for('report-export', function (Request $request) {
             $key = $request->user()?->id ?: $request->ip();
+
             return Limit::perMinute(10)->by($key);
         });
 
         // Media signed upload authorization rate limiter
         RateLimiter::for('media-sign', function (Request $request) {
             $key = $request->user()?->id ?: $request->ip();
+
             return Limit::perMinute(30)->by($key);
         });
 
         // SMS Credit purchase checkout initiation rate limiter
         RateLimiter::for('payment-init', function (Request $request) {
             $key = $request->user()?->id ?: $request->ip();
+
             return Limit::perMinute(15)->by($key);
         });
     }
