@@ -2,8 +2,8 @@ import { Phone, MessageSquare, User, Clock, Check, Minus } from 'lucide-react';
 import type { LocalCustomer, LocalPackage } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 import { formatNationalDisplay } from '@/features/auth/lib/phone';
-import { PackagesStrings } from '../strings';
-import { formatAgeDisplay, getAgeBand } from '../domain/package-filters';
+import { PackagesStrings } from '../../strings';
+import { formatAgeDisplay, getAgeBand } from '../../domain/package-filters';
 
 export interface PackageCustomerCardProps {
   customer: LocalCustomer | null;
