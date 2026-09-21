@@ -40,36 +40,26 @@ const mockPackage: LocalPackage = {
   server_received_at: null,
   returned_at: null,
   cancelled_at: null,
-  released_at: null,
-  return_reason: null,
-  return_note: null,
-  cancel_reason: null,
-  cancel_note: null,
-  shelf_location: null,
-  package_type: null,
-  notes: null,
   version: 1,
   sync_status: 'SYNCED',
-  created_by_user_id: 1,
-  cancelled_by_user_id: null,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
 };
 
 const unpaidSummary: PaymentSummaryData = {
-  total_paid_minor: 0,
-  amount_due_minor: 350000,
-  balance_minor: 350000,
-  is_fully_paid: false,
-  payments: [],
+  amountDueMinor: 350000,
+  paidMinor: 0,
+  balanceMinor: 350000,
+  paymentState: 'UNPAID',
+  isFullyPaid: false,
+  paymentCount: 0,
 };
 
 const paidSummary: PaymentSummaryData = {
-  total_paid_minor: 350000,
-  amount_due_minor: 350000,
-  balance_minor: 0,
-  is_fully_paid: true,
-  payments: [],
+  amountDueMinor: 350000,
+  paidMinor: 350000,
+  balanceMinor: 0,
+  paymentState: 'PAID',
+  isFullyPaid: true,
+  paymentCount: 1,
 };
 
 export const ReturnDefault: StoryObj = {
