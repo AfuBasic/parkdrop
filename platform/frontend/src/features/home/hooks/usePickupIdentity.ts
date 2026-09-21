@@ -6,14 +6,16 @@ export interface PickupIdentity {
   pointName: string | null;
   /** The park it sits in. Null when nobody has chosen one. */
   parkName: string | null;
-  /** True while either name is still missing, so the header can ask for it. */
+  /** The contact phone customers call. Null when unconfirmed or missing. */
+  contactPhone: string | null;
+  /** True while either name or phone is still missing, so the header/banner can ask for it. */
   needsSetup: boolean;
   /** Which one to ask for first. */
-  missing: 'point' | 'park' | null;
+  missing: 'point' | 'park' | 'phone' | null;
 }
 
 /**
- * The two names that appear in every customer SMS.
+ * The names and contact phone that appear in every customer SMS.
  *
  * Both come from the pickup point the user set up at first run. The business
  * name is a fallback for the trading name only — and only when a human
@@ -29,12 +31,15 @@ export function usePickupIdentity(): PickupIdentity {
 
   const pointName = realNameOrNull(point?.name) ?? realNameOrNull(business?.name);
   const parkName = realNameOrNull(point?.park_name);
+  const contactPhone = (point as any)?.contact_phone ? String((point as any).contact_phone).trim() : null;
 
   const missing: PickupIdentity['missing'] = !pointName
     ? 'point'
     : !parkName
       ? 'park'
-      : null;
+      : !contactPhone
+        ? 'phone'
+        : null;
 
-  return { pointName, parkName, needsSetup: missing !== null, missing };
+  return { pointName, parkName, contactPhone, needsSetup: missing !== null, missing };
 }
