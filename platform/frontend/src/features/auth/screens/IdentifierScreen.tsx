@@ -16,6 +16,7 @@ export interface IdentifierScreenProps {
   /** Receives the identifier ready for the backend. */
   onContinue: (identifier: string) => void;
   onHelp: () => void;
+  onPrivacy: () => void;
   busy?: boolean;
   /** Error from the request itself, as opposed to validation. */
   requestError?: string;
@@ -40,6 +41,7 @@ export function IdentifierScreen({
   initialValue = '',
   onContinue,
   onHelp,
+  onPrivacy,
   busy,
   requestError,
   slowNetwork,
@@ -110,14 +112,15 @@ export function IdentifierScreen({
 
           <p className="m-0 text-center text-[var(--pd-size-min)] font-semibold text-[var(--pd-muted)] leading-[1.45]">
             By continuing you accept our{' '}
-            <a
-              href="/privacy.html"
+            <button
+              type="button"
+              onClick={onPrivacy}
               // Padded out to a 48px touch target with the margin pulled back,
               // so the hit area grows without moving the sentence around it.
               className="inline-block py-[13px] -my-[13px] text-[var(--pd-blue-hover)] font-extrabold underline underline-offset-2"
             >
               {AuthStrings.privacyNoticeLink}
-            </a>
+            </button>
             .
           </p>
         </div>
