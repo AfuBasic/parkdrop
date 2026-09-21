@@ -1,4 +1,4 @@
-import { Clock, CloudUpload, Check, Minus } from 'lucide-react';
+import { Clock, Check, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatNationalDisplay } from '@/features/auth/lib/phone';
 import { PackagesStrings } from '../../strings';
@@ -17,7 +17,6 @@ export interface PackageListRowProps {
  * - Right column: Amount in naira (18/800 tabular) + payment chip (Unpaid, Part paid, Paid, Nothing to pay)
  * - Age chip with clock icon ("Today", "Yesterday", "3 days", "8 days")
  * - Public package ID (e.g. PD-MKK89)
- * - Unsynced status shows "Waiting to send" with cloud icon; synced shows nothing
  * - Pickup code is strictly excluded from list rows for customer privacy.
  */
 export function PackageListRow({
@@ -150,14 +149,6 @@ export function PackageListRow({
               </span>
             )}
           </div>
-
-          {/* Sync indicator: Only shown when unsynced */}
-          {pkg.sync_status === 'PENDING_CREATE' && (
-            <div className="flex items-center gap-1 text-[#92400E] font-bold text-[12px]">
-              <CloudUpload className="w-3.5 h-3.5" />
-              <span>{PackagesStrings.waitingToSend}</span>
-            </div>
-          )}
         </div>
       </button>
     </li>
