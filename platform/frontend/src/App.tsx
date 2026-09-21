@@ -112,7 +112,29 @@ function AppContent() {
   );
 }
 
+/**
+ * A harness for looking at the Home screen in every state it can be in.
+ *
+ * Gated on import.meta.env.DEV so the module, and the seeder it pulls in,
+ * are dropped from the production bundle entirely.
+ */
+const HomePreview = import.meta.env.DEV
+  ? React.lazy(() => import('@/routes/home-preview'))
+  : null;
+
 function App() {
+  if (
+    HomePreview &&
+    typeof window !== 'undefined' &&
+    window.location.pathname === '/home-preview'
+  ) {
+    return (
+      <React.Suspense fallback={<BootSplash />}>
+        <HomePreview />
+      </React.Suspense>
+    );
+  }
+
   if (typeof window !== 'undefined' && window.location.pathname === '/theme') {
     return (
       <React.Fragment>
