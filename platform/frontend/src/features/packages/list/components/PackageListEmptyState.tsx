@@ -1,81 +1,61 @@
-import { Package, Plus } from 'lucide-react';
-import type { PackageStatusFilter } from '@/features/packages/list/package-list-types';
+import { CheckCircle2, PackagePlus } from 'lucide-react';
+import { PackagesStrings } from '../strings';
 
-interface PackageListEmptyStateProps {
-  status: PackageStatusFilter;
+export interface PackageListEmptyStateProps {
+  isPositiveFilterEmpty?: boolean;
+  filterType?: 'unpaid' | '7d';
+  onClearFilters?: () => void;
   onAddPackage?: () => void;
 }
 
-export function PackageListEmptyState({ status, onAddPackage }: PackageListEmptyStateProps) {
-  switch (status) {
-    case 'WAITING':
-      return (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-action-primary mb-4">
-            <Package className="h-8 w-8 stroke-[1.5]" />
-          </div>
-          <h3 className="text-base font-semibold text-text-primary mb-1">
-            No packages waiting
-          </h3>
-          <p className="text-sm text-text-secondary max-w-xs leading-relaxed mb-6">
-            New packages you receive will appear here awaiting collection.
-          </p>
-          {onAddPackage && (
-            <button
-              type="button"
-              onClick={onAddPackage}
-              className="flex items-center justify-center gap-2 h-12 px-5 bg-action-primary hover:bg-action-primary-hover text-text-inverse font-semibold text-sm rounded-xl transition-colors shadow-sm active:scale-98 cursor-pointer"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add package</span>
-            </button>
-          )}
-        </div>
-      );
+export function PackageListEmptyState({
+  isPositiveFilterEmpty = false,
+  filterType,
+  onClearFilters,
+  onAddPackage,
+}: PackageListEmptyStateProps) {
+  if (isPositiveFilterEmpty) {
+    const text =
+      filterType === 'unpaid'
+        ? PackagesStrings.emptyNoUnpaid
+        : PackagesStrings.emptyNo7Days;
 
-    case 'COLLECTED':
-      return (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-subtle text-text-muted mb-4">
-            <Package className="h-8 w-8 stroke-[1.5]" />
-          </div>
-          <h3 className="text-base font-semibold text-text-primary mb-1">
-            No collected packages yet
-          </h3>
-          <p className="text-sm text-text-secondary max-w-xs leading-relaxed">
-            Packages will appear here once customers pick them up.
-          </p>
+    return (
+      <div className="py-12 px-6 flex flex-col items-center justify-center text-center gap-3 bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] shadow-xs my-4">
+        <div className="w-14 h-14 rounded-full bg-[#DCFCE7] text-[#15803D] flex items-center justify-center border border-[#86EFAC]">
+          <CheckCircle2 className="w-7 h-7 stroke-[2.5]" />
         </div>
-      );
-
-    case 'RETURNED':
-      return (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-subtle text-text-muted mb-4">
-            <Package className="h-8 w-8 stroke-[1.5]" />
-          </div>
-          <h3 className="text-base font-semibold text-text-primary mb-1">
-            No returned packages
-          </h3>
-          <p className="text-sm text-text-secondary max-w-xs leading-relaxed">
-            Packages returned to the sender or dispatch hub will show here.
-          </p>
-        </div>
-      );
-
-    case 'CANCELLED':
-      return (
-        <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-subtle text-text-muted mb-4">
-            <Package className="h-8 w-8 stroke-[1.5]" />
-          </div>
-          <h3 className="text-base font-semibold text-text-primary mb-1">
-            No cancelled packages
-          </h3>
-          <p className="text-sm text-text-secondary max-w-xs leading-relaxed">
-            Packages that were cancelled will appear here for audit reference.
-          </p>
-        </div>
-      );
+        <p className="text-[17px] font-extrabold text-[var(--pd-navy)] max-w-[280px] m-0">
+          {text}
+        </p>
+        {onClearFilters && (
+          <button
+            type="button"
+            onClick={onClearFilters}
+            className="min-h-[48px] px-4 text-[16px] font-extrabold text-[var(--pd-blue)] hover:underline active:scale-95"
+          >
+            {PackagesStrings.clearFilters}
+          </button>
+        )}
+      </div>
+    );
   }
+
+  return (
+    <div className="py-12 px-6 flex flex-col items-center justify-center text-center gap-3 bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] shadow-xs my-4">
+      <p className="text-[17px] font-extrabold text-[var(--pd-muted)] m-0">
+        {PackagesStrings.emptyNoPackagesYet}
+      </p>
+      {onAddPackage && (
+        <button
+          type="button"
+          onClick={onAddPackage}
+          className="min-h-[48px] px-5 py-2.5 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[16px] font-extrabold flex items-center gap-2 shadow-xs hover:bg-[var(--pd-blue-hover)] active:scale-95 transition-transform"
+        >
+          <PackagePlus className="w-5 h-5" />
+          <span>{PackagesStrings.addPackageAction}</span>
+        </button>
+      )}
+    </div>
+  );
 }
