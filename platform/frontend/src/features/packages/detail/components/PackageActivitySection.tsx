@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { CheckCircle2, DollarSign, Camera, RotateCcw, Ban, PackageCheck, Send, Clock, XCircle, HelpCircle } from 'lucide-react';
+import { CheckCircle2, DollarSign, Camera, RotateCcw, Ban, PackageCheck, Send, Clock, XCircle, HelpCircle, Activity } from 'lucide-react';
 import type { PackageDetailActivityItem } from '@/features/packages/detail/package-detail-types';
 import { PackagesStrings } from '@/features/packages/strings';
+import { Section } from '@/design-system/shell/Section';
 
 export interface PackageActivitySectionProps {
   timeline: PackageDetailActivityItem[];
@@ -45,52 +46,56 @@ export function PackageActivitySection({ timeline }: PackageActivitySectionProps
     }
   };
 
+  const chip = timeline.length > 3 && !showAll ? (
+    <button
+      type="button"
+      onClick={() => setShowAll(true)}
+      className="text-[14px] font-extrabold text-[var(--pd-blue)] hover:underline min-h-[44px] px-2 flex items-center"
+    >
+      {PackagesStrings.seeAllActivity} ({timeline.length})
+    </button>
+  ) : undefined;
+
   return (
-    <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-4 shadow-xs flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">
-          {PackagesStrings.activityTitle}
-        </h3>
-
-        {timeline.length > 3 && !showAll && (
-          <button
-            type="button"
-            onClick={() => setShowAll(true)}
-            className="text-[14px] font-extrabold text-[var(--pd-blue)] hover:underline min-h-[44px] px-2 flex items-center"
-          >
-            {PackagesStrings.seeAllActivity} ({timeline.length})
-          </button>
-        )}
-      </div>
-
+    <Section
+      icon={<Activity className="w-4 h-4" />}
+      label={PackagesStrings.activityTitle}
+      chip={chip}
+    >
       <div className="flex flex-col divide-y divide-[var(--pd-line-2)]">
-        {displayedItems.map((item) => (
-          <div key={item.id} className="py-2.5 flex items-start gap-3 text-[14px]">
-            <div className="p-1.5 rounded-full bg-[var(--pd-page)] border border-[var(--pd-line)] mt-0.5 shrink-0">
-              {getIcon(item.type)}
-            </div>
+        {displayedItems.map((item) => {
+          const actorDisplay = item.actorPhone && item.actorName
+            ? `${item.actorName} (${item.actorPhone})`
+            : item.actorName;
 
-            <div className="flex flex-col flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-extrabold text-[var(--pd-navy)] leading-tight">
-                  {item.title}
-                </span>
-                <span className="text-[13px] font-bold text-[var(--pd-muted)] tabular-nums shrink-0">
-                  {new Date(item.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                </span>
+          return (
+            <div key={item.id} className="py-2.5 flex items-start gap-3 text-[14px]">
+              <div className="p-1.5 rounded-full bg-[var(--pd-page)] border border-[var(--pd-line)] mt-0.5 shrink-0">
+                {getIcon(item.type)}
               </div>
 
-              {(item.description || item.actorName) && (
-                <span className="text-[13px] font-bold text-[var(--pd-muted)] mt-0.5">
-                  {item.description}
-                  {item.description && item.actorName && ' · '}
-                  {item.actorName && `by ${item.actorName}`}
-                </span>
-              )}
+              <div className="flex flex-col flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-extrabold text-[var(--pd-navy)] leading-tight">
+                    {item.title}
+                  </span>
+                  <span className="text-[13px] font-bold text-[var(--pd-muted)] tabular-nums shrink-0">
+                    {new Date(item.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                </div>
+
+                {(item.description || actorDisplay) && (
+                  <span className="text-[13px] font-bold text-[var(--pd-muted)] mt-0.5">
+                    {item.description}
+                    {item.description && actorDisplay && ' · '}
+                    {actorDisplay && `by ${actorDisplay}`}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-    </div>
+    </Section>
   );
 }
