@@ -1,23 +1,39 @@
 import * as React from "react"
-import { Home, Package, Plus, Users, Menu } from "lucide-react"
+import { Home, Package, Users, Menu } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { HomeStrings } from "@/features/home/strings"
 import { NavItem } from "./NavItem"
 
 interface AppShellProps {
   children: React.ReactNode
   currentPath?: string
   onNavigate?: (path: string) => void
+  /**
+   * Let the screen paint to the edges and supply its own padding.
+   *
+   * Home does: its blue header has to reach the edges of the phone, and the
+   * shell's own 16px gutter would leave a page-coloured frame around it.
+   */
+  bleed?: boolean
 }
 
+/**
+ * Four destinations, no floating button.
+ *
+ * The floating "+" was the third way to add a package on a screen that also
+ * had a main button and an empty-state button. Adding a package now happens
+ * in one place — the Add tile on Home — so the bar is a set of places to go
+ * and nothing else.
+ */
 const navConfig = [
-  { path: "/", label: "Home", icon: <Home className="h-5 w-5" /> },
-  { path: "/packages", label: "Packages", icon: <Package className="h-5 w-5" /> },
-  { path: "/add", label: "Add", icon: <Plus className="h-6 w-6 sm:h-5 sm:w-5" />, emphasized: true },
-  { path: "/customers", label: "Customers", icon: <Users className="h-5 w-5" /> },
-  { path: "/more", label: "More", icon: <Menu className="h-5 w-5" /> },
+  { path: "/", label: HomeStrings.navHome, icon: <Home className="h-6 w-6" strokeWidth={2.25} /> },
+  { path: "/packages", label: HomeStrings.navPackages, icon: <Package className="h-6 w-6" strokeWidth={2.25} /> },
+  { path: "/customers", label: HomeStrings.navCustomers, icon: <Users className="h-6 w-6" strokeWidth={2.25} /> },
+  { path: "/more", label: HomeStrings.navMore, icon: <Menu className="h-6 w-6" strokeWidth={2.25} /> },
 ]
 
-export function AppShell({ children, currentPath = "/", onNavigate }: AppShellProps) {
-  
+export function AppShell({ children, currentPath = "/", onNavigate, bleed = false }: AppShellProps) {
+
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     e.preventDefault()
     if (onNavigate) {
@@ -31,7 +47,7 @@ export function AppShell({ children, currentPath = "/", onNavigate }: AppShellPr
       <aside className="hidden w-64 flex-col border-r border-border-default bg-surface-default sm:flex">
         <div className="flex h-16 items-center border-b border-border-default px-6">
           <span className="text-xl font-bold tracking-tight text-action-primary">
-            ParkDrop
+            {HomeStrings.brand}
           </span>
         </div>
         <nav className="flex-1 space-y-1 p-4">
@@ -41,10 +57,8 @@ export function AppShell({ children, currentPath = "/", onNavigate }: AppShellPr
               href={item.path}
               icon={item.icon}
               label={item.label}
-              isActive={currentPath === item.path && !item.emphasized}
-              isEmphasized={item.emphasized}
+              isActive={currentPath === item.path}
               onClick={(e) => handleNav(e, item.path)}
-              className={item.emphasized ? "mt-4 mb-4" : ""}
             />
           ))}
         </nav>
@@ -52,23 +66,28 @@ export function AppShell({ children, currentPath = "/", onNavigate }: AppShellPr
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto pb-24 sm:pb-0">
-        <div className="mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+        <div className={cn(!bleed && "mx-auto max-w-5xl p-4 sm:p-6 lg:p-8")}>
           {children}
         </div>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[88px] items-start justify-around border-t border-border-default bg-surface-default px-2 pt-2 pb-safe sm:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <nav
+        className={cn(
+          "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
+          "flex items-stretch justify-around gap-2 px-2 pt-1.5",
+          "min-h-[var(--pd-nav-h)] pb-safe",
+          "border-t border-[var(--pd-line-2)] bg-white"
+        )}
+      >
         {navConfig.map((item) => (
           <NavItem
             key={item.path}
             href={item.path}
             icon={item.icon}
             label={item.label}
-            isActive={currentPath === item.path && !item.emphasized}
-            isEmphasized={item.emphasized}
+            isActive={currentPath === item.path}
             onClick={(e) => handleNav(e, item.path)}
-            className={item.emphasized ? "-mt-6" : ""}
           />
         ))}
       </nav>
