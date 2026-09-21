@@ -13,6 +13,7 @@ export type AuthState =
   | 'onboarding'           // Authenticated user but business/onboarding incomplete -> OnboardingFlow
   | 'locked'               // Device registered with PIN lock -> UnlockScreen
   | 'remembered_expired'   // Device has remembered email but session expired -> RememberedReauthScreen
+  | 'recovery'             // Database corruption, recovery marker or schema failure -> RecoveryScreen
   | 'unknown';             // Fresh unknown visitor -> Universal Email OTP Flow
 
 export interface AuthContextValue {
@@ -31,6 +32,8 @@ export interface AuthContextValue {
 
 export const AuthContext = React.createContext<AuthContextValue | null>(null);
 
+import { LocalHealthCheck } from '@/offline/recovery/health-check';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<AuthState>('booting');
   const [user, setUser] = React.useState<AuthUser | null>(null);
@@ -42,6 +45,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const initAuth = React.useCallback(async () => {
     setState('booting');
     try {
+      // ─── Phase 0: Local Health & Integrity Check (< 15ms) ───────────────────
+      const health = await LocalHealthCheck.checkStartupHealth();
+      if (!health.isHealthy && health.state === 'RECOVERY_REQUIRED') {
+        setState('recovery');
+        return;
+      }
+
       // ─── Phase 1: Resolve from local IndexedDB immediately (no network) ───────
       const meta = await db.deviceMeta.toCollection().first();
       setDeviceMeta(meta || null);
