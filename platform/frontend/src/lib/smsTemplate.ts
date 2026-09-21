@@ -179,24 +179,53 @@ export function checkSmsFit(names: SmsNames): SmsFit {
 }
 
 /**
- * Placeholder names that must never reach the database. The screen shows the
- * first two as greyed placeholders, and seed data historically used the rest.
+ * Names that are never a real business or park — seed data, filler and
+ * stand-ins. These are always refused.
  */
-export const PLACEHOLDER_NAMES = [
-  'chima parcel services',
-  'peace park',
+export const JUNK_NAMES = [
   'default park',
   'default pickup point',
+  'default',
   'pickup point',
   'my park',
   'park',
   'test',
+  'testing',
+  'asdf',
   'n/a',
   'na',
+  'none',
+  'xxx',
 ] as const;
 
-/** True when `value` is one of the names we refuse to save. */
+/**
+ * The example names printed on the setup screen as placeholders.
+ *
+ * These are deliberately NOT refused on their own. "Peace Park" is a
+ * perfectly plausible real park, and there is very likely a real
+ * "Chima Parcel Services" — hard-blocking either would wall a legitimate
+ * owner out of setup with no way forward, which is a worse failure than the
+ * one it prevents. We only refuse them when BOTH fields match the examples
+ * exactly, which is unmistakably someone copying what was on screen.
+ */
+export const EXAMPLE_NAMES = {
+  pickupPoint: 'chima parcel services',
+  park: 'peace park',
+} as const;
+
+function clean(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/** True when `value` is filler that could never be a real name. */
 export function isPlaceholderName(value: string): boolean {
-  const cleaned = value.trim().toLowerCase().replace(/\s+/g, ' ');
-  return (PLACEHOLDER_NAMES as readonly string[]).includes(cleaned);
+  return (JUNK_NAMES as readonly string[]).includes(clean(value));
+}
+
+/** True when both fields are just the examples copied off the screen. */
+export function isExamplePair(pickupPointName: string, parkName: string): boolean {
+  return (
+    clean(pickupPointName) === EXAMPLE_NAMES.pickupPoint &&
+    clean(parkName) === EXAMPLE_NAMES.park
+  );
 }
