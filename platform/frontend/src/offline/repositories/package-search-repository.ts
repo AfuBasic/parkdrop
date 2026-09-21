@@ -1,8 +1,8 @@
-import { db } from '../db/database';
+import { db } from '@/offline/db/database';
 import { classifyQuery } from '@/features/packages/search/package-search-classifier';
 import { calculateScore, compareSearchResults } from '@/features/packages/search/package-search-ranking';
 import type { PackageSearchOptions, PackageSearchResult, MatchQuality } from '@/features/packages/search/package-search-types';
-import type { LocalPackage, LocalCustomer } from '../db/schema';
+import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 
 export class PackageSearchRepository {
   /**
