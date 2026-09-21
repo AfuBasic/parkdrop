@@ -1,6 +1,7 @@
-import { Calendar, MapPin, UserCheck } from 'lucide-react';
+import { Calendar, MapPin, UserCheck, Hash, Info } from 'lucide-react';
 import type { LocalPackage } from '@/offline/db/schema';
 import { PackagesStrings } from '@/features/packages/strings';
+import { Section } from '@/design-system/shell/Section';
 
 export interface PackageInfoCardProps {
   pkg: LocalPackage;
@@ -22,12 +23,15 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
   const realPointName = pickupPointName || pkg.pickup_point_name || null;
   const isPlaceholder = !realPointName;
 
-  return (
-    <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-4 shadow-xs flex flex-col gap-3">
-      <h3 className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">
-        {PackagesStrings.infoCardTitle}
-      </h3>
+  const creatorDisplay = pkg.creator_phone && pkg.creator_name
+    ? `${pkg.creator_name} · ${pkg.creator_phone}`
+    : pkg.creator_name || 'Staff';
 
+  return (
+    <Section
+      icon={<Info className="w-4 h-4" />}
+      label={PackagesStrings.infoCardTitle}
+    >
       <div className="flex flex-col divide-y divide-[var(--pd-line-2)] text-[15px]">
         {/* Line 1: Received Date & Time */}
         <div className="py-2.5 flex items-center justify-between">
@@ -47,13 +51,16 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
             <span>{PackagesStrings.receivedByLabel}</span>
           </div>
           <span className="font-extrabold text-[var(--pd-navy)]">
-            {pkg.creator_name || 'Staff'}
+            {creatorDisplay}
           </span>
         </div>
 
         {/* Line 3: Package Public ID */}
         <div className="py-2.5 flex items-center justify-between">
-          <span className="text-[var(--pd-muted)] font-bold">{PackagesStrings.packageIdLabel}</span>
+          <div className="flex items-center gap-2 text-[var(--pd-muted)] font-bold">
+            <Hash className="w-4 h-4" />
+            <span>{PackagesStrings.packageIdLabel}</span>
+          </div>
           <span className="font-mono font-extrabold text-[var(--pd-navy)] tracking-wider">
             {pkg.public_package_id}
           </span>
@@ -76,6 +83,6 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
           )}
         </div>
       </div>
-    </div>
+    </Section>
   );
 }
