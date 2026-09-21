@@ -1,6 +1,4 @@
 import * as React from 'react';
-import { RouterProvider } from '@tanstack/react-router';
-import { router } from '@/router';
 import { AppShell } from '@/design-system/shell/AppShell';
 import { AuthContext, type AuthContextValue } from '@/features/auth/AuthContext';
 import type { AuthBusiness } from '@/features/auth/types';
@@ -131,53 +129,58 @@ export function HomePreview() {
   }, [scenario]);
 
   return (
-    <RouterProvider router={router}>
-      <AuthContext.Provider value={authValue(BUSINESSES[naming])}>
-        {chrome && (
-          <div className="fixed top-0 left-0 right-0 z-[100] flex flex-wrap gap-1.5 bg-slate-900/90 p-2">
-            <select
-              aria-label="Scenario"
-              className={CONTROL}
-              value={scenario}
-              onChange={(e) => setScenario(e.target.value as HomeScenario)}
-            >
-              {SCENARIOS.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-            <select
-              aria-label="Naming"
-              className={CONTROL}
-              value={naming}
-              onChange={(e) => setNaming(e.target.value as Naming)}
-            >
-              <option value="full">Named</option>
-              <option value="noPark">No park</option>
-              <option value="placeholder">Placeholder</option>
-              <option value="long">Long names</option>
-            </select>
-          </div>
-        )}
-
-        <div className={chrome ? 'pt-[52px]' : undefined}>
-          <AppShell currentPath="/" bleed onNavigate={() => {}}>
-            {seeded && (
-              <HomeScreen
-                key={`${scenario}-${naming}`}
-                onNavigateToSearch={() => {}}
-                onNavigateToAdd={() => {}}
-                onNavigateToPackages={() => {}}
-                onNavigateToSetup={() => {}}
-                onNavigateToAttention={() => {}}
-                onSelectPackage={() => {}}
-              />
-            )}
-          </AppShell>
+    <AuthContext.Provider value={authValue(BUSINESSES[naming])}>
+      {chrome && (
+        <div className="fixed top-0 left-0 right-0 z-[100] flex flex-wrap gap-1.5 bg-slate-900/90 p-2">
+          <select
+            aria-label="Scenario"
+            className={CONTROL}
+            value={scenario}
+            onChange={(e) => setScenario(e.target.value as HomeScenario)}
+          >
+            {SCENARIOS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Naming"
+            className={CONTROL}
+            value={naming}
+            onChange={(e) => setNaming(e.target.value as Naming)}
+          >
+            <option value="full">Named</option>
+            <option value="noPark">No park</option>
+            <option value="placeholder">Placeholder</option>
+            <option value="long">Long names</option>
+          </select>
         </div>
-      </AuthContext.Provider>
-    </RouterProvider>
+      )}
+
+      {/*
+        This harness intentionally renders outside the app's RouterProvider —
+        it is a standalone snapshot of one screen with fabricated data, not a
+        page reached through real navigation. AppShell/NavItem fall back to
+        plain <a> tags (no router context needed) when onNavigate is passed,
+        which is what keeps this working now that routing is wired app-wide.
+      */}
+      <div className={chrome ? 'pt-[52px]' : undefined}>
+        <AppShell currentPath="/" bleed onNavigate={() => {}}>
+          {seeded && (
+            <HomeScreen
+              key={`${scenario}-${naming}`}
+              onNavigateToSearch={() => {}}
+              onNavigateToAdd={() => {}}
+              onNavigateToPackages={() => {}}
+              onNavigateToSetup={() => {}}
+              onNavigateToAttention={() => {}}
+              onSelectPackage={() => {}}
+            />
+          )}
+        </AppShell>
+      </div>
+    </AuthContext.Provider>
   );
 }
 
