@@ -2,12 +2,14 @@ export class ApiError extends Error {
   status: number;
   data?: any;
   errors?: Record<string, string[]>;
+  requestId?: string | null;
 
-  constructor(status: number, message: string, data?: any) {
+  constructor(status: number, message: string, data?: any, requestId?: string | null) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.data = data;
+    this.requestId = requestId;
     
     // Auto-extract Laravel's validation errors bag if it's a 422 Unprocessable Entity
     if (status === 422 && data?.errors) {
@@ -71,7 +73,9 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}): Pro
         message = 'Something went wrong on our end. Please try again shortly.';
       }
     }
-    throw new ApiError(response.status, message, data);
+
+    const requestId = response.headers.get('X-Request-ID');
+    throw new ApiError(response.status, message, data, requestId);
   }
 
   return response;
