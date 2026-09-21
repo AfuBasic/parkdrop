@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PackageX, ArrowLeft } from 'lucide-react';
+import { useAuth } from '@/features/auth/AuthContext';
 import { usePackageDetail } from '@/features/packages/detail/hooks/usePackageDetail';
 import { PackageIdentityHeader } from '@/features/packages/detail/components/PackageIdentityHeader';
 import { PackageCustomerCard } from '@/features/packages/detail/components/PackageCustomerCard';
@@ -30,6 +31,8 @@ export function PackageDetailScreen({
   pickupPointName,
   onBack,
 }: PackageDetailScreenProps) {
+  const { user } = useAuth();
+  const staffName = user?.first_name ? user.first_name : user?.email || 'Staff';
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
 
@@ -107,7 +110,7 @@ export function PackageDetailScreen({
       packageId: pkg.id,
       pickupCode,
       notes: null,
-      actorName: 'Staff',
+      actorName: staffName,
     });
 
     onBack();
@@ -121,7 +124,7 @@ export function PackageDetailScreen({
       packageId: pkg.id,
       pickupCode,
       notes: 'Released owing balance',
-      actorName: 'Staff',
+      actorName: staffName,
     });
 
     onBack();
@@ -135,7 +138,7 @@ export function PackageDetailScreen({
       packageId: pkg.id,
       pickupCode,
       notes: null,
-      actorName: 'Staff',
+      actorName: staffName,
     });
 
     onBack();
