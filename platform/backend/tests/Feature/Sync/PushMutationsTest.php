@@ -62,3 +62,59 @@ test('it processes valid mutations and enforces idempotency', function () {
     $response2->assertJsonPath('results.0.status', 'APPLIED');
     $this->assertDatabaseCount('sync_mutation_receipts', 1);
 });
+
+test('it scopes push and pull to explicitly requested business_id when authorized', function () {
+    $user = User::factory()->create();
+    $businessA = Business::create(['public_id' => (string) Str::uuid(), 'name' => 'Business A']);
+    $businessB = Business::create(['public_id' => (string) Str::uuid(), 'name' => 'Business B']);
+
+    $user->memberships()->create(['business_id' => $businessA->id, 'role' => 'owner', 'status' => 'active']);
+    $user->memberships()->create(['business_id' => $businessB->id, 'role' => 'attendant', 'status' => 'active']);
+
+    $deviceUuid = (string) Str::uuid();
+    $mutationId = (string) Str::uuid();
+
+    // Push with explicit business_id
+    $pushRes = $this->actingAs($user)->postJson('/api/v1/sync/push', [
+        'business_id' => $businessB->id,
+        'device_uuid' => $deviceUuid,
+        'mutations' => [
+            [
+                'mutation_id' => $mutationId,
+                'operation' => 'TEST_OPERATION',
+                'payload' => [],
+                'device_sequence' => 1,
+            ],
+        ],
+    ]);
+
+    $pushRes->assertOk();
+    $this->assertDatabaseHas('sync_mutation_receipts', [
+        'mutation_id' => $mutationId,
+        'business_id' => $businessB->id,
+    ]);
+
+    // Pull with explicit business_id
+    $pullRes = $this->actingAs($user)->getJson("/api/v1/sync/pull?business_id={$businessB->id}&cursor=0");
+    $pullRes->assertOk();
+});
+
+test('it rejects push to a business where user has no active membership', function () {
+    $user = User::factory()->create();
+    $foreignBusiness = Business::create(['public_id' => (string) Str::uuid(), 'name' => 'Foreign Business']);
+
+    $response = $this->actingAs($user)->postJson('/api/v1/sync/push', [
+        'business_id' => $foreignBusiness->id,
+        'device_uuid' => (string) Str::uuid(),
+        'mutations' => [
+            [
+                'mutation_id' => (string) Str::uuid(),
+                'operation' => 'TEST_OPERATION',
+                'payload' => [],
+                'device_sequence' => 1,
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(403);
+});
