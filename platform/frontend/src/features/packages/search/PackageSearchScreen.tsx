@@ -124,9 +124,7 @@ export function PackageSearchScreen({
               No packages found
             </h2>
             <p className="text-sm text-text-secondary max-w-xs leading-relaxed mb-5">
-              {!isOnline
-                ? 'No matching packages found on this device. Try another name, phone number, pickup code or package ID.'
-                : 'Try another name, phone number, pickup code or package ID.'}
+              Try another name, phone number, pickup code or package ID.
             </p>
             {onNavigateToAdd && (
               <button
