@@ -17,7 +17,9 @@ import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScree
 import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
 import { CustomersScreen } from '@/features/customers/list/CustomersScreen';
 import { CustomerDetailScreen } from '@/features/customers/detail/CustomerDetailScreen';
-import { MessageSquare, ChevronRight } from 'lucide-react';
+import { StaffScreen } from '@/features/business/staff/StaffScreen';
+import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetailsScreen';
+import { MessageSquare, ChevronRight, Users, Building2 } from 'lucide-react';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 
@@ -176,6 +178,18 @@ function AppContent() {
         />
       )}
 
+      {currentPath === '/more/staff' && (
+        <StaffScreen 
+          onBack={() => setCurrentPath('/more')}
+        />
+      )}
+
+      {currentPath === '/more/business' && (
+        <BusinessDetailsScreen 
+          onBack={() => setCurrentPath('/more')}
+        />
+      )}
+
       {currentPath === '/more' && (
         <div className="flex flex-col h-full max-w-lg mx-auto pb-4 pt-4">
           <h2 className="text-2xl font-bold text-text-primary mb-6 tracking-tight">Settings & More</h2>
@@ -193,11 +207,48 @@ function AppContent() {
             </div>
 
             {/* Navigation Sections */}
-            <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-sm border border-border-subtle overflow-hidden">
+            <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-sm border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+              {/* Staff Management */}
+              <button
+                type="button"
+                onClick={() => setCurrentPath('/more/staff')}
+                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-text-primary text-[15px]">Staff</div>
+                    <div className="text-xs text-text-secondary">Members, roles, and invitations</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-text-muted" />
+              </button>
+
+              {/* Business Details */}
+              <button
+                type="button"
+                onClick={() => setCurrentPath('/more/business')}
+                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-text-primary text-[15px]">Business details</div>
+                    <div className="text-xs text-text-secondary">Name, pickup point, and role</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-text-muted" />
+              </button>
+
+              {/* SMS Credits */}
               <button
                 type="button"
                 onClick={() => setCurrentPath('/more/sms-credits')}
-                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left"
+                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
