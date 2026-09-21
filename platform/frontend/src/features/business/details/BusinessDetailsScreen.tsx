@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, Building2, MapPin, Phone, Shield, Edit3, Check, X, AlertCircle, Lock } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { businessApi, type BusinessDetailsResponse } from '@/features/business/api/business-api';
@@ -11,7 +12,7 @@ import { verifyPin } from '@/lib/pin';
 import { db } from '@/lib/db';
 
 interface BusinessDetailsScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
   mockData?: BusinessDetailsResponse;
   mockRole?: BusinessRole;
 }
@@ -21,6 +22,8 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
   mockData,
   mockRole,
 }) => {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
   const { role: contextRole, deviceMeta: contextDeviceMeta } = useAuth();
   const effectiveRole = (mockRole || contextRole || 'attendant') as BusinessRole;
   const permissions = getBusinessPermissions(effectiveRole);
@@ -262,7 +265,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
       <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center justify-between shrink-0">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center text-slate-600 hover:text-slate-900 transition-colors py-2 pr-4 -ml-2 min-h-[44px] cursor-pointer"
           aria-label="Back to more menu"
         >
