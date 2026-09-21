@@ -321,7 +321,37 @@ Crash & Storage Resilience:
 * Storage Guard: Differentiates essential package creation from optional photo blobs under quota pressure.
 * Storage Eviction Detection: Missing DB on known device triggers clean server re-bootstrap rather than empty account view.
 * React Error Boundary: Top-level error catcher prevents UI white-screen crashes without wiping local storage.
+
+## Production Readiness, Observability & Release Hardening Architecture (Build 24)
+
+```
+Client Traffic (https://app.parkdrop.com.ng)
+      ↓
+Web Server / Reverse Proxy (TLS Termination, Static Asset Caching)
+      ↓
+API Application (https://api.parkdrop.com.ng)
+├── SecurityHeadersMiddleware (nosniff, DENY, Referrer-Policy, camera=(self))
+├── AssignRequestId Middleware (Generates/propagates X-Request-ID across HTTP & Monolog)
+├── Multi-Tier Health Probes
+│   ├── /api/v1/health/live (Process ping, <5ms)
+│   ├── /api/v1/health/ready (MySQL + Redis ping, 200 or 503, no credential leakage)
+│   └── /api/v1/health/dependencies (Authenticated deep checks: DB, Redis, Scheduler, Outbox)
+└── Rate Limiters (Sync 120/min, Reports 10/min, Media 30/min, Payments 15/min, Auth OTP)
+      ↓
+Domain Layer
+├── MySQL 8.4 (Canonical durable state, row-level locks, transactional outbox)
+├── Redis 7 (Sessions, Queues, Cache, Scheduler heartbeat)
+├── Laravel Horizon (Supervised queues: default, auth)
+└── Laravel Reverb (wss://ws.parkdrop.com.ng, bounded reconnect, channel authorization)
+      ↓
+External Service Gateways
+├── Termii SMS (Arrival SMS, retry-safe credit accounting)
+├── Cloudinary (Signed client direct upload, private thumbnail delivery)
+├── Flutterwave (SMS Credit purchases, idempotent webhook reconciliation)
+└── ZeptoMail (High-priority queued transactional email OTP)
 ```
 
-
-
+**Operational Resilience Guarantees:**
+* **Visible, Contained Failure:** Subsystem outages (SMS, Cloudinary, Reverb, Redis) degrade gracefully without taking down core offline parcel intake or collection workflows.
+* **Non-Destructive Operations:** Production migrations follow expand-and-contract patterns without arbitrary data drops or table purges.
+* **Correlated Telemetry:** Every API interaction carries a unique `X-Request-ID` logged in structured JSON without logging customer phone numbers, pickup codes, or secrets.
