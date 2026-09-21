@@ -6,54 +6,51 @@ export interface NavItemProps extends React.AnchorHTMLAttributes<HTMLAnchorEleme
   icon: React.ReactNode
   label: string
   isActive?: boolean
-  isEmphasized?: boolean
   asChild?: boolean
 }
 
+/**
+ * One destination in the bottom bar or the desktop sidebar.
+ *
+ * Icon and label, always both. An icon-only bar asks a first-time user to
+ * guess, and the guess is made with a customer waiting. The label sits at
+ * 15px — the floor for this app — rather than the 12px caption size, and the
+ * active item is marked by a tinted pill behind the icon as well as by
+ * colour, so the current tab is not carried by hue alone.
+ *
+ * The emphasized floating variant is gone: there is exactly one Add control
+ * in the app, and it is the tile on Home.
+ */
 export const NavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
-  ({ icon, label, isActive, isEmphasized, asChild, className, ...props }, ref) => {
+  ({ icon, label, isActive, asChild, className, ...props }, ref) => {
     const Comp = asChild ? Slot : "a"
-    
-    if (isEmphasized) {
-      return (
-        <Comp
-          ref={ref}
-          className={cn(
-            "flex flex-col items-center justify-center gap-1 text-[var(--text-caption)] font-medium transition-colors hover:text-action-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus rounded-[var(--radius-md)]",
-            className
-          )}
-          {...props}
-        >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-action-primary text-text-inverse shadow-[var(--shadow-elevation-1)] transition-transform hover:scale-105 active:scale-95 sm:h-12 sm:w-full sm:rounded-[var(--radius-md)] sm:shadow-none sm:gap-2">
-            <div className="flex items-center justify-center sm:hidden">
-              {icon}
-            </div>
-            <div className="hidden sm:flex sm:items-center sm:justify-center sm:gap-2">
-              {icon}
-              <span className="text-[var(--text-body-md)] font-semibold">{label}</span>
-            </div>
-          </div>
-          <span className="sr-only sm:hidden">{label}</span>
-        </Comp>
-      )
-    }
 
     return (
       <Comp
         ref={ref}
+        aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex flex-col sm:flex-row sm:justify-start items-center gap-1 sm:gap-3 rounded-[var(--radius-md)] p-2 sm:px-4 sm:py-3 text-[var(--text-caption)] sm:text-[var(--text-body-md)] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus",
-          isActive 
-            ? "text-action-primary sm:bg-surface-selected sm:text-action-primary" 
-            : "text-text-secondary hover:text-text-primary sm:hover:bg-surface-subtle",
+          "flex flex-1 sm:flex-none flex-col sm:flex-row sm:justify-start items-center",
+          "gap-1 sm:gap-3 min-h-[var(--pd-tap-min)] rounded-[var(--radius-md)]",
+          "px-1 py-1.5 sm:px-4 sm:py-3",
+          "text-[var(--pd-size-small)] font-bold sm:text-[var(--text-body-md)] sm:font-medium",
+          "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus",
+          isActive
+            ? "text-[var(--pd-blue-hover)] sm:bg-surface-selected sm:text-action-primary"
+            : "text-[var(--pd-muted)] hover:text-text-primary sm:hover:bg-surface-subtle",
           className
         )}
         {...props}
       >
-        <div className="flex h-6 w-6 items-center justify-center">
+        <span
+          className={cn(
+            "flex h-7 w-11 sm:h-6 sm:w-6 items-center justify-center rounded-full sm:rounded-none",
+            isActive && "bg-[var(--pd-tint-2)] sm:bg-transparent"
+          )}
+        >
           {icon}
-        </div>
-        <span>{label}</span>
+        </span>
+        <span className="leading-none">{label}</span>
       </Comp>
     )
   }
