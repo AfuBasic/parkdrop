@@ -29,6 +29,11 @@ class Business extends Model
         return $this->hasMany(BusinessMembership::class);
     }
 
+    public function invitations()
+    {
+        return $this->hasMany(BusinessInvitation::class);
+    }
+
     public function customers()
     {
         return $this->hasMany(Customer::class);
