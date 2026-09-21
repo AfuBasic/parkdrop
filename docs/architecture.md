@@ -141,6 +141,28 @@ PackageDetailScreen (/packages/:packageId)
 
 
 
+### Staff & Business Management (Build 18)
+```
+More Tab → Staff (/more/staff)
+        ↓
+StaffScreen (Online-Only Admin UI)
+        ↓
+businessApi.getStaffList() / inviteStaff() / changeMemberRole() / removeMember()
+        ↓
+Laravel BusinessStaffController & BusinessDetailsController
+        ↓
+Domain Actions (InviteBusinessMemberAction, ChangeBusinessMemberRoleAction, RemoveBusinessMemberAction, UpdateBusinessDetailsAction)
+        ↓ DB::transaction with row locking (last-owner count invariant check)
+BusinessMembership / BusinessInvitation / ActivityLog
+        ↓
+Queued StaffInvitationMail (passwordless OTP auth integration)
+```
+**Architecture Rules:**
+* **Online-Only Administration:** Staff mutations are strictly server-authoritative and require active network. No offline mutation queue in Dexie is used for staff changes.
+* **Universal Passwordless Auth Integration:** When an invited user signs in with email OTP, `AuthChallengeController` matches pending invitations for their normalized email and auto-accepts them into active `BusinessMembership`.
+* **Last-Owner Invariant:** A business cannot demote or remove its last active Owner. Enforced atomically via `DB::transaction()` and row locking on `business_memberships`.
+* **Historical Actor Identity Preserved:** Removing staff deactivates access (`status = 'removed'`) without deleting `User` records or cascading deletions to past packages, payments, or collections.
+
 ## Media Architecture (Cloudinary)
 
 Cloudinary is the ParkDrop media provider for package photos.
