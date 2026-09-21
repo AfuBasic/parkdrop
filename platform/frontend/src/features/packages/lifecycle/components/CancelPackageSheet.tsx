@@ -6,8 +6,8 @@ import {
   type CancelReason,
   CANCEL_REASONS,
 } from '@/features/packages/lifecycle/domain/lifecycle-reasons';
-import { LifecycleReasonField } from './LifecycleReasonField';
-import { ExistingPaymentWarning } from './ExistingPaymentWarning';
+import { LifecycleReasonField } from '@/features/packages/lifecycle/components/LifecycleReasonField';
+import { ExistingPaymentWarning } from '@/features/packages/lifecycle/components/ExistingPaymentWarning';
 
 interface CancelPackageSheetProps {
   isOpen: boolean;
