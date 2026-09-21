@@ -1,47 +1,97 @@
 import * as React from 'react';
-import { AuthStrings } from '@/features/auth/strings';
-import { Field, Input, Button } from '@/design-system';
+import { AuthShell } from '../components/AuthShell';
+import { TextField } from '../components/TextField';
+import { BigButton } from '../components/BigButton';
+import { AuthStrings } from '../strings';
 
-interface NameScreenProps {
+export interface NameScreenProps {
   initialName?: string;
   onContinue: (name: string) => void;
+  onBack: () => void;
+  onHelp: () => void;
+  step?: number;
+  totalSteps?: number;
 }
 
-export function NameScreen({ initialName = '', onContinue }: NameScreenProps) {
+/**
+ * Screen 3. First name only.
+ *
+ * We ask for as little as will do the job: the name is used to greet them and
+ * nothing else, so a full legal name would be data we collect without needing.
+ */
+export function NameScreen({
+  initialName = '',
+  onContinue,
+  onBack,
+  onHelp,
+  step = 3,
+  totalSteps = 5,
+}: NameScreenProps) {
   const [name, setName] = React.useState(initialName);
+  const [error, setError] = React.useState('');
+  const inputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim()) {
-      onContinue(name.trim());
+  const submit = () => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError(AuthStrings.nameEmpty);
+      inputRef.current?.focus();
+      navigator.vibrate?.(30);
+      return;
     }
+    setError('');
+    onContinue(trimmed);
   };
 
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="mb-5">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-text-primary">{AuthStrings.nameTitle}</h1>
-        <p className="text-sm font-medium text-text-secondary m-0">{AuthStrings.nameSubtitle}</p>
-      </div>
+    <AuthShell
+      size="compact"
+      onBack={onBack}
+      onHelp={onHelp}
+      step={step}
+      totalSteps={totalSteps}
+      foot={<BigButton onClick={submit}>{AuthStrings.continue}</BigButton>}
+    >
+      <h1 className="m-0 mb-2 text-[var(--pd-size-title)] font-extrabold leading-[1.15] tracking-[-0.025em] text-[var(--pd-navy)] text-balance">
+        {AuthStrings.nameTitle}
+      </h1>
+      <p className="m-0 mb-6 text-[var(--pd-size-body)] font-semibold text-[var(--pd-muted)] leading-[1.45]">
+        {AuthStrings.nameSubtitle}
+      </p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <Field label={AuthStrings.firstNameLabel} htmlFor="firstName">
-          <Input
-            id="firstName"
-            autoFocus
-            placeholder={AuthStrings.firstNamePlaceholder}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="h-12 text-base font-medium rounded-xl"
-          />
-        </Field>
-
-        <div className="mt-auto pt-6">
-          <Button type="submit" className="w-full h-12 text-base font-bold" size="lg" disabled={!name.trim()}>
-            {AuthStrings.continue}
-          </Button>
-        </div>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+      >
+        <TextField
+          ref={inputRef}
+          label={AuthStrings.nameLabel}
+          placeholder={AuthStrings.namePlaceholder}
+          value={name}
+          onChange={(event) => {
+            setName(event.target.value);
+            if (error) setError('');
+          }}
+          error={error}
+          clearable
+          onClear={() => setName('')}
+          // Safe to autofocus: this screen has no trust rows to hide, and the
+          // keyboard is what they need next.
+          autoFocus
+          autoComplete="given-name"
+          autoCapitalize="words"
+          enterKeyHint="next"
+          maxLength={40}
+        />
+        {/* Lets the keyboard's own Enter key submit. */}
+        <button type="submit" className="sr-only" tabIndex={-1}>
+          {AuthStrings.continue}
+        </button>
       </form>
-    </div>
+
+      <div className="h-4" />
+    </AuthShell>
   );
 }
