@@ -16,7 +16,6 @@ interface CancelPackageSheetProps {
   customer: LocalCustomer | null;
   paymentSummary: PaymentSummaryData;
   onConfirmCancel: (reason: CancelReason, note?: string | null) => Promise<void>;
-  isOnline?: boolean;
 }
 
 export function CancelPackageSheet({
@@ -26,7 +25,6 @@ export function CancelPackageSheet({
   customer,
   paymentSummary,
   onConfirmCancel,
-  isOnline = true,
 }: CancelPackageSheetProps) {
   const [selectedReason, setSelectedReason] = useState<CancelReason | null>(null);
   const [note, setNote] = useState('');
