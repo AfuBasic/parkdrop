@@ -5,9 +5,7 @@ namespace Tests\Feature\Sms;
 use App\Actions\Sms\ChargeForSmsAction;
 use App\Actions\Sms\RefundSmsAction;
 use App\Models\Business;
-use App\Models\SmsCreditTransaction;
 use App\Models\SmsWallet;
-use App\Models\SyncChange;
 use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -30,7 +28,7 @@ class SmsWalletTest extends TestCase
             'balance' => 10,
         ]);
 
-        $action = new ChargeForSmsAction();
+        $action = new ChargeForSmsAction;
         $result = $action->execute($business, 2, 'ARRIVAL_SMS', 'pkg-123');
 
         $this->assertEquals(8, $result['wallet']->balance);
@@ -78,7 +76,7 @@ class SmsWalletTest extends TestCase
             'balance' => 1,
         ]);
 
-        $action = new ChargeForSmsAction();
+        $action = new ChargeForSmsAction;
 
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('INSUFFICIENT_CREDITS');
@@ -99,7 +97,7 @@ class SmsWalletTest extends TestCase
             'balance' => 2,
         ]);
 
-        $action = new RefundSmsAction();
+        $action = new RefundSmsAction;
         $result = $action->execute($business, 1, 'SMS_REFUND', 'pkg-failed');
 
         $this->assertEquals(3, $result['wallet']->balance);
