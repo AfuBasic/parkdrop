@@ -207,6 +207,7 @@ export function normaliseForSms(value: string | null | undefined): string {
     .replace(/[‘’‛′]/g, "'")
     .replace(/[“”″]/g, '"')
     .replace(/[–—−]/g, '-')
+    .replace(/[·•]/g, '-')
     .replace(/…/g, '...')
     .replace(/ /g, ' ')
     .normalize('NFD')
