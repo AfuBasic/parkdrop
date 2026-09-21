@@ -43,7 +43,7 @@ describe('PackageDetailScreen', () => {
     });
   });
 
-  it('renders package details, customer card, pickup code, and payment summary', async () => {
+  it('renders package details, customer card, grouped pickup code, and payment summary', async () => {
     render(
       <PackageDetailScreen
         packageId={packageId}
@@ -52,9 +52,9 @@ describe('PackageDetailScreen', () => {
       />
     );
 
-    // Header & code
+    // Header & code (grouped 4 + 3)
     expect(await screen.findByText('PD-88220')).toBeDefined();
-    expect(screen.getByText('4K9M2PX')).toBeDefined();
+    expect(screen.getByText('4K9M 2PX')).toBeDefined();
 
     // Customer
     expect(screen.getByText('Ngozi Eze')).toBeDefined();
@@ -63,6 +63,9 @@ describe('PackageDetailScreen', () => {
     // Payment summary initial state (Unpaid, full balance)
     expect(screen.getByText('Unpaid')).toBeDefined();
     expect(screen.getByText('Record payment')).toBeDefined();
+
+    // Sticky Action Bar button
+    expect(screen.getByText(/Collect ₦3,500 and release/i)).toBeDefined();
 
     // Operational info
     expect(screen.getByText('Ikeja Hub')).toBeDefined();
