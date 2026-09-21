@@ -1,5 +1,5 @@
-import { db } from '../db/database';
-import type { LocalSmsWallet, LocalSmsCreditTransaction } from '../db/schema';
+import { db } from '@/offline/db/database';
+import type { LocalSmsWallet, LocalSmsCreditTransaction } from '@/offline/db/schema';
 
 export class SmsWalletRepository {
   /**
