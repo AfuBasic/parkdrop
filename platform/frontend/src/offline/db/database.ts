@@ -57,6 +57,8 @@ export class ParkDropDatabase extends Dexie {
       quarantineRecords: 'id, business_id, entity_type, quarantined_at, [business_id+entity_type]',
       recoveryMeta: 'key, updated_at'
     });
+
+    this.version(9).stores({});
   }
 }
 
