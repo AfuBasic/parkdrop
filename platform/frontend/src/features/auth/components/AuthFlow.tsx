@@ -94,7 +94,7 @@ export interface AuthFlowProps {
 
 export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   const { user: sessionUser, state: authState, setAuthenticatedUser } = useAuth();
-  const restored = React.useMemo(loadDraft, []);
+  const restored = React.useMemo(() => loadDraft(), []);
   const online = useOnline();
   const request = useSlowRequest();
 
