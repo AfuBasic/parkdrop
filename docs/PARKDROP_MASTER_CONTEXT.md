@@ -16,8 +16,9 @@
 **Build 16 — Return & Cancel Package Lifecycle (Deliberate Terminal Actions + Reasons + Offline Support + Concurrency Safety): COMPLETED**
 **Build 17 — Customers Directory & Customer Detail (Local-First Customer Browse + Package History + Active Package Visibility): COMPLETED**
 **Build 18 — Staff & Business Management (Memberships + Invitations + Roles + Safe Removal + Basic Business Settings): COMPLETED**
+**Build 19 — Notifications & Operational Attention Center (Actionable Exceptions + Sync Conflicts + Failed Operations + Low SMS Credits): COMPLETED**
 
-Next build: Build 19.
+Next build: Build 20.
 
 ## Core Architecture Decisions
 
@@ -136,6 +137,24 @@ The mobile experience is the source design.
 Tablet and desktop are adaptations of the mobile design.
 
 This rule applies to the **ParkDrop operational application**.
+### 4. Operational Attention Center (Build 19)
+- **Principle:** ONLY surface something if the user may need to know or act. Successful operations remain completely quiet.
+- **Not a Social Feed:** No notification bells, unread markers, swipe-to-dismiss, Clear All, or marketing announcements.
+- **Read-Model Projection:** Attention is a derived projection (`AttentionRepository`) over canonical local domain state (failed `packageMedia`, rejected `payments`, sync `conflicts`, `smsWallets` balance, pending/failed `SmsCreditPurchase`). There is NO duplicate mutable notifications table.
+- **Automatic Resolution:** Items disappear automatically the moment the underlying domain condition resolves (e.g. photo uploads successfully, wallet balance replenished, purchase confirmed).
+- **Mutually Exclusive SMS Credits Alert:** Balance = 0 yields `ZERO_SMS_CREDITS` (severity: `ERROR`); Balance between 1 and 4 yields `LOW_SMS_CREDITS` (severity: `WARNING`). Never duplicate both for the same business.
+- **Role-Aware CTAs:**
+  - Owner / Manager: `Buy credits` CTA deep-linking to purchase flow.
+  - Attendant: `View SMS credits` CTA (read-only balance inspection).
+- **Conflict Safety & Retries:**
+  - For `COLLECTION_SYNC_CONFLICT` or `PACKAGE_LIFECYCLE_CONFLICT`: Never offer invalid "Retry" because canonical server state won. CTA is `View package`.
+  - For `PHOTO_UPLOAD_FAILED`: CTA is `Retry upload` which calls canonical `MediaUploadCoordinator.syncPendingMedia`.
+- **Tenant Isolation:** Scoped strictly to active `business_id`. Cross-tenant attention items are strictly forbidden.
+- **Home & More Integration:**
+  - `More`: Subtle row entry with `unresolvedCount` badge.
+  - `Home`: Restrained `AttentionSummary` preview card displaying up to 2 items and a `View all` link; hidden completely when `unresolvedCount === 0`.
+  - Canonical 5-item bottom navigation remains untouched (`Home`, `Packages`, `Add`, `Customers`, `More`).
+
 It does **not** automatically apply to any separate public marketing website.
 
 ### Mobile Design Hierarchy
