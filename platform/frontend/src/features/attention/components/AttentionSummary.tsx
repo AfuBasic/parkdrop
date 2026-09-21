@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { AlertCircle, ChevronRight } from 'lucide-react';
 import type { AttentionItem } from '@/features/attention/attention-types';
 
