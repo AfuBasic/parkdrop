@@ -14,26 +14,27 @@ class CreateCustomerMutationHandlerTest extends TestCase
     use RefreshDatabase;
 
     protected CreateCustomerMutationHandler $handler;
+
     protected Business $business;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
-        $this->handler = new CreateCustomerMutationHandler();
-        
+
+        $this->handler = new CreateCustomerMutationHandler;
+
         // Since BusinessFactory doesn't exist, we'll manually create a Business.
         $this->business = Business::create([
             'public_id' => (string) Str::uuid(),
             'name' => 'Test Business',
-            'slug' => 'test-business-' . Str::random(6),
+            'slug' => 'test-business-'.Str::random(6),
         ]);
     }
 
     public function test_it_creates_a_new_customer_and_sync_change(): void
     {
         $customerId = Str::uuid()->toString();
-        
+
         $payload = [
             'customer_id' => $customerId,
             'name' => 'Chinedu Okafor',
@@ -96,7 +97,7 @@ class CreateCustomerMutationHandlerTest extends TestCase
     {
         $businessB = Business::create([
             'name' => 'Test Business B',
-            'slug' => 'test-business-b-' . Str::random(6),
+            'slug' => 'test-business-b-'.Str::random(6),
         ]);
 
         $existingCustomerId = Str::uuid()->toString();
@@ -131,7 +132,7 @@ class CreateCustomerMutationHandlerTest extends TestCase
     public function test_it_rejects_invalid_payload(): void
     {
         $result = $this->handler->handle([], $this->business->id, null, 'device-1', null);
-        
+
         $this->assertEquals('REJECTED', $result['status']);
         $this->assertArrayHasKey('customer_id', $result['metadata']['errors']);
         $this->assertArrayHasKey('name', $result['metadata']['errors']);
@@ -147,7 +148,7 @@ class CreateCustomerMutationHandlerTest extends TestCase
         ];
 
         $result = $this->handler->handle($payload, $this->business->id, null, 'device-1', null);
-        
+
         $this->assertEquals('REJECTED', $result['status']);
         $this->assertEquals('INVALID_PHONE', $result['metadata']['error']);
     }
