@@ -116,6 +116,7 @@ export const AuthStrings = {
   parkNamePlaceholder: 'Peace Park',
   smsPreviewTitle: 'Your customers will get this SMS:',
   pickupSave: 'Save and continue',
+  saving: 'Saving…',
 
   pickupNameEmpty: 'Type the name of your pickup point.',
   parkNameEmpty: 'Type the name of the park.',
