@@ -36,8 +36,8 @@ export function HomeError({ onRetry, className }: HomeErrorProps) {
         className={cn(
           'inline-flex items-center justify-center',
           'min-h-[var(--pd-tap-min)] px-6 rounded-[var(--pd-chip-radius)]',
-          'bg-[var(--pd-blue)] text-white',
-          'text-[var(--pd-size-meta)] font-extrabold leading-none',
+          // Size before colour — tailwind-merge drops an earlier text-* class.
+          'bg-[var(--pd-blue)] text-[var(--pd-size-meta)] font-extrabold leading-none text-white',
           'hover:bg-[var(--pd-blue-hover)] active:scale-[0.97]',
           'transition-[transform,background-color] duration-[var(--pd-motion-fast)]',
           'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/35'
