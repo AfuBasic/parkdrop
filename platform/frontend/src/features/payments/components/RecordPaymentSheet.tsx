@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, AlertCircle } from 'lucide-react';
 import type { PaymentMethod } from '@/offline/db/schema';
-import { PAYMENT_METHOD_LABELS } from '../domain/payment-summary';
+import { PAYMENT_METHOD_LABELS } from '@/features/payments/domain/payment-summary';
 import { formatMoney } from '@/lib/formatters';
 
 interface RecordPaymentSheetProps {
