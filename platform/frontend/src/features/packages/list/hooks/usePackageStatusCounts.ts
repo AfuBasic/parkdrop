@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PackageRepository } from '@/offline/repositories/PackageRepository';
-import type { StatusCounts } from '../package-list-types';
+import type { StatusCounts } from '@/features/packages/list/package-list-types';
 
 export function usePackageStatusCounts(
   businessId?: number,
