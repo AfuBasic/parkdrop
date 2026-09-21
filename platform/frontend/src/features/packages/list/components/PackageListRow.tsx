@@ -1,4 +1,4 @@
-import type { PackageListRowItem } from '../package-list-types';
+import type { PackageListRowItem } from '@/features/packages/list/package-list-types';
 import { StatusBadge } from '@/design-system/components/StatusBadge';
 import { formatMoney, formatPhone } from '@/lib/formatters';
 
