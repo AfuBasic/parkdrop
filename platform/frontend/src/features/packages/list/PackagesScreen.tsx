@@ -1,17 +1,16 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { AlertCircle, PackagePlus, WifiOff } from 'lucide-react';
+import { AlertCircle, PackagePlus } from 'lucide-react';
 import { db } from '@/offline/db/database';
-import { connectivityManager } from '@/offline/sync/connectivity-manager';
 import { useAuth } from '@/features/auth/AuthContext';
 import { PackageSearchRepository } from '@/offline/repositories/package-search-repository';
 import type { LocalCustomer, LocalPayment } from '@/offline/db/schema';
-import { PackagesListHeader } from './components/PackagesListHeader';
-import { PackagesTabsAndChips } from './components/PackagesTabsAndChips';
-import { PackagesSortSheet } from './components/PackagesSortSheet';
-import { PackageListRow } from './components/PackageListRow';
-import { PackageListEmptyState } from './components/PackageListEmptyState';
-import { PackagesStrings } from '../strings';
+import { PackagesListHeader } from '@/features/packages/list/components/PackagesListHeader';
+import { PackagesTabsAndChips } from '@/features/packages/list/components/PackagesTabsAndChips';
+import { PackagesSortSheet } from '@/features/packages/list/components/PackagesSortSheet';
+import { PackageListRow } from '@/features/packages/list/components/PackageListRow';
+import { PackageListEmptyState } from '@/features/packages/list/components/PackageListEmptyState';
+import { PackagesStrings } from '@/features/packages/strings';
 import {
   type StatusTab,
   type WaitingFilterChip,
@@ -25,7 +24,7 @@ import {
   evaluatePackagePayment,
   matchesFilters,
   sortPackages,
-} from '../domain/package-filters';
+} from '@/features/packages/domain/package-filters';
 
 export interface PackagesScreenProps {
   initialStatus?: StatusTab;
@@ -71,14 +70,6 @@ export function PackagesScreen({
 
   // Pagination limit (30 items at a time)
   const [renderLimit, setRenderLimit] = useState(30);
-
-  // Connectivity
-  const [isOnline, setIsOnline] = useState(() => connectivityManager.getState() !== 'UNREACHABLE');
-  useEffect(() => {
-    return connectivityManager.subscribe((connState) => {
-      setIsOnline(connState !== 'UNREACHABLE');
-    });
-  }, []);
 
   // Debounce search query by ~150ms
   const handleSearchChange = (query: string) => {
@@ -356,15 +347,7 @@ export function PackagesScreen({
         onClearSearch={handleClearSearch}
       />
 
-      {/* Offline Connectivity Notice */}
-      {!isOnline && (
-        <div className="px-4 py-2 bg-[#FFFBEB] border-b border-[#FDE68A] flex items-center justify-between text-[#92400E] text-[14px] font-bold">
-          <div className="flex items-center gap-2">
-            <WifiOff className="w-4 h-4" />
-            <span>Offline — using local packages</span>
-          </div>
-        </div>
-      )}
+
 
       {/* 2. When NOT searching: Show 3 Tabs + Filter Chips + Summary/Sort Bar */}
       {!isSearching && (
