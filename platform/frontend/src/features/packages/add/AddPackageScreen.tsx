@@ -1,18 +1,21 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { CustomerLookup, type CustomerSelection } from '@/features/customers/components/CustomerLookup';
 import { AddPackageForm } from './components/AddPackageForm';
 import { PackageSaved } from './components/PackageSaved';
 import { PackageRepository } from '@/offline/repositories/PackageRepository';
+import { CustomerDirectoryRepository } from '@/features/customers/services/CustomerDirectoryRepository';
 import { useAuth } from '@/features/auth/AuthContext';
 import { ChevronLeft } from 'lucide-react';
 import type { LocalPackage } from '@/offline/db/schema';
+import { db } from '@/offline/db/database';
 
 interface AddPackageScreenProps {
   onNavigate?: (path: string) => void;
   onBack?: () => void;
+  initialCustomerId?: string | null;
 }
 
-export function AddPackageScreen({ onNavigate, onBack }: AddPackageScreenProps) {
+export function AddPackageScreen({ onNavigate, onBack, initialCustomerId }: AddPackageScreenProps) {
   const { business } = useAuth();
 
   const [customer, setCustomer] = useState<CustomerSelection | null>(null);
@@ -22,6 +25,36 @@ export function AddPackageScreen({ onNavigate, onBack }: AddPackageScreenProps) 
   const businessId = business?.id || 0;
   // Pickup points aren't fully implemented yet, use null for now
   const pickupPointId = null;
+
+  // Pre-load customer if initialCustomerId is provided
+  useEffect(() => {
+    if (!initialCustomerId || !businessId) return;
+
+    let cancelled = false;
+    async function loadPreselectedCustomer() {
+      try {
+        const canonicalId = await CustomerDirectoryRepository.resolveCanonicalCustomerId(initialCustomerId!);
+        const found = await db.customers.get(canonicalId);
+        if (found && found.business_id === businessId && !cancelled) {
+          setCustomer({
+            customerId: found.id,
+            name: found.name,
+            phoneDisplay: found.phone_display,
+            phoneNormalized: found.phone_normalized,
+            syncStatus: found.sync_status,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to preselect customer:', err);
+      }
+    }
+
+    loadPreselectedCustomer();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialCustomerId, businessId]);
 
   const handleSave = async (amountDueMinor: number, sendSms: boolean, photoBlob: Blob | null) => {
     if (!customer || !businessId) return;
