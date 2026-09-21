@@ -12,6 +12,7 @@ import {
   type IdentifierMode,
 } from '../config';
 import { formatNationalDisplay } from '../lib/phone';
+import { webmailProviderFor } from '../lib/webmail';
 import { cn } from '@/lib/utils';
 
 export interface CodeScreenProps {
@@ -63,6 +64,7 @@ export function CodeScreen({
 
   const isPhone = mode === 'phone';
   const shownError = error || localError;
+  const webmail = isPhone ? null : webmailProviderFor(identifier);
 
   // Clear the boxes when the server rejects the code, so the next attempt
   // starts from empty rather than making them delete six digits by hand.
@@ -211,15 +213,15 @@ export function CodeScreen({
         {AuthStrings.codeHint(mode)}
       </p>
 
-      {!isPhone && (
+      {webmail && (
         <a
-          href="https://mail.google.com"
+          href={webmail.url}
           target="_blank"
           rel="noreferrer"
           className={cn(secondaryButton, 'mt-3 no-underline')}
         >
           <Mail className="w-[19px] h-[19px]" strokeWidth={2.5} aria-hidden="true" />
-          {AuthStrings.openGmail}
+          {webmail.label}
         </a>
       )}
 
