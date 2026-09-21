@@ -10,12 +10,14 @@ import type { PackageSearchResult } from './package-search-types';
 interface PackageSearchScreenProps {
   onBack?: () => void;
   onSelectPackage?: (result: PackageSearchResult) => void;
+  onNavigateToAdd?: (phone?: string) => void;
   initialQuery?: string;
 }
 
 export function PackageSearchScreen({
   onBack,
   onSelectPackage,
+  onNavigateToAdd,
   initialQuery = '',
 }: PackageSearchScreenProps) {
   const { business } = useAuth();
@@ -140,11 +142,20 @@ export function PackageSearchScreen({
             <h2 className="text-base font-semibold text-text-primary mb-1">
               No packages found
             </h2>
-            <p className="text-sm text-text-secondary max-w-xs leading-relaxed">
+            <p className="text-sm text-text-secondary max-w-xs leading-relaxed mb-5">
               {!isOnline
                 ? 'No matching packages found on this device. Try another name, phone number, pickup code or package ID.'
                 : 'Try another name, phone number, pickup code or package ID.'}
             </p>
+            {onNavigateToAdd && (
+              <button
+                type="button"
+                onClick={() => onNavigateToAdd(query)}
+                className="inline-flex items-center justify-center min-h-[48px] px-5 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white font-extrabold text-[15px] hover:bg-[var(--pd-blue-hover)] active:scale-[0.98] transition-transform"
+              >
+                Add package for this number
+              </button>
+            )}
           </div>
         )}
       </main>
