@@ -10,7 +10,7 @@ import { useHomeData } from './hooks/useHomeData';
 import { usePickupIdentity } from './hooks/usePickupIdentity';
 import { HomeHeader } from './components/HomeHeader';
 import { SyncSheet } from './components/SyncSheet';
-import { summariseSync } from './components/SyncChip';
+import { summariseSync } from './lib/syncSummary';
 import { SetupBanner } from './components/SetupBanner';
 import { ActionTiles } from './components/ActionTiles';
 import { StatStrip } from './components/StatStrip';
