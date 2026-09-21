@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { AuthLayout } from './AuthLayout';
-import { EmailScreen } from '../screens/EmailScreen';
-import { CodeScreen } from '../screens/CodeScreen';
-import { NameScreen } from '../screens/NameScreen';
-import { PinSetupScreen } from '../screens/PinSetupScreen';
-import { PickupPointScreen } from '../screens/PickupPointScreen';
-import { ReadyScreen } from '../screens/ReadyScreen';
-import { authApi } from '../api';
+import { EmailScreen } from '@/features/auth/screens/EmailScreen';
+import { CodeScreen } from '@/features/auth/screens/CodeScreen';
+import { NameScreen } from '@/features/auth/screens/NameScreen';
+import { PinSetupScreen } from '@/features/auth/screens/PinSetupScreen';
+import { PickupPointScreen } from '@/features/auth/screens/PickupPointScreen';
+import { ReadyScreen } from '@/features/auth/screens/ReadyScreen';
+import { authApi } from '@/features/auth/api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
 import { ProblemLoggingInSheet } from './ProblemLoggingInSheet';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '@/features/auth/AuthContext';
 import { notify } from '@/lib/notify';
 
 type Step = 'email' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
