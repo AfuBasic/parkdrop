@@ -17,8 +17,10 @@
 **Build 17 — Customers Directory & Customer Detail (Local-First Customer Browse + Package History + Active Package Visibility): COMPLETED**
 **Build 18 — Staff & Business Management (Memberships + Invitations + Roles + Safe Removal + Basic Business Settings): COMPLETED**
 **Build 19 — Notifications & Operational Attention Center (Actionable Exceptions + Sync Conflicts + Failed Operations + Low SMS Credits): COMPLETED**
+**Build 20 — Pickup Point Management & Business Switching (Multi-Location Operational Context + Multi-Business Membership + Safe Data Scoping): COMPLETED**
+**Build 21 — Daily Operations & Reports (Date-Based Package Activity + Payment Summaries + Canonical CSV Exports): COMPLETED**
 
-Next build: Build 20.
+Next build: Build 22.
 
 ## Core Architecture Decisions
 
@@ -154,6 +156,36 @@ This rule applies to the **ParkDrop operational application**.
   - `More`: Subtle row entry with `unresolvedCount` badge.
   - `Home`: Restrained `AttentionSummary` preview card displaying up to 2 items and a `View all` link; hidden completely when `unresolvedCount === 0`.
   - Canonical 5-item bottom navigation remains untouched (`Home`, `Packages`, `Add`, `Customers`, `More`).
+-
+-### 5. Daily Operations & Reports (Build 21)
+-- **Core Principle:** Clear daily operational facts, not analytics theater. No charts, no profit/loss claims, no forecasting, no employee or customer leaderboards.
+-- **Reporting Unit:** Exactly one Business-local calendar day in `Africa/Lagos` (WAT, UTC+1), defined cleanly as `[start_of_day, start_of_next_day)`. Future dates are blocked.
+-- **Access Policy:**
+-  - `OWNER` & `MANAGER`: View full daily reports, payment summaries, Pickup Point scope, Business-wide scope, and download canonical CSV exports.
+-  - `ATTENDANT`: Reports section is hidden in `/more` and API endpoints return 403 Forbidden.
+-- **Scoping Invariant:** Defaults to active Business + active Pickup Point. Selecting "All pickup points" (Business-wide) updates reporting scope without mutating the operational workspace context. Inactive pickup points remain selectable for historical reporting.
+-- **Package Metrics:**
+-  - `Received`: Intake count during the day (`client_created_at` or `created_at` within bounds).
+-  - `Collected`: Transitioned to `COLLECTED` during the day (`updated_at` within bounds).
+-  - `Returned`: `PackageLifecycleEvent` of type `RETURN` or `returned_at` within bounds.
+-  - `Cancelled`: `PackageLifecycleEvent` of type `CANCEL` or `cancelled_at` within bounds.
+-  - `Waiting now`: Secondary operational context value displayed for TODAY only.
+-  - *Event Independence:* A package received and collected on the same day counts as 1 Received and 1 Collected.
+-- **Payment Metrics:**
+-  - Aggregates canonical package payment records in integer minor units (kobo). Zero floating-point arithmetic.
+-  - Terminology: "Payments recorded", "Net payment activity". Never "Revenue", "Sales", or "Earnings".
+-  - Method breakdown: Cash, Transfer, POS, Other.
+-  - Reversals: Recorded payment events are immutable; reversals are counted on the date the reversal occurred and subtract from net activity.
+-  - Zero SMS credit purchase contamination: SMS credit transactions are strictly excluded from package payment totals.
+-- **Safe CSV Export:**
+-  - Online-only streaming response from canonical server database.
+-  - Formula injection defense: Prefixes cells starting with `=`, `+`, `-`, `@`, `\t`, `\r` with `'`.
+-  - PII minimization: Public package ID and customer name only; NO customer phone, NO pickup codes, NO internal database UUIDs.
+-  - Currency formatting: Exact decimal conversion from minor units with explicit `Amount (NGN)` column and UTF-8 BOM.
+-- **Local-First & Truthful Offline:**
+-  - Derives current/recent report projections locally from Dexie IndexedDB.
+-  - Shows "Offline · showing data stored on this device" when network is absent.
+-  - Older dates outside local retention display: "This date isn't available on this device while offline. Connect to the internet to view this report." (Never lies with fake zeros).
 
 It does **not** automatically apply to any separate public marketing website.
 
