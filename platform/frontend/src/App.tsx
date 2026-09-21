@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { RouterProvider } from '@tanstack/react-router';
+import { router } from '@/router';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthFlow } from '@/features/auth/components/AuthFlow';
@@ -7,14 +9,6 @@ import { ForgotPinFlow } from '@/features/auth/components/ForgotPinFlow';
 import { UnlockScreen } from '@/features/auth/screens/UnlockScreen';
 import { ThemeDemo } from '@/routes/theme-demo';
 import { RecoveryScreen } from '@/features/recovery/RecoveryScreen';
-
-/**
- * The signed-in app, split into its own chunk.
- *
- * A first-time visitor on slow data needs the sign-in screen and nothing
- * else, so the dashboard is fetched only once they are actually signed in.
- */
-const AuthenticatedApp = React.lazy(() => import('@/routes/AuthenticatedApp'));
 
 /** Shown while the app resolves who this is, and while the app chunk loads. */
 function BootSplash() {
@@ -104,10 +98,9 @@ function AppContent() {
   }
 
   // Authenticated state (active session).
-  // Loaded on demand: a signed-out visitor never downloads the dashboard.
   return (
     <React.Suspense fallback={<BootSplash />}>
-      <AuthenticatedApp />
+      <RouterProvider router={router} />
     </React.Suspense>
   );
 }
