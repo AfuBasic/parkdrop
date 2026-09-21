@@ -1,19 +1,22 @@
 ParkDrop
 
-Welcome to ParkDrop, {{ $firstName }}!
+You are ready, {{ $firstName }}.
 
-Your account and pickup point {{ $pickupPointName }} are set up and ready.
+{{ $pickupPointName }} is set up on ParkDrop.
 
-We've credited your account with {{ $initialCredits }} free SMS credits to get you started.
+{{ $initialCredits }} free SMS credits added — you can text customers as soon as a
+package arrives, at no cost.
 
-Key Features:
-- Quick Parcel Logging: Record incoming packages in seconds, even while offline.
-- Verified Token Releases: Recipients receive automatic pickup codes to ensure 100% accurate handoffs.
+How it works:
+1. Add a package in seconds. Works even with no signal — it saves on the
+   phone and sends once you are back online.
+2. Customers get a text and a code. They show the code at pickup, so the
+   right package always goes to the right person.
 
-Access your dashboard:
+Add your first package:
 {{ $appUrl }}
 
-Need assistance? Reply directly to this email or contact support@parkdrop.com.ng.
+Need a hand? Reply to this email or write to support@parkdrop.com.ng.
 
-ParkDrop — Simple parcel management for pickup points.
+ParkDrop — simple package pickup for local businesses.
 https://parkdrop.com.ng
