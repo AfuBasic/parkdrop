@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { RouterProvider } from '@tanstack/react-router';
+import { router } from '@/router';
 import { AppShell } from '@/design-system/shell/AppShell';
 import { AuthContext, type AuthContextValue } from '@/features/auth/AuthContext';
 import type { AuthBusiness } from '@/features/auth/types';
@@ -129,58 +131,53 @@ export function HomePreview() {
   }, [scenario]);
 
   return (
-    <AuthContext.Provider value={authValue(BUSINESSES[naming])}>
-      {chrome && (
-        <div className="fixed top-0 left-0 right-0 z-[100] flex flex-wrap gap-1.5 bg-slate-900/90 p-2">
-          <select
-            aria-label="Scenario"
-            className={CONTROL}
-            value={scenario}
-            onChange={(e) => setScenario(e.target.value as HomeScenario)}
-          >
-            {SCENARIOS.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="Naming"
-            className={CONTROL}
-            value={naming}
-            onChange={(e) => setNaming(e.target.value as Naming)}
-          >
-            <option value="full">Named</option>
-            <option value="noPark">No park</option>
-            <option value="placeholder">Placeholder</option>
-            <option value="long">Long names</option>
-          </select>
-        </div>
-      )}
+    <RouterProvider router={router}>
+      <AuthContext.Provider value={authValue(BUSINESSES[naming])}>
+        {chrome && (
+          <div className="fixed top-0 left-0 right-0 z-[100] flex flex-wrap gap-1.5 bg-slate-900/90 p-2">
+            <select
+              aria-label="Scenario"
+              className={CONTROL}
+              value={scenario}
+              onChange={(e) => setScenario(e.target.value as HomeScenario)}
+            >
+              {SCENARIOS.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
+            <select
+              aria-label="Naming"
+              className={CONTROL}
+              value={naming}
+              onChange={(e) => setNaming(e.target.value as Naming)}
+            >
+              <option value="full">Named</option>
+              <option value="noPark">No park</option>
+              <option value="placeholder">Placeholder</option>
+              <option value="long">Long names</option>
+            </select>
+          </div>
+        )}
 
-      <div className={chrome ? 'pt-[52px]' : undefined}>
-        {/*
-          This harness renders outside the app's RouterProvider (see the
-          file header), and NavItem falls back to a plain <a> only when
-          onNavigate is supplied — otherwise it renders a TanStack Link,
-          which throws with no router context. The stub keeps the bottom
-          nav visible for review without needing to mount the full router.
-        */}
-        <AppShell currentPath="/" bleed onNavigate={() => {}}>
-          {seeded && (
-            <HomeScreen
-              key={`${scenario}-${naming}`}
-              onNavigateToSearch={() => {}}
-              onNavigateToAdd={() => {}}
-              onNavigateToPackages={() => {}}
-              onNavigateToSetup={() => {}}
-              onNavigateToAttention={() => {}}
-              onSelectPackage={() => {}}
-            />
-          )}
-        </AppShell>
-      </div>
-    </AuthContext.Provider>
+        <div className={chrome ? 'pt-[52px]' : undefined}>
+          <AppShell currentPath="/" bleed onNavigate={() => {}}>
+            {seeded && (
+              <HomeScreen
+                key={`${scenario}-${naming}`}
+                onNavigateToSearch={() => {}}
+                onNavigateToAdd={() => {}}
+                onNavigateToPackages={() => {}}
+                onNavigateToSetup={() => {}}
+                onNavigateToAttention={() => {}}
+                onSelectPackage={() => {}}
+              />
+            )}
+          </AppShell>
+        </div>
+      </AuthContext.Provider>
+    </RouterProvider>
   );
 }
 
