@@ -42,20 +42,33 @@ export function PinPad({
 }: PinPadProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
+  // Mirror of the current value, read by the key handlers.
+  //
+  // Two presses inside a single React commit would otherwise both read the
+  // same stale `value` from their closure and the second would overwrite the
+  // first — so a fast typist, a held-down key repeating, or an accessibility
+  // tool replaying keys loses digits. Reading from a ref means each press
+  // always builds on the previous one.
+  const latest = React.useRef(value);
+  latest.current = value;
+
   const press = React.useCallback(
     (digit: string) => {
-      if (disabled || value.length >= length) return;
-      const next = value + digit;
+      if (disabled || latest.current.length >= length) return;
+      const next = latest.current + digit;
+      latest.current = next;
       onChange(next);
       if (next.length === length) onComplete?.(next);
     },
-    [disabled, value, length, onChange, onComplete]
+    [disabled, length, onChange, onComplete]
   );
 
   const backspace = React.useCallback(() => {
-    if (disabled || value.length === 0) return;
-    onChange(value.slice(0, -1));
-  }, [disabled, value, onChange]);
+    if (disabled || latest.current.length === 0) return;
+    const next = latest.current.slice(0, -1);
+    latest.current = next;
+    onChange(next);
+  }, [disabled, onChange]);
 
   // Hardware keyboard support. Bound to the document so the user does not have
   // to find and focus a particular key first.
