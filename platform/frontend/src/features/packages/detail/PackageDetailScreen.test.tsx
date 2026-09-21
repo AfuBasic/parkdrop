@@ -102,7 +102,7 @@ describe('PackageDetailScreen', () => {
     await user.type(amountInput, '1000');
 
     // Select submit button inside dialog
-    const submitBtn = dialog.querySelector('button[type="submit"]') as HTMLButtonElement;
+    const submitBtn = await screen.findByRole('button', { name: /Record ₦1,000/i });
     await user.click(submitBtn);
 
     // Sheet closes and summary updates reactively
