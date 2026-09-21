@@ -62,14 +62,14 @@ describe('CustomersScreen', () => {
     );
 
     // Both customers should appear
-    expect(await screen.findByText('Chinedu Okafor')).toBeInTheDocument();
-    expect(screen.getByText('Ngozi Eze')).toBeInTheDocument();
+    expect(await screen.findByText('Chinedu Okafor')).toBeDefined();
+    expect(screen.getByText('Ngozi Eze')).toBeDefined();
 
     // Chinedu has 1 package waiting
-    expect(screen.getByText(/1 package waiting/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 package waiting/i)).toBeDefined();
 
     // Ngozi has no packages waiting
-    expect(screen.getByText(/No packages waiting/i)).toBeInTheDocument();
+    expect(screen.getByText(/No packages waiting/i)).toBeDefined();
 
     // Tap Chinedu row
     fireEvent.click(screen.getByText('Chinedu Okafor'));
@@ -92,16 +92,16 @@ describe('CustomersScreen', () => {
     fireEvent.change(searchInput, { target: { value: 'Ngozi' } });
 
     await waitFor(() => {
-      expect(screen.queryByText('Chinedu Okafor')).not.toBeInTheDocument();
-      expect(screen.getByText('Ngozi Eze')).toBeInTheDocument();
+      expect(screen.queryByText('Chinedu Okafor')).toBeNull();
+      expect(screen.getByText('Ngozi Eze')).toBeDefined();
     });
 
     // Search by phone
     fireEvent.change(searchInput, { target: { value: '08031234567' } });
 
     await waitFor(() => {
-      expect(screen.getByText('Chinedu Okafor')).toBeInTheDocument();
-      expect(screen.queryByText('Ngozi Eze')).not.toBeInTheDocument();
+      expect(screen.getByText('Chinedu Okafor')).toBeDefined();
+      expect(screen.queryByText('Ngozi Eze')).toBeNull();
     });
 
     // Clear search
@@ -109,8 +109,8 @@ describe('CustomersScreen', () => {
     fireEvent.click(clearButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Chinedu Okafor')).toBeInTheDocument();
-      expect(screen.getByText('Ngozi Eze')).toBeInTheDocument();
+      expect(screen.getByText('Chinedu Okafor')).toBeDefined();
+      expect(screen.getByText('Ngozi Eze')).toBeDefined();
     });
   });
 
@@ -127,7 +127,7 @@ describe('CustomersScreen', () => {
     const searchInput = screen.getByPlaceholderText('Search name or phone');
     fireEvent.change(searchInput, { target: { value: 'Nonexistent person' } });
 
-    expect(await screen.findByText('No customers found')).toBeInTheDocument();
-    expect(screen.getByText('Try another name or phone number.')).toBeInTheDocument();
+    expect(await screen.findByText('No customers found')).toBeDefined();
+    expect(screen.getByText('Try another name or phone number.')).toBeDefined();
   });
 });
