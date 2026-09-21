@@ -20,8 +20,9 @@
 **Build 20 — Pickup Point Management & Business Switching (Multi-Location Operational Context + Multi-Business Membership + Safe Data Scoping): COMPLETED**
 **Build 21 — Daily Operations & Reports (Date-Based Package Activity + Payment Summaries + Canonical CSV Exports): COMPLETED**
 **Build 22 — Account, Security & Device Management (Passwordless Account Settings + Sessions + Registered Devices + Offline Authorization Leases): COMPLETED**
+**Build 23 — Data Backup, Recovery & Operational Resilience (Local Database Integrity + Safe Recovery + Device Replacement + Sync Repair + Crash Hardening): COMPLETED**
 
-Next build: Build 23.
+Next build: Build 24.
 
 ## Core Architecture Decisions
 
