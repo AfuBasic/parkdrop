@@ -17,7 +17,7 @@
                 Sign in with {{ $inviteeEmail }}
             </div>
             <div style="color: #163B8C; font-size: 14px; font-weight: 500; line-height: 1.45;">
-                We will text or email you a 6-digit code — no password needed.
+                We will text or email you a 6-digit code. No password needed.
             </div>
         </td>
     </tr>
