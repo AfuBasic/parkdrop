@@ -65,12 +65,14 @@ export interface LocalPackage {
   version: number;
   sync_status: SyncStatus;
   creator_name?: string | null;
+  creator_phone?: string | null;
   pickup_point_name?: string | null;
   returned_at?: string | null;
   cancelled_at?: string | null;
   terminal_reason?: string | null;
   terminal_reason_note?: string | null;
   terminal_actor_name?: string | null;
+  terminal_actor_phone?: string | null;
   /**
    * Delivery status of the arrival SMS, populated from sms_messages.status via sync pull.
    * Only present when an SMS was attempted. Never shown as "Delivered" unless Termii
