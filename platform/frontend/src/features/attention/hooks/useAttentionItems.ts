@@ -1,5 +1,4 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/offline/db/database';
 import { AttentionRepository, type AttentionFilterOptions } from '@/offline/read-models/attention-repository';
 import type { AttentionItem } from '@/features/attention/attention-types';
 
