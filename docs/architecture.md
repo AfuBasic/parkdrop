@@ -207,3 +207,45 @@ Cloudinary is the ParkDrop media provider for package photos.
   * Offline photos are stored locally in IndexedDB as a Blob.
   * When connectivity returns, the client requests a fresh signature and uploads directly.
 * **Verification:** Laravel verifies Cloudinary upload metadata before persisting to the `package_media` database.
+
+## Daily Operations & Reports Architecture (Build 21)
+
+```
+Report UI (/more/reports)
+      ↓
+Daily Operations Read Model
+├── Local Recent Domain Projection (Dexie IndexedDB)
+└── Canonical Server Report Query (where online or for deep historical dates)
+      ↓
+Summary (Packages + Payments) & Chronological Activity List
+
+Server Architecture:
+Report Request (date, scope)
+      ↓
+ReportPolicy (owner or manager)
+      ↓
+BusinessDayBounds (Africa/Lagos [start, end) UTC)
+      ↓
+Domain Aggregate Queries
+├── Packages (received_count, collected_count, returned_count, cancelled_count)
+├── PackageLifecycleEvents (RETURN, CANCEL)
+└── Payments (recorded_minor, reversed_minor, net_minor, by_method)
+      ↓
+DailyOperationsReport Resource / Controller
+
+Canonical CSV Export:
+Report Request
+      ↓
+ExportDailyOperationsReportAction
+      ↓
+Formula Injection Defense + Decimal Currency Conversion + UTF-8 BOM
+      ↓
+Streaming CSV Response (No memory exhaustion)
+```
+
+**Architecture Rules:**
+* **No Second Reporting Truth:** Server aggregates directly from indexed canonical tables (`packages`, `payments`, `package_lifecycle_events`).
+* **Canonical Timezone:** Always `Africa/Lagos` (WAT, UTC+1). Database boundaries use clean `[start_of_day, start_of_next_day)` in UTC.
+* **Separation of Workspace from Scope:** Switching report scope to "All pickup points" filters reporting data without mutating the user's active operational workspace.
+* **Safe CSV Streaming:** Streams directly to the browser; sanitizes cells against CSV formula injection (`=`, `+`, `-`, `@`, `\t`, `\r`); omits unnecessary PII (no customer phone, no pickup codes, no internal UUIDs).
+
