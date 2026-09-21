@@ -21,6 +21,7 @@ import { MessageSquare, ChevronRight, Users, Building2, AlertCircle, BarChart3, 
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAuth } from '@/features/auth/AuthContext';
+import type { PackageStatusFilter } from '@/features/packages/list/package-list-types';
 
 /**
  * Everything a signed-in user can reach.
@@ -36,6 +37,8 @@ export default function AuthenticatedApp() {
 
   // Lightweight internal router.
   const [currentPath, setCurrentPath] = React.useState('/');
+  // Which tab the Packages screen opens on, set by the Home stat strip.
+  const [packagesStatus, setPackagesStatus] = React.useState<PackageStatusFilter>('WAITING');
 
   // Wallet balance for the settings display.
   const wallet = useLiveQuery(
@@ -49,13 +52,21 @@ export default function AuthenticatedApp() {
   });
 
   return (
-    <AppShell currentPath={currentPath.startsWith('/more') ? '/more' : currentPath} onNavigate={setCurrentPath}>
+    <AppShell
+      currentPath={currentPath.startsWith('/more') ? '/more' : currentPath}
+      onNavigate={setCurrentPath}
+      // Home paints its own blue header to the edges of the phone.
+      bleed={currentPath === '/'}
+    >
       {currentPath === '/' && (
-        <HomeScreen 
+        <HomeScreen
           onNavigateToSearch={() => setCurrentPath('/packages/search')}
           onNavigateToAdd={() => setCurrentPath('/add')}
-          onNavigateToPackages={() => setCurrentPath('/packages')}
-          onNavigateToCredits={() => setCurrentPath('/more/sms-credits')}
+          onNavigateToPackages={(status) => {
+            setPackagesStatus(status ?? 'WAITING');
+            setCurrentPath('/packages');
+          }}
+          onNavigateToSetup={() => setCurrentPath('/more/business')}
           onNavigateToAttention={() => setCurrentPath('/more/attention')}
           onSelectPackage={(id) => setCurrentPath(`/packages/${id}`)}
         />
@@ -71,7 +82,9 @@ export default function AuthenticatedApp() {
       )}
       
       {currentPath === '/packages' && (
-        <PackagesScreen 
+        <PackagesScreen
+          key={packagesStatus}
+          initialStatus={packagesStatus}
           onNavigateToSearch={() => setCurrentPath('/packages/search')}
           onNavigateToAdd={() => setCurrentPath('/add')}
           onSelectPackage={(pkg) => setCurrentPath(`/packages/${pkg.id}`)}
