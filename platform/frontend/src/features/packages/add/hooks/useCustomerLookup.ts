@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/offline/db/database';
 import { normalizePhone } from '@/offline/helpers/phoneNormalizer';
