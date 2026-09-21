@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle2, Search, UserPlus } from 'lucide-react';
-import { normalizePhone, formatPhoneForDisplay } from '../../../offline/helpers/phoneNormalizer';
-import { CustomerRepository } from '../../../offline/repositories/CustomerRepository';
-import type { LocalCustomer } from '../../../offline/db/schema';
+import { normalizePhone, formatPhoneForDisplay } from '@/offline/helpers/phoneNormalizer';
+import { CustomerRepository } from '@/offline/repositories/CustomerRepository';
+import type { LocalCustomer } from '@/offline/db/schema';
 
 export interface CustomerSelection {
   customerId: string;
