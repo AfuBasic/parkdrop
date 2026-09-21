@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Camera, X } from 'lucide-react';
-import { processPackagePhoto } from '../image-processing/process-package-photo';
+import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
 
 export interface PackagePhotoFieldProps {
   onPhotoSelected: (blob: Blob | null) => void;
