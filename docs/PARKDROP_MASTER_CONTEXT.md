@@ -19,8 +19,9 @@
 **Build 19 — Notifications & Operational Attention Center (Actionable Exceptions + Sync Conflicts + Failed Operations + Low SMS Credits): COMPLETED**
 **Build 20 — Pickup Point Management & Business Switching (Multi-Location Operational Context + Multi-Business Membership + Safe Data Scoping): COMPLETED**
 **Build 21 — Daily Operations & Reports (Date-Based Package Activity + Payment Summaries + Canonical CSV Exports): COMPLETED**
+**Build 22 — Account, Security & Device Management (Passwordless Account Settings + Sessions + Registered Devices + Offline Authorization Leases): COMPLETED**
 
-Next build: Build 22.
+Next build: Build 23.
 
 ## Core Architecture Decisions
 
