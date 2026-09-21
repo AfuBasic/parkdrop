@@ -1,116 +1,154 @@
 import * as React from 'react';
-import { AuthLayout } from './AuthLayout';
 import { CodeScreen } from '@/features/auth/screens/CodeScreen';
+import { PinSetupScreen } from '@/features/auth/screens/PinSetupScreen';
+import { HelpSheet } from './HelpSheet';
 import { authApi } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/AuthContext';
-import { notify } from '@/lib/notify';
+import { useSlowRequest } from '@/features/auth/lib/useSlowRequest';
+import { AuthStrings } from '@/features/auth/strings';
+import { AUTH_IDENTIFIER } from '@/features/auth/config';
+import { hashPin, generateSalt } from '@/lib/pin';
 import { db, type DeviceMeta, type RememberedIdentity } from '@/lib/db';
 
-import { ProblemLoggingInSheet } from './ProblemLoggingInSheet';
-
-interface ForgotPinFlowProps {
+export interface ForgotPinFlowProps {
   deviceMeta: DeviceMeta;
   rememberedIdentity?: RememberedIdentity | null;
   onCancel: () => void;
 }
 
+type Step = 'code' | 'newPin';
+
+/**
+ * Resetting a forgotten PIN: confirm with a code, then choose a new one.
+ *
+ * The user is sent straight to choosing a replacement rather than being told
+ * to go and find a settings page. Someone who has just been locked out of the
+ * app mid-shift needs to be working again in the next thirty seconds, and a
+ * device left with no PIN at all is a worse state to leave them in.
+ *
+ * The step counter is replaced with "Reset your PIN", since this is a detour
+ * and not one of the five setup steps.
+ */
 export function ForgotPinFlow({ deviceMeta, rememberedIdentity, onCancel }: ForgotPinFlowProps) {
-  const { setAuthenticatedUser } = useAuth();
-  const [isLoading, setIsLoading] = React.useState(false);
+  const { setAuthenticatedUser, unlock } = useAuth();
+  const [step, setStep] = React.useState<Step>('code');
   const [error, setError] = React.useState('');
-  const [showProblemHelp, setShowProblemHelp] = React.useState(false);
+  const [helpOpen, setHelpOpen] = React.useState(false);
+  const request = useSlowRequest();
 
-  // Email associated with the remembered device or remembered identity
-  const email = deviceMeta.email || rememberedIdentity?.email || '';
+  const identifier = deviceMeta.email || rememberedIdentity?.email || '';
+  const sentRef = React.useRef(false);
 
-  const handleSendCode = React.useCallback(async () => {
-    if (!email) {
-      setError('No email found for this device. Please sign in again.');
+  const message = (err: unknown, fallback: string) =>
+    (err instanceof Error && err.message) || fallback;
+
+  const sendCode = React.useCallback(async () => {
+    if (!identifier) {
+      setError('We do not have a way to reach you on this phone. Sign in again to continue.');
       return;
     }
-    setIsLoading(true);
+    if (request.busy) return;
+
     setError('');
+    request.start();
+
     try {
       await authApi.requestCode({
-        email,
+        email: identifier,
         purpose: 'pin_reset',
         device_uuid: deviceMeta.device_uuid,
       });
-      notify.info(`Confirmation code sent to ${email}`);
-    } catch (err: any) {
-      const msg = err?.message || 'Failed to send confirmation code';
-      setError(msg);
-      notify.error(err, 'Failed to send confirmation code');
-    } finally {
-      setIsLoading(false);
+      request.finish();
+    } catch (err) {
+      request.finish();
+      setError(message(err, 'We could not send your code. Try again.'));
     }
-  }, [email, deviceMeta.device_uuid]);
+  }, [identifier, deviceMeta.device_uuid, request]);
 
-  const hasSentRef = React.useRef(false);
-
-  // Trigger code send on initial mount exactly once
+  // Send one code on arrival — the user asked for this by tapping Forgot PIN,
+  // so making them tap again to receive it would be a wasted step.
   React.useEffect(() => {
-    if (!hasSentRef.current) {
-      hasSentRef.current = true;
-      handleSendCode();
-    }
-  }, [handleSendCode]);
+    if (sentRef.current) return;
+    sentRef.current = true;
+    sendCode();
+  }, [sendCode]);
 
-  const handleVerifyCode = async (code: string) => {
-    setIsLoading(true);
+  const verifyCode = async (code: string) => {
+    if (request.busy) return;
     setError('');
+    request.start();
+
     try {
-      const res = await authApi.verifyCode({
-        email,
+      const result = await authApi.verifyCode({
+        email: identifier,
         code,
         purpose: 'pin_reset',
         device_uuid: deviceMeta.device_uuid,
       });
 
-      if (res.outcome === 'authenticated') {
-        // Successfully verified via OTP:
-        // Clear old PIN on this device so user can set a new one or continue to dashboard
-        if (deviceMeta.id) {
-          await db.deviceMeta.update(deviceMeta.id, {
-            pin_hash: undefined,
-            pin_salt: undefined,
-          });
-        }
+      request.finish();
 
-        notify.success('Identity verified! Please set a new PIN in your account settings.');
-        await setAuthenticatedUser(res.user, res.business);
+      if (result.outcome === 'authenticated') {
+        await setAuthenticatedUser(result.user, result.business);
+        setStep('newPin');
         return;
       }
 
-      setError('Unable to authenticate. Please try again.');
-    } catch (err: any) {
-      const msg = err?.message || 'Invalid or expired confirmation code';
-      setError(msg);
-      notify.error(err, 'Verification failed');
-    } finally {
-      setIsLoading(false);
+      setError('We could not confirm that code. Try again.');
+    } catch (err) {
+      request.finish();
+      setError(message(err, AuthStrings.codeWrong(AUTH_IDENTIFIER)));
     }
+  };
+
+  const saveNewPin = async (pin: string) => {
+    const salt = generateSalt();
+    const pinHash = await hashPin(pin, salt);
+
+    if (deviceMeta.id) {
+      await db.deviceMeta.update(deviceMeta.id, { pin_hash: pinHash, pin_salt: salt });
+    } else {
+      await db.deviceMeta.put({ ...deviceMeta, pin_hash: pinHash, pin_salt: salt });
+    }
+
+    // They have just proven who they are and set a new PIN, so let them in.
+    unlock();
   };
 
   return (
     <>
-      <AuthLayout showBack={true} onBack={onCancel}>
+      {step === 'code' && (
         <CodeScreen
-          email={email}
-          onVerify={handleVerifyCode}
-          onResend={handleSendCode}
-          onProblemLoggingIn={() => setShowProblemHelp(true)}
-          isLoading={isLoading}
+          identifier={identifier}
+          onVerify={verifyCode}
+          onResend={sendCode}
+          onChangeIdentifier={onCancel}
+          onBack={onCancel}
+          onHelp={() => setHelpOpen(true)}
+          busy={request.busy}
           error={error}
-          onChangeEmail={onCancel}
+          step={1}
+          totalSteps={2}
+          stepLabelOverride={AuthStrings.resetPinTitle}
+          slowNetwork={request.showReassurance}
+          timedOut={request.timedOut}
         />
-      </AuthLayout>
+      )}
 
-      <ProblemLoggingInSheet
-        open={showProblemHelp}
-        onOpenChange={setShowProblemHelp}
-        email={email}
-      />
+      {step === 'newPin' && (
+        <PinSetupScreen
+          onContinue={saveNewPin}
+          onBack={onCancel}
+          onHelp={() => setHelpOpen(true)}
+          step={2}
+          totalSteps={2}
+          stepLabelOverride={AuthStrings.resetPinTitle}
+          titleOverride={AuthStrings.newPinTitle}
+          subtitleOverride={AuthStrings.newPinSubtitle}
+        />
+      )}
+
+      <HelpSheet open={helpOpen} onOpenChange={setHelpOpen} screenName="Reset your PIN" />
     </>
   );
 }
