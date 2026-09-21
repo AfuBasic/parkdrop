@@ -402,19 +402,17 @@ export function PackagesScreen({
                     {PackagesStrings.noSearchResultsBody}
                   </p>
                 </div>
-                {onNavigateToAdd && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const cleanPhone = searchQuery.replace(/\D/g, '');
-                      onNavigateToAdd(cleanPhone.length >= 7 ? cleanPhone : undefined);
-                    }}
-                    className="mt-2 min-h-[48px] px-5 py-2.5 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[16px] font-extrabold flex items-center gap-2 shadow-xs hover:bg-[var(--pd-blue-hover)] active:scale-95 transition-transform"
-                  >
-                    <PackagePlus className="w-5 h-5" />
-                    <span>{PackagesStrings.addPackageAction}</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const cleanPhone = searchQuery.replace(/\D/g, '');
+                    handleNavigateToAdd(cleanPhone.length >= 7 ? cleanPhone : undefined);
+                  }}
+                  className="mt-2 min-h-[48px] px-5 py-2.5 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[16px] font-extrabold flex items-center gap-2 shadow-xs hover:bg-[var(--pd-blue-hover)] active:scale-95 transition-transform"
+                >
+                  <PackagePlus className="w-5 h-5" />
+                  <span>{PackagesStrings.addPackageAction}</span>
+                </button>
               </div>
             ) : (
               <ul className="flex flex-col gap-2.5 p-0 m-0" role="list">
@@ -441,7 +439,7 @@ export function PackagesScreen({
                 isPositiveFilterEmpty={isPositiveEmpty}
                 filterType={positiveEmptyType}
                 onClearFilters={handleClearFilters}
-                onAddPackage={() => onNavigateToAdd?.()}
+                onAddPackage={() => handleNavigateToAdd()}
               />
             ) : (
               <div className="flex flex-col gap-4">
