@@ -1,5 +1,5 @@
 
-import { AuthStrings } from '../strings';
+import { AuthStrings } from '@/features/auth/strings';
 import { Button } from '@/design-system';
 import { CheckCircle2 } from 'lucide-react';
 
