@@ -1,106 +1,119 @@
 import * as React from 'react';
-import { AuthLayout } from './AuthLayout';
 import { RememberedReauthScreen } from '@/features/auth/screens/RememberedReauthScreen';
 import { CodeScreen } from '@/features/auth/screens/CodeScreen';
+import { HelpSheet } from './HelpSheet';
 import { authApi } from '@/features/auth/api';
 import { useAuth } from '@/features/auth/AuthContext';
-import { notify } from '@/lib/notify';
+import { useSlowRequest } from '@/features/auth/lib/useSlowRequest';
+import { AuthStrings } from '@/features/auth/strings';
+import { AUTH_IDENTIFIER } from '@/features/auth/config';
 import type { RememberedIdentity } from '@/lib/db';
 
-import { ProblemLoggingInSheet } from './ProblemLoggingInSheet';
-
-interface RememberedReauthFlowProps {
+export interface RememberedReauthFlowProps {
   identity: RememberedIdentity;
-  onSwitchToEmail: () => void;
+  onSwitchToNewAccount: () => void;
 }
 
 type Step = 'prompt' | 'code';
 
-export function RememberedReauthFlow({ identity, onSwitchToEmail }: RememberedReauthFlowProps) {
+/**
+ * Signing a known user back in after their session ran out.
+ *
+ * Reuses the same CodeScreen as first-run so there is only one code screen in
+ * the app to get right, and so a returning user sees exactly what they saw the
+ * first time.
+ */
+export function RememberedReauthFlow({
+  identity,
+  onSwitchToNewAccount,
+}: RememberedReauthFlowProps) {
   const { setAuthenticatedUser } = useAuth();
   const [step, setStep] = React.useState<Step>('prompt');
-  const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState('');
-  const [showProblemHelp, setShowProblemHelp] = React.useState(false);
+  const [helpOpen, setHelpOpen] = React.useState(false);
+  const request = useSlowRequest();
 
-  const handleSendCode = async (targetEmail: string) => {
-    setIsLoading(true);
+  const message = (err: unknown, fallback: string) =>
+    (err instanceof Error && err.message) || fallback;
+
+  const sendCode = async (target: string) => {
+    if (request.busy) return;
     setError('');
+    request.start();
+
     try {
-      await authApi.requestCode({
-        email: targetEmail,
-        purpose: 'auth',
-      });
+      await authApi.requestCode({ email: target, purpose: 'auth' });
+      request.finish();
       setStep('code');
-    } catch (err: any) {
-      setError(err.message || 'Failed to send confirmation code');
-      notify.error(err, 'Failed to send confirmation code');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      request.finish();
+      setError(message(err, 'We could not send your code. Try again.'));
     }
   };
 
-  const handleVerifyCode = async (code: string) => {
-    setIsLoading(true);
+  const verifyCode = async (code: string) => {
+    if (request.busy) return;
     setError('');
+    request.start();
+
     try {
-      const res = await authApi.verifyCode({
+      const result = await authApi.verifyCode({
         email: identity.email,
         code,
         purpose: 'auth',
       });
 
-      if (res.outcome === 'authenticated') {
-        notify.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
-        await setAuthenticatedUser(res.user, res.business);
+      if (result.outcome === 'authenticated') {
+        request.finish();
+        await setAuthenticatedUser(result.user, result.business);
         return;
       }
 
-      // If somehow not found, switch to full flow
-      onSwitchToEmail();
-    } catch (err: any) {
-      setError(err.message || 'Invalid or expired confirmation code');
-      notify.error(err, 'Invalid or expired confirmation code');
-    } finally {
-      setIsLoading(false);
+      // We thought we knew this person but the server does not: start over
+      // rather than leaving them on a screen that cannot go anywhere.
+      request.finish();
+      onSwitchToNewAccount();
+    } catch (err) {
+      request.finish();
+      setError(message(err, AuthStrings.codeWrong(AUTH_IDENTIFIER)));
     }
   };
 
   return (
     <>
-      <AuthLayout 
-        showBack={step === 'code'} 
-        onBack={() => {
-          setStep('prompt');
-          setError('');
-        }}
-      >
-        {step === 'prompt' && (
-          <RememberedReauthScreen
-            identity={identity}
-            onContinue={handleSendCode}
-            onSwitchAccount={onSwitchToEmail}
-            isLoading={isLoading}
-          />
-        )}
-        {step === 'code' && (
-          <CodeScreen
-            email={identity.email}
-            onVerify={handleVerifyCode}
-            onResend={() => handleSendCode(identity.email)}
-            onProblemLoggingIn={() => setShowProblemHelp(true)}
-            isLoading={isLoading}
-            error={error}
-            onChangeEmail={onSwitchToEmail}
-          />
-        )}
-      </AuthLayout>
+      {step === 'prompt' && (
+        <RememberedReauthScreen
+          identity={identity}
+          onContinue={sendCode}
+          onSwitchAccount={onSwitchToNewAccount}
+          onHelp={() => setHelpOpen(true)}
+          busy={request.busy}
+          error={error}
+          slowNetwork={request.showReassurance}
+        />
+      )}
 
-      <ProblemLoggingInSheet
-        open={showProblemHelp}
-        onOpenChange={setShowProblemHelp}
-        email={identity.email}
-      />
+      {step === 'code' && (
+        <CodeScreen
+          identifier={identity.email}
+          onVerify={verifyCode}
+          onResend={() => sendCode(identity.email)}
+          onChangeIdentifier={onSwitchToNewAccount}
+          onBack={() => {
+            setStep('prompt');
+            setError('');
+          }}
+          onHelp={() => setHelpOpen(true)}
+          busy={request.busy}
+          error={error}
+          step={2}
+          totalSteps={2}
+          slowNetwork={request.showReassurance}
+          timedOut={request.timedOut}
+        />
+      )}
+
+      <HelpSheet open={helpOpen} onOpenChange={setHelpOpen} screenName="Welcome back" />
     </>
   );
 }
