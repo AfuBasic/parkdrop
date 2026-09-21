@@ -13,8 +13,8 @@ export function removeDeviceUuid(): void {
   localStorage.removeItem('pd_device_uuid');
 }
 
-import { db } from '../db/database';
-import type { LocalAuthorization } from '../db/schema';
+import { db } from '@/offline/db/database';
+import type { LocalAuthorization } from '@/offline/db/schema';
 
 export async function saveOfflineAuthorization(userId: number, businessId: number, businessName: string, pickupPointId: number | null): Promise<void> {
   const expiresAt = new Date();
