@@ -64,6 +64,7 @@ export interface OnboardingPayload {
   first_name: string;
   pickup_point_name: string;
   park_name?: string;
+  contact_phone?: string;
   challenge_id: number;
   device_uuid: string;
   device_name?: string;
