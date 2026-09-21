@@ -4,6 +4,7 @@ import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAttentionItems } from '@/features/attention/hooks/useAttentionItems';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { Logo } from '@/features/auth/components/Logo';
 import {
   MessageSquare,
   ChevronRight,
@@ -31,10 +32,13 @@ export function MoreScreen() {
   });
 
   return (
-    <div className="flex flex-col h-full max-w-lg mx-auto pb-8 pt-4">
-      <h1 className="text-2xl font-bold text-text-primary mb-5 tracking-tight">
-        Settings & More
-      </h1>
+    <div className="flex flex-col h-full max-w-lg mx-auto pb-8 pt-4 px-4 sm:px-0">
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-2xl font-bold text-text-primary tracking-tight m-0">
+          Settings & More
+        </h1>
+        <Logo tone="light" markOnly />
+      </div>
 
       <div className="flex flex-col gap-5">
         {/* Account Profile Header */}
