@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\Auth\AuthChallengeController;
 use App\Http\Controllers\Api\Auth\OnboardingController;
 use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Media\CloudinarySignController;
+use App\Http\Controllers\Api\V1\Business\BusinessDetailsController;
+use App\Http\Controllers\Api\V1\Business\BusinessStaffController;
 use App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
@@ -58,15 +60,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Business Staff & Details (Build 18)
     Route::prefix('v1/business')->group(function () {
-        Route::get('staff', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'index']);
-        Route::post('invitations', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'invite']);
-        Route::post('invitations/{invitation}/resend', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'resend']);
-        Route::post('invitations/{invitation}/revoke', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'revoke']);
-        Route::patch('members/{membership}/role', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'changeRole']);
-        Route::post('members/{membership}/remove', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'removeMember']);
+        Route::get('staff', [BusinessStaffController::class, 'index']);
+        Route::post('invitations', [BusinessStaffController::class, 'invite']);
+        Route::post('invitations/{invitation}/resend', [BusinessStaffController::class, 'resend']);
+        Route::post('invitations/{invitation}/revoke', [BusinessStaffController::class, 'revoke']);
+        Route::patch('members/{membership}/role', [BusinessStaffController::class, 'changeRole']);
+        Route::post('members/{membership}/remove', [BusinessStaffController::class, 'removeMember']);
 
-        Route::get('details', [\App\Http\Controllers\Api\V1\Business\BusinessDetailsController::class, 'show']);
-        Route::patch('details', [\App\Http\Controllers\Api\V1\Business\BusinessDetailsController::class, 'update']);
+        Route::get('details', [BusinessDetailsController::class, 'show']);
+        Route::patch('details', [BusinessDetailsController::class, 'update']);
     });
 });
 
