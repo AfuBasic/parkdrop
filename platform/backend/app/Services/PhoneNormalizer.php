@@ -21,22 +21,22 @@ class PhoneNormalizer
         // Handle various common Nigerian formats
         // 08031234567 -> 11 digits starting with 0
         if (preg_match('/^0([789][01]\d{8})$/', $clean, $matches)) {
-            return '+234' . $matches[1];
+            return '+234'.$matches[1];
         }
 
         // 8031234567 -> 10 digits starting with 7, 8, or 9
         if (preg_match('/^([789][01]\d{8})$/', $clean, $matches)) {
-            return '+234' . $matches[1];
+            return '+234'.$matches[1];
         }
 
         // 2348031234567 -> 13 digits starting with 234
         if (preg_match('/^234([789][01]\d{8})$/', $clean, $matches)) {
-            return '+234' . $matches[1];
+            return '+234'.$matches[1];
         }
 
         // +2348031234567 -> 14 chars starting with +234
         if (preg_match('/^\+234([789][01]\d{8})$/', $clean, $matches)) {
-            return '+234' . $matches[1];
+            return '+234'.$matches[1];
         }
 
         // If it doesn't match our recognized rules, return null
@@ -50,7 +50,7 @@ class PhoneNormalizer
     {
         // Example: +2348031234567 -> 0803 123 4567
         if (preg_match('/^\+234(\d{3})(\d{3})(\d{4})$/', $normalized, $matches)) {
-            return '0' . $matches[1] . ' ' . $matches[2] . ' ' . $matches[3];
+            return '0'.$matches[1].' '.$matches[2].' '.$matches[3];
         }
 
         return $normalized;
