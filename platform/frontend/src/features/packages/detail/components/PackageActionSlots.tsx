@@ -5,6 +5,7 @@ import type { PaymentSummaryData } from '@/features/payments/domain/payment-summ
 interface PackageActionSlotsProps {
   pkg: LocalPackage;
   paymentSummary: PaymentSummaryData;
+  onOpenRelease?: () => void;
   onOpenRecordPayment?: () => void;
   onOpenReturn?: () => void;
   onOpenCancel?: () => void;
@@ -13,6 +14,7 @@ interface PackageActionSlotsProps {
 export function PackageActionSlots({
   pkg,
   paymentSummary,
+  onOpenRelease,
   onOpenReturn,
   onOpenCancel,
 }: PackageActionSlotsProps) {
@@ -27,9 +29,7 @@ export function PackageActionSlots({
       {isWaiting && (
         <button
           type="button"
-          onClick={() => {
-            alert('Package release and collection workflow is scheduled for Build 15.');
-          }}
+          onClick={onOpenRelease}
           className="w-full h-13 bg-action-primary hover:bg-action-primary-hover active:scale-[0.99] text-white font-bold rounded-[var(--radius-xl)] shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer text-base"
         >
           <PackageCheck className="w-5 h-5" />
