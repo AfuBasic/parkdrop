@@ -1,55 +1,56 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CodeScreen } from './CodeScreen';
 
-const meta = {
-  title: 'Features/Auth/CodeScreen',
+/**
+ * The code screen is where most sign-ups are lost, so each of the states it
+ * can land in gets its own story — including the ones that only show up on a
+ * bad connection, which are the hardest to reach by hand.
+ */
+const meta: Meta<typeof CodeScreen> = {
+  title: 'Auth/CodeScreen',
   component: CodeScreen,
   parameters: {
     layout: 'fullscreen',
-    viewport: {
-      defaultViewport: 'mobile1',
-    },
+    viewport: { defaultViewport: 'mobile1' },
   },
-  tags: ['autodocs'],
-} satisfies Meta<typeof CodeScreen>;
+  args: {
+    identifier: 'chinedu@gmail.com',
+    onVerify: () => {},
+    onResend: () => {},
+    onChangeIdentifier: () => {},
+    onBack: () => {},
+    onHelp: () => {},
+  },
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-const defaultArgs = {
-  email: 'afutunde@gmail.com',
-  onVerify: (code: string) => alert(`Verified with code: ${code}`),
-  onResend: () => alert('Resend clicked'),
-  onProblemLoggingIn: () => alert('Problem logging in clicked'),
-  onChangeEmail: () => alert('Edit email clicked'),
+type Story = StoryObj<typeof CodeScreen>;
+
+/** Fresh arrival: empty boxes, countdown running. */
+export const Default: Story = {};
+
+/** Waiting on the server after the sixth digit. */
+export const Checking: Story = {
+  args: { busy: true },
 };
 
-export const Empty: Story = {
-  args: {
-    ...defaultArgs,
-  },
-};
-
-export const Loading: Story = {
-  args: {
-    ...defaultArgs,
-    isLoading: true,
-  },
-};
-
+/** The server rejected the code. Boxes clear and turn red. */
 export const WrongCode: Story = {
-  args: {
-    ...defaultArgs,
-    error: "The code you entered is incorrect or has expired.",
-  },
+  args: { error: 'That code is not right. Check your email and try again.' },
 };
 
-export const ResendAvailable: Story = {
-  args: {
-    ...defaultArgs,
-  },
-  play: async () => {
-    // We would need to manipulate state or pass a prop to force this in a real story
-    // For now, this is just to document the state exists
-  }
+/** Eight seconds in on a slow connection. */
+export const SlowNetwork: Story = {
+  args: { busy: true, slowNetwork: true },
+};
+
+/** Fifteen seconds in — we stop pretending and offer a retry. */
+export const TimedOut: Story = {
+  args: { timedOut: true },
+};
+
+/** Phone mode, where the copy talks about SMS rather than email. */
+export const PhoneMode: Story = {
+  args: { mode: 'phone', identifier: '+2348031234567' },
 };
