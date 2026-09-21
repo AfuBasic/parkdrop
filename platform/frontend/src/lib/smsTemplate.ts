@@ -1,17 +1,25 @@
 /**
- * The customer arrival SMS — single source of truth for the frontend.
+ * The customer arrival SMS — single source of truth for frontend and backend.
  *
  * This MUST stay in step with the backend sender in
- * platform/backend/app/Console/Commands/ProcessOutboxCommand.php
- * (renderArrivalSms). The pickup-point setup screen previews the real message
- * to the business owner, so if these two drift the preview becomes a lie.
+ * platform/backend/app/Console/Commands/ProcessOutboxCommand.php.
+ * The pickup-point setup screens preview the real message to the business owner,
+ * so if these two drift the preview becomes a lie.
  *
- * Cost note: Nigerian SMS is billed per segment. A single character outside
- * the GSM 03.38 alphabet (a curly quote, an en dash, an emoji) switches the
- * whole message to UCS-2 and drops the single-segment budget from 160
- * characters to 70 — more than doubling the cost of every arrival SMS. That
- * is why the template uses a plain hyphen and why we normalise typed names.
+ * Hard limit: 130 characters.
+ * Template:
+ *   Your package is at {pickupPoint}, {park}.
+ *   Show code {code} at pickup.
+ *   Call: {phone}
+ *   ParkDrop
+ *
+ * (The "Call: {phone}\n" line is omitted if no phone is present).
  */
+
+import { PICKUP_CODE_LENGTH } from '@/features/packages/domain/PackageCodeGenerator';
+
+/** Hard character limit for arrival SMS across client and server. */
+export const SMS_MAX_CHARS = 130;
 
 /** Single-segment budget for a GSM 03.38 message. */
 export const GSM7_SINGLE_SEGMENT = 160;
@@ -36,10 +44,16 @@ export interface SmsNames {
   parkName: string;
 }
 
-export interface ArrivalSmsParts extends SmsNames {
-  customerFirstName: string;
-  packageId: string;
-  pickupCode: string;
+export interface CustomerSmsParts extends SmsNames {
+  phone?: string | null;
+  code: string;
+}
+
+export interface RenderCustomerSmsResult {
+  text: string;
+  length: number;
+  valid: boolean;
+  reason?: 'TOO_LONG' | 'NON_GSM7' | 'EMPTY_NAME';
 }
 
 /** True when every character can be sent in a single-byte GSM-7 message. */
@@ -61,58 +75,112 @@ export function countSeptets(text: string): number {
 }
 
 /**
- * Render the arrival SMS exactly as the backend sends it.
- * The park clause is dropped when there is no park name.
+ * Render customer SMS according to standard template:
+ * Your package is at {pickupPoint}, {park}.
+ * Show code {code} at pickup.
+ * Call: {phone}
+ * ParkDrop
  */
-export function renderArrivalSms({
-  customerFirstName,
-  packageId,
-  pickupCode,
+export function renderCustomerSms({
   pickupPointName,
   parkName,
-}: ArrivalSmsParts): string {
-  const place = parkName.trim()
-    ? `${pickupPointName.trim()}, ${parkName.trim()}`
-    : pickupPointName.trim();
+  phone,
+  code,
+}: CustomerSmsParts): RenderCustomerSmsResult {
+  const cleanPoint = normaliseForSms(pickupPointName).trim();
+  const cleanPark = normaliseForSms(parkName).trim();
 
-  return `Hi ${customerFirstName}, your parcel ${packageId} has arrived at ${place}. Use code ${pickupCode} to collect it. - ParkDrop`;
+  const place = cleanPark !== ''
+    ? (cleanPoint !== '' ? `${cleanPoint}, ${cleanPark}` : cleanPark)
+    : cleanPoint;
+
+  let callLine = '';
+  if (phone) {
+    const rawDigits = phone.replace(/\D/g, '');
+    let displayPhone = rawDigits;
+    if (rawDigits.startsWith('234') && rawDigits.length === 13) {
+      displayPhone = '0' + rawDigits.slice(3);
+    } else if (!rawDigits.startsWith('0') && rawDigits.length === 10) {
+      displayPhone = '0' + rawDigits;
+    }
+    if (displayPhone) {
+      callLine = `Call: ${displayPhone}\n`;
+    }
+  }
+
+  const text = `Your package is at ${place}.\nShow code ${code} at pickup.\n${callLine}ParkDrop`;
+  const septetCount = countSeptets(text);
+  const isAllGsm7 = isGsm7(text);
+
+  let valid = true;
+  let reason: RenderCustomerSmsResult['reason'] = undefined;
+
+  if (cleanPoint === '' && cleanPark === '') {
+    valid = false;
+    reason = 'EMPTY_NAME';
+  } else if (!isAllGsm7) {
+    valid = false;
+    reason = 'NON_GSM7';
+  } else if (septetCount > SMS_MAX_CHARS) {
+    valid = false;
+    reason = 'TOO_LONG';
+  }
+
+  return {
+    text,
+    length: septetCount,
+    valid,
+    reason,
+  };
 }
 
 /**
- * Realistic worst-case stand-ins used both for the on-screen preview and for
- * computing how many characters the owner's two names may take up.
- * Reserving a long-ish customer first name keeps real messages inside one
- * segment rather than only the sample.
+ * Backwards-compatibility wrapper for any legacy call site.
+ */
+export function renderArrivalSms(parts: {
+  customerFirstName?: string;
+  packageId?: string;
+  pickupCode: string;
+  pickupPointName: string;
+  parkName: string;
+  phone?: string | null;
+}): string {
+  return renderCustomerSms({
+    pickupPointName: parts.pickupPointName,
+    parkName: parts.parkName,
+    phone: parts.phone ?? null,
+    code: parts.pickupCode,
+  }).text;
+}
+
+/**
+ * Realistic worst-case stand-ins used for computing preview limits.
  */
 export const SMS_PREVIEW_SAMPLE = {
-  customerFirstName: 'Chinedu',
-  packageId: 'PD-2841',
   pickupCode: '4821',
-} as const;
-
-const NAME_BUDGET_RESERVE = {
-  /** Longest first name we plan for before the message spills over. */
-  customerFirstName: 'Oluwafunmilayo',
-  packageId: 'PD-88241',
-  pickupCode: '482100',
+  phone: '08031234567',
 } as const;
 
 /**
  * How many characters the pickup point and park names may use between them
- * before the arrival SMS needs a second segment.
+ * before the arrival SMS exceeds SMS_MAX_CHARS (130 chars).
  *
- * Derived from the template itself rather than hard-coded, so editing
- * `renderArrivalSms` automatically re-derives the limit.
+ * Computed against the longest possible code length (PICKUP_CODE_LENGTH)
+ * and an 11-digit phone number so the user never exceeds 130 characters.
  */
 export function combinedNameBudget(): number {
-  const fixed = renderArrivalSms({
-    ...NAME_BUDGET_RESERVE,
+  const worstCaseCode = 'A'.repeat(PICKUP_CODE_LENGTH); // 7 chars
+  const worstCasePhone = '08031234567'; // 11 chars
+  const emptyRender = renderCustomerSms({
     pickupPointName: '',
     parkName: '',
+    phone: worstCasePhone,
+    code: worstCaseCode,
   });
-  // The empty-name render still carries the ", " joiner cost we must reserve.
-  const overhead = countSeptets(fixed) + 2;
-  return Math.max(0, GSM7_SINGLE_SEGMENT - overhead);
+
+  // The empty-name render plus ", " joiner overhead
+  const overhead = countSeptets(emptyRender.text) + 2;
+  return Math.max(0, SMS_MAX_CHARS - overhead);
 }
 
 export interface SmsFit {
@@ -122,7 +190,7 @@ export interface SmsFit {
   used: number;
   /** Characters the two names may use in total. */
   budget: number;
-  /** True when the message still fits in one SMS. */
+  /** True when the message still fits within the 130 character limit. */
   fitsOneSms: boolean;
   /** Characters present that would force the costly UCS-2 encoding. */
   unsupportedCharacters: string[];
@@ -156,24 +224,25 @@ export function unsupportedCharacters(value: string): string[] {
 }
 
 /** Everything the pickup-point screen needs to render and police the preview. */
-export function checkSmsFit(names: SmsNames): SmsFit {
+export function checkSmsFit(names: SmsNames, phone: string = SMS_PREVIEW_SAMPLE.phone): SmsFit {
   const pickupPointName = normaliseForSms(names.pickupPointName);
   const parkName = normaliseForSms(names.parkName);
 
-  const message = renderArrivalSms({
-    ...SMS_PREVIEW_SAMPLE,
+  const rendered = renderCustomerSms({
+    code: SMS_PREVIEW_SAMPLE.pickupCode,
     pickupPointName,
     parkName,
+    phone,
   });
 
   const used = countSeptets(pickupPointName) + countSeptets(parkName);
   const budget = combinedNameBudget();
 
   return {
-    message,
+    message: rendered.text,
     used,
     budget,
-    fitsOneSms: used <= budget,
+    fitsOneSms: rendered.valid && rendered.length <= SMS_MAX_CHARS,
     unsupportedCharacters: unsupportedCharacters(pickupPointName + parkName),
   };
 }
@@ -200,13 +269,6 @@ export const JUNK_NAMES = [
 
 /**
  * The example names printed on the setup screen as placeholders.
- *
- * These are deliberately NOT refused on their own. "Peace Park" is a
- * perfectly plausible real park, and there is very likely a real
- * "Chima Parcel Services" — hard-blocking either would wall a legitimate
- * owner out of setup with no way forward, which is a worse failure than the
- * one it prevents. We only refuse them when BOTH fields match the examples
- * exactly, which is unmistakably someone copying what was on screen.
  */
 export const EXAMPLE_NAMES = {
   pickupPoint: 'chima parcel services',
