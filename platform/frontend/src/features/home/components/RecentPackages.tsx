@@ -28,17 +28,17 @@ export function RecentPackages({ onSeeAll, onAddPackage, onSelectPackage }: Rece
       </div>
 
       {recentPackages.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-[var(--radius-xl)] bg-surface-default border border-border-subtle shadow-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-page mb-4 text-action-primary">
-            <Package className="h-8 w-8" />
+        <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-[var(--radius-xl)] bg-surface-default border border-border-subtle shadow-xs">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 mb-3 text-action-primary">
+            <Package className="h-7 w-7" />
           </div>
-          <h3 className="text-[var(--text-body-lg)] font-semibold text-text-primary mb-2">No packages yet</h3>
-          <p className="text-[var(--text-body-md)] text-text-secondary max-w-[250px] mb-6">
-            Packages you receive will appear here.
+          <h3 className="text-base font-bold text-text-primary mb-1.5">No packages yet</h3>
+          <p className="text-xs text-text-secondary max-w-[260px] mb-5 leading-relaxed">
+            Record your first package to start managing customer pickups and SMS notifications.
           </p>
           <button 
             onClick={onAddPackage}
-            className="px-5 py-2.5 bg-surface-page border border-border-default hover:bg-surface-subtle text-text-primary font-medium rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+            className="px-6 py-3 bg-action-primary hover:bg-action-primary-hover active:scale-[0.99] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer min-h-[48px] flex items-center justify-center"
           >
             Add your first package
           </button>
