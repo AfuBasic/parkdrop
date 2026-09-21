@@ -1,4 +1,4 @@
-import { AuthStrings } from '../strings';
+import { AuthStrings } from '@/features/auth/strings';
 import { Button } from '@/design-system';
 import { User, ArrowRight } from 'lucide-react';
 import type { RememberedIdentity } from '@/lib/db';
