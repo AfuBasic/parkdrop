@@ -125,7 +125,7 @@
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px;">
                     <tr>
                         <td align="center" class="email-footer" style="padding: 28px 20px; color: #475569; font-size: 13px; font-weight: 600; line-height: 1.6;">
-                            ParkDrop &mdash; simple package pickup for local businesses.<br>
+                            ParkDrop, simple package pickup for local businesses.<br>
                             <a href="https://parkdrop.com.ng" style="color: #2563EB; text-decoration: none; font-weight: 700;">parkdrop.com.ng</a>
                             &nbsp;&middot;&nbsp;
                             <a href="https://parkdrop.com.ng/privacy.html" style="color: #2563EB; text-decoration: none; font-weight: 700;">Privacy Notice</a>
