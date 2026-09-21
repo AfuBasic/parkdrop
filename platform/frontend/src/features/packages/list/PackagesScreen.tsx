@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { AlertCircle, PackagePlus } from 'lucide-react';
 import { db } from '@/offline/db/database';
@@ -42,6 +43,10 @@ export function PackagesScreen({
   onNavigateToAdd,
   onSelectPackage,
 }: PackagesScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleNavigateToAdd = onNavigateToAdd ?? ((phone) => routerNavigate({ to: '/packages/new', search: phone ? { phone } : undefined }));
+  const handleSelectPackage = onSelectPackage ?? ((id: string) => routerNavigate({ to: '/packages/$packageId', params: { packageId: id } }));
+
   const { business } = useAuth();
   const businessId = business?.id || 0;
 
@@ -460,7 +465,7 @@ export function PackagesScreen({
                         <PackageListRow
                           key={item.pkg.id}
                           data={item}
-                          onSelect={(id) => onSelectPackage?.(id)}
+                          onSelect={(id) => handleSelectPackage(id)}
                           showStatusBadge={activeTab !== 'WAITING'}
                         />
                       ))}
