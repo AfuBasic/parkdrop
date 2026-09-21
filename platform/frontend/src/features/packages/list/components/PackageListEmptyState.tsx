@@ -1,5 +1,5 @@
 import { CheckCircle2, PackagePlus } from 'lucide-react';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '../../strings';
 
 export interface PackageListEmptyStateProps {
   isPositiveFilterEmpty?: boolean;
