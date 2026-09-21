@@ -2,13 +2,16 @@
 
 use App\Models\Business;
 use App\Models\User;
-use App\Models\Device;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Tests\TestCase;
+
+uses(TestCase::class, RefreshDatabase::class);
 
 test('it rejects unauthorized push attempts', function () {
     $response = $this->postJson('/api/v1/sync/push', [
         'device_uuid' => Str::uuid(),
-        'mutations' => []
+        'mutations' => [],
     ]);
 
     $response->assertUnauthorized();
@@ -16,7 +19,10 @@ test('it rejects unauthorized push attempts', function () {
 
 test('it processes valid mutations and enforces idempotency', function () {
     $user = User::factory()->create();
-    $business = Business::factory()->create();
+    $business = Business::create([
+        'public_id' => (string) Str::uuid(),
+        'name' => 'Push Test Business',
+    ]);
     $user->memberships()->create(['business_id' => $business->id, 'role' => 'owner']);
 
     $deviceUuid = Str::uuid()->toString();
@@ -31,8 +37,8 @@ test('it processes valid mutations and enforces idempotency', function () {
                 'operation' => 'TEST_OPERATION',
                 'payload' => [],
                 'device_sequence' => 1,
-            ]
-        ]
+            ],
+        ],
     ]);
 
     $response1->assertOk();
@@ -48,8 +54,8 @@ test('it processes valid mutations and enforces idempotency', function () {
                 'operation' => 'TEST_OPERATION',
                 'payload' => [],
                 'device_sequence' => 1,
-            ]
-        ]
+            ],
+        ],
     ]);
 
     $response2->assertOk();
