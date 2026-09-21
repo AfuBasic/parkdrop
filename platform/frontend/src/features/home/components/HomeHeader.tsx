@@ -1,56 +1,93 @@
-import { useAuth } from '@/features/auth/AuthContext';
-import { SyncIndicator } from '@/offline/components/SyncIndicator';
-import { useSyncState } from '@/offline/hooks/useSyncState';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/offline/db/database';
-import { SmsCreditBalance } from '@/features/sms-credits/components/SmsCreditBalance';
+import { Logo } from '@/features/auth/components/Logo';
+import { cn } from '@/lib/utils';
+import { SyncChip, type SyncSummary } from './SyncChip';
 
-interface HomeHeaderProps {
-  onNavigateToCredits?: () => void;
+export interface HomeHeaderProps {
+  greeting: string;
+  /** The trading name customers see. Absent while setup is unfinished. */
+  pointName: string | null;
+  /** The park it sits in. Absent while setup is unfinished. */
+  parkName: string | null;
+  sync: SyncSummary;
+  onOpenSync: () => void;
+  /**
+   * Drop to the logo row alone. Used when the keyboard is up, so the field
+   * being typed into and its results both stay on screen — the same
+   * behaviour as the sign-in screens.
+   */
+  collapsed?: boolean;
 }
 
-export function HomeHeader({ onNavigateToCredits }: HomeHeaderProps) {
-  const { user, business } = useAuth();
-  const syncState = useSyncState(business?.id);
-
-  const wallet = useLiveQuery(
-    () => business?.id ? db.smsWallets.where('business_id').equals(business.id).first() : undefined,
-    [business?.id]
-  );
-  
-  // Calculate greeting
-  const hour = new Date().getHours();
-  let greeting = 'Welcome back';
-  if (hour < 12) greeting = 'Good morning';
-  else if (hour < 18) greeting = 'Good afternoon';
-  else greeting = 'Good evening';
-
-  const name = user?.first_name || user?.email?.split('@')[0] || '';
-
+/**
+ * The solid blue band at the top of Home.
+ *
+ * Reads top to bottom in the order someone checks it: who this app is, is my
+ * work safe, hello, and then the two names that go out in every customer
+ * SMS. The pickup point is the largest thing on the screen after the action
+ * tiles because it is the one piece of identity an attendant working across
+ * two parks must not get wrong.
+ *
+ * Every piece of small text here is pure white on #2563EB — never white at
+ * reduced opacity, which is unreadable on a cheap screen in daylight.
+ */
+export function HomeHeader({
+  greeting,
+  pointName,
+  parkName,
+  sync,
+  onOpenSync,
+  collapsed = false,
+}: HomeHeaderProps) {
   return (
-    <header className="flex items-start justify-between pb-4 pt-2">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-text-primary tracking-tight">
-          {greeting}{name ? `, ${name}` : ''}
-        </h1>
-        {business && (
-          <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:gap-2 text-[var(--text-body-md)]">
-            <span className="font-semibold text-text-primary">{business.name}</span>
-            <span className="hidden sm:inline text-text-muted">·</span>
-            <span className="text-text-secondary">Default Park</span>
+    <header className="bg-[var(--pd-blue)] text-white">
+      <div className="mx-auto w-full max-w-[520px] px-4 pt-3">
+        <div className="flex items-center justify-between gap-3 min-h-[var(--pd-tap-min)]">
+          <Logo tone="blue" />
+          <SyncChip summary={sync} onOpen={onOpenSync} />
+        </div>
+
+        {/* Collapsed keeps the logo row and drops the rest, rather than
+            hiding the header entirely — losing the brand under the keyboard
+            makes the app feel like it navigated somewhere it did not. */}
+        {!collapsed && (
+          <div className="mt-3">
+            <p className="m-0 text-[var(--pd-size-meta)] font-semibold leading-tight text-white">
+              {greeting}
+            </p>
+
+            {pointName && (
+              <h1
+                className={cn(
+                  'm-0 mt-1.5 text-[var(--pd-size-point)] font-extrabold',
+                  'leading-tight tracking-[-0.02em] text-white',
+                  // One line, cut cleanly. A 40-character trading name must
+                  // not push the park off the screen.
+                  'truncate'
+                )}
+                title={pointName}
+              >
+                {pointName}
+              </h1>
+            )}
+
+            {parkName && (
+              <p className="m-0 mt-0.5 text-[var(--pd-size-meta)] font-bold leading-tight text-white truncate">
+                {parkName}
+              </p>
+            )}
+
+            {/* Nothing stands in for a missing name. The setup banner below
+                asks for the real one — see SetupBanner. */}
           </div>
         )}
       </div>
-      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-        <SyncIndicator state={syncState} />
-        {wallet !== undefined && (
-          <SmsCreditBalance
-            balance={wallet.balance}
-            variant="badge"
-            onClick={onNavigateToCredits}
-          />
-        )}
-      </div>
+
+      {/* The strip the action tiles climb into. */}
+      <div
+        aria-hidden="true"
+        style={{ height: 'var(--pd-tile-overlap)' }}
+        className={collapsed ? 'mt-3' : 'mt-5'}
+      />
     </header>
   );
 }
