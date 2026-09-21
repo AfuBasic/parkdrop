@@ -87,7 +87,7 @@ function AppContent() {
     return (
       <RememberedReauthFlow
         identity={rememberedIdentity}
-        onSwitchToEmail={() => setSwitchAccount(true)}
+        onSwitchToNewAccount={() => setSwitchAccount(true)}
       />
     );
   }
@@ -95,9 +95,7 @@ function AppContent() {
   // Unknown visitor, onboarding pending, or user chose to switch account
   if (state === 'unknown' || state === 'onboarding' || (state === 'remembered_expired' && switchAccount)) {
     return (
-      <AuthFlow 
-        initialEmail={switchAccount && rememberedIdentity ? '' : ''} 
-      />
+      <AuthFlow />
     );
   }
 
@@ -114,11 +112,13 @@ function AppContent() {
     }
 
     return (
-      <UnlockScreen 
-        deviceMeta={deviceMeta} 
-        onUnlocked={unlock} 
-        onLogout={forgetRememberedIdentity} 
+      <UnlockScreen
+        deviceMeta={deviceMeta}
+        onUnlocked={unlock}
+        onNotYou={forgetRememberedIdentity}
         onForgotPin={() => setIsForgotPin(true)}
+        // Five wrong tries falls back to a code rather than locking them out.
+        onTooManyAttempts={() => setIsForgotPin(true)}
       />
     );
   }
