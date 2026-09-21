@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AuthStrings } from '../strings';
+import { AuthStrings } from '@/features/auth/strings';
 import { Field, Input, Button } from '@/design-system';
 
 interface PickupPointScreenProps {
