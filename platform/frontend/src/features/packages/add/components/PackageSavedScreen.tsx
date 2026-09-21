@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { Check, Camera, MessageSquare, ArrowLeft, RefreshCw, X, Loader2, CloudOff } from 'lucide-react';
+import { useState, useRef, useEffect, type ChangeEvent } from 'react';
+import { Check, Camera, MessageSquare, RefreshCw, Loader2, CloudOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/features/auth/components/Logo';
 import { BigButton } from '@/features/auth/components/BigButton';
@@ -43,16 +43,16 @@ export function PackageSavedScreen({
   onPackageVoided,
   isOnline = true,
 }: PackageSavedScreenProps) {
-  const [photoPreview, setPhotoPreview] = React.useState<string | null>(null);
-  const [isProcessingPhoto, setIsProcessingPhoto] = React.useState(false);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 10s Undo countdown
-  const [undoSeconds, setUndoSeconds] = React.useState(UNDO_WINDOW_SECONDS);
-  const [isVoided, setIsVoided] = React.useState(false);
-  const [isVoiding, setIsVoiding] = React.useState(false);
+  const [undoSeconds, setUndoSeconds] = useState(UNDO_WINDOW_SECONDS);
+  const [isVoided, setIsVoided] = useState(false);
+  const [isVoiding, setIsVoiding] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (undoSeconds <= 0 || isVoided) return;
     const timer = setInterval(() => {
       setUndoSeconds((prev) => prev - 1);
@@ -61,7 +61,7 @@ export function PackageSavedScreen({
   }, [undoSeconds, isVoided]);
 
   // Photo handling
-  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -133,7 +133,7 @@ export function PackageSavedScreen({
         businessId,
         pickupPointId: null,
         packageId,
-        reason: 'CUSTOMER_CANCELLED',
+        reason: 'CREATED_BY_MISTAKE',
         reasonNote: 'Undo from Add Package screen',
         actorName: 'Staff',
       });
