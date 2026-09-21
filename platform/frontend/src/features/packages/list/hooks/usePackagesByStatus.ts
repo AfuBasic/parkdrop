@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PackageRepository } from '@/offline/repositories/PackageRepository';
-import type { PackageStatusFilter, PackageListRowItem } from '../package-list-types';
+import type { PackageStatusFilter, PackageListRowItem } from '@/features/packages/list/package-list-types';
 
 interface UsePackagesByStatusProps {
   businessId?: number;
