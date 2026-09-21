@@ -1,4 +1,4 @@
-import type { PackageSearchResult } from '../package-search-types';
+import type { PackageSearchResult } from '@/features/packages/search/package-search-types';
 import { StatusBadge } from '@/design-system/components/StatusBadge';
 import { formatMoney, formatPhone } from '@/lib/formatters';
 
