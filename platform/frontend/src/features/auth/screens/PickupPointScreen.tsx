@@ -44,7 +44,7 @@ export function PickupPointScreen({
   slowNetwork,
   timedOut,
   step = 5,
-  totalSteps = 5,
+  totalSteps = 6,
 }: PickupPointScreenProps) {
   const [pickupName, setPickupName] = React.useState(initialPickupName);
   const [parkName, setParkName] = React.useState(initialParkName);
