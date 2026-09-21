@@ -1,6 +1,6 @@
 import * as React from "react"
 import { MessageSquare } from "lucide-react"
-import { Button } from "../components/Button"
+import { Button } from "@/design-system/components/Button"
 import { cn } from "@/lib/utils"
 
 interface SmsCreditBalanceProps extends React.HTMLAttributes<HTMLDivElement> {
