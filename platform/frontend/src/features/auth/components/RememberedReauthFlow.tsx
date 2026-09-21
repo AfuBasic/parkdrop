@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { AuthLayout } from './AuthLayout';
-import { RememberedReauthScreen } from '../screens/RememberedReauthScreen';
-import { CodeScreen } from '../screens/CodeScreen';
-import { authApi } from '../api';
-import { useAuth } from '../AuthContext';
+import { RememberedReauthScreen } from '@/features/auth/screens/RememberedReauthScreen';
+import { CodeScreen } from '@/features/auth/screens/CodeScreen';
+import { authApi } from '@/features/auth/api';
+import { useAuth } from '@/features/auth/AuthContext';
 import { notify } from '@/lib/notify';
 import type { RememberedIdentity } from '@/lib/db';
 
