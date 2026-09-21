@@ -1,12 +1,13 @@
 import { useState, useId } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { Search, X, Users, PackagePlus } from 'lucide-react';
-import { useCustomerDirectory } from '../hooks/useCustomerDirectory';
-import { CustomerListItem } from './components/CustomerListItem';
-import type { CustomerDirectoryItem } from '../domain/customer-types';
+import { useCustomerDirectory } from '@/features/customers/hooks/useCustomerDirectory';
+import { CustomerListItem } from '@/features/customers/list/components/CustomerListItem';
+import type { CustomerDirectoryItem } from '@/features/customers/domain/customer-types';
 
 interface CustomersScreenProps {
   businessId: number;
-  onSelectCustomer: (customerId: string) => void;
+  onSelectCustomer?: (customerId: string) => void;
   onNavigateToAdd?: () => void;
 }
 
@@ -15,6 +16,14 @@ export function CustomersScreen({
   onSelectCustomer,
   onNavigateToAdd,
 }: CustomersScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleSelectCustomer = onSelectCustomer ?? ((customerId: string) => {
+    routerNavigate({ to: '/customers/$customerId', params: { customerId } });
+  });
+  const handleNavigateToAdd = onNavigateToAdd ?? (() => {
+    routerNavigate({ to: '/packages/new' });
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [pageSize, setPageSize] = useState(50);
   const searchInputId = useId();
@@ -46,16 +55,14 @@ export function CustomersScreen({
             )}
           </div>
 
-          {onNavigateToAdd && (
-            <button
-              type="button"
-              onClick={onNavigateToAdd}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
-            >
-              <PackagePlus className="w-4 h-4" />
-              <span>Add package</span>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleNavigateToAdd}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
+          >
+            <PackagePlus className="w-4 h-4" />
+            <span>Add package</span>
+          </button>
         </div>
 
         {/* Search Input */}
@@ -126,15 +133,13 @@ export function CustomersScreen({
                 <p className="text-sm text-text-secondary mt-1 max-w-xs">
                   Customers appear here when you record packages.
                 </p>
-                {onNavigateToAdd && (
-                  <button
-                    type="button"
-                    onClick={onNavigateToAdd}
-                    className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-action-primary hover:bg-action-primary/90 shadow-sm transition-all cursor-pointer"
-                  >
-                    Add package
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={handleNavigateToAdd}
+                  className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-action-primary hover:bg-action-primary/90 shadow-sm transition-all cursor-pointer"
+                >
+                  Add package
+                </button>
               </>
             )}
           </div>
@@ -146,7 +151,7 @@ export function CustomersScreen({
               <CustomerListItem
                 key={item.id}
                 item={item}
-                onSelect={(selected: CustomerDirectoryItem) => onSelectCustomer(selected.id)}
+                onSelect={(selected: CustomerDirectoryItem) => handleSelectCustomer(selected.id)}
               />
             ))}
           </div>
