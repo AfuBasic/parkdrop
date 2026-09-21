@@ -1,64 +1,81 @@
-import { CheckCircle2, DollarSign, Camera, CloudUpload, RotateCcw, Ban, PackageCheck } from 'lucide-react';
-import type { PackageDetailActivityItem } from '@/features/packages/detail/package-detail-types';
+import { useState } from 'react';
+import { Clock, CheckCircle2, DollarSign, Camera, RotateCcw, Ban, PackageCheck, MessageSquare } from 'lucide-react';
+import type { PackageDetailActivityItem } from '../package-detail-types';
+import { PackagesStrings } from '../strings';
 
-interface PackageActivitySectionProps {
+export interface PackageActivitySectionProps {
   timeline: PackageDetailActivityItem[];
 }
 
 export function PackageActivitySection({ timeline }: PackageActivitySectionProps) {
+  const [showAll, setShowAll] = useState(false);
+
   if (timeline.length === 0) return null;
+
+  const displayedItems = showAll ? timeline : timeline.slice(-3);
 
   const getIcon = (type: PackageDetailActivityItem['type']) => {
     switch (type) {
       case 'PAYMENT_RECORDED':
-        return <DollarSign className="w-3.5 h-3.5 text-action-primary" />;
+        return <DollarSign className="w-4 h-4 text-[var(--pd-blue)]" />;
       case 'PHOTO_ATTACHED':
-        return <Camera className="w-3.5 h-3.5 text-text-secondary" />;
+        return <Camera className="w-4 h-4 text-[var(--pd-muted)]" />;
       case 'PACKAGE_COLLECTED':
-        return <PackageCheck className="w-3.5 h-3.5 text-status-success-text" />;
+        return <PackageCheck className="w-4 h-4 text-[#15803D]" />;
       case 'PACKAGE_RETURNED':
-        return <RotateCcw className="w-3.5 h-3.5 text-status-warning-text" />;
+        return <RotateCcw className="w-4 h-4 text-[#D97706]" />;
       case 'PACKAGE_CANCELLED':
-        return <Ban className="w-3.5 h-3.5 text-status-danger-text" />;
+        return <Ban className="w-4 h-4 text-[var(--pd-bad)]" />;
       case 'SYNCED':
-        return <CloudUpload className="w-3.5 h-3.5 text-status-success-text" />;
       case 'PACKAGE_RECORDED':
       default:
-        return <CheckCircle2 className="w-3.5 h-3.5 text-status-success-text" />;
+        return <CheckCircle2 className="w-4 h-4 text-[#15803D]" />;
     }
   };
 
   return (
-    <div className="bg-surface-default rounded-[var(--radius-2xl)] border border-border-subtle p-5 shadow-sm flex flex-col gap-3">
-      <h3 className="text-base font-bold text-text-primary tracking-tight">Activity</h3>
+    <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-4 shadow-xs flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">
+          {PackagesStrings.activityTitle}
+        </h3>
 
-      <div className="relative pl-6 flex flex-col gap-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-[2px] before:bg-border-subtle">
-        {timeline.map((item) => (
-          <div key={item.id} className="relative flex flex-col gap-0.5">
-            {/* Timeline Node Dot */}
-            <div className="absolute -left-6 top-0.5 w-5 h-5 rounded-full bg-surface-page border border-border-subtle flex items-center justify-center">
+        {timeline.length > 3 && !showAll && (
+          <button
+            type="button"
+            onClick={() => setShowAll(true)}
+            className="text-[14px] font-extrabold text-[var(--pd-blue)] hover:underline min-h-[44px] px-2 flex items-center"
+          >
+            {PackagesStrings.seeAllActivity} ({timeline.length})
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-col divide-y divide-[var(--pd-line-2)]">
+        {displayedItems.map((item) => (
+          <div key={item.id} className="py-2.5 flex items-start gap-3 text-[14px]">
+            <div className="p-1.5 rounded-full bg-[var(--pd-page)] border border-[var(--pd-line)] mt-0.5 shrink-0">
               {getIcon(item.type)}
             </div>
 
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-text-primary text-sm">
-                {item.title}
-              </span>
-              <span className="text-text-muted tabular-nums">
-                {new Date(item.timestamp).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </div>
+            <div className="flex flex-col flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-extrabold text-[var(--pd-navy)] leading-tight">
+                  {item.title}
+                </span>
+                <span className="text-[13px] font-bold text-[var(--pd-muted)] tabular-nums shrink-0">
+                  {new Date(item.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                </span>
+              </div>
 
-            {(item.description || item.actorName) && (
-              <p className="text-xs text-text-secondary">
-                {item.description}
-                {item.description && item.actorName && ' · '}
-                {item.actorName && `By ${item.actorName}`}
-              </p>
-            )}
+              {(item.description || item.actorName) && (
+                <span className="text-[13px] font-bold text-[var(--pd-muted)] mt-0.5">
+                  {item.description}
+                  {item.description && item.actorName && ' · '}
+                  {item.actorName && `by ${item.actorName}`}
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>
