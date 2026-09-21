@@ -24,7 +24,10 @@ class SessionController extends Controller
             ], 401);
         }
 
-        $membership = $user->businessMemberships()->with('business.pickupPoints')->first();
+        $membership = $user->businessMemberships()
+            ->where('status', 'active')
+            ->with('business.pickupPoints')
+            ->first();
         $business = $membership?->business;
 
         return response()->json([
