@@ -2,10 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   renderCustomerSms,
   renderArrivalSms,
-  countSeptets,
   isGsm7,
   normaliseForSms,
-  unsupportedCharacters,
   combinedNameBudget,
   SMS_MAX_CHARS,
 } from './smsTemplate';
