@@ -1,12 +1,12 @@
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { PackagesStrings } from '../../strings';
+import { PackagesStrings } from '@/features/packages/strings';
 import type {
   StatusTab,
   WaitingFilterChip,
   CollectedFilterChip,
   OtherFilterChip,
-} from '../../domain/package-filters';
+} from '@/features/packages/domain/package-filters';
 
 export interface PackagesTabsAndChipsProps {
   activeTab: StatusTab;
