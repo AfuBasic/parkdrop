@@ -10,8 +10,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Alter the enum to add 'auth'
-        DB::statement("ALTER TABLE auth_challenges MODIFY COLUMN purpose ENUM('auth', 'login', 'registration', 'pin_reset', 'new_device') NOT NULL DEFAULT 'auth'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE auth_challenges MODIFY COLUMN purpose ENUM('auth', 'login', 'registration', 'pin_reset', 'new_device') NOT NULL DEFAULT 'auth'");
+        }
     }
 
     /**
@@ -19,6 +20,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE auth_challenges MODIFY COLUMN purpose ENUM('login', 'registration', 'pin_reset', 'new_device') NOT NULL DEFAULT 'login'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE auth_challenges MODIFY COLUMN purpose ENUM('login', 'registration', 'pin_reset', 'new_device') NOT NULL DEFAULT 'login'");
+        }
     }
 };
