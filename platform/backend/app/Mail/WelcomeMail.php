@@ -17,6 +17,12 @@ class WelcomeMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    /** @var int Maximum delivery attempts */
+    public int $tries = 3;
+
+    /** @var array<int> Retry backoff in seconds */
+    public array $backoff = [5, 30];
+
     /**
      * Create a new message instance.
      */

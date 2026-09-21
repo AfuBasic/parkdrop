@@ -15,6 +15,12 @@ class AuthChallengeMail extends Mailable implements ShouldBeEncrypted, ShouldQue
 {
     use Queueable, SerializesModels;
 
+    /** @var int Maximum delivery attempts (auth OTP must be delivered reliably) */
+    public int $tries = 3;
+
+    /** @var array<int> Retry backoff in seconds: 5s, 30s, 120s */
+    public array $backoff = [5, 30, 120];
+
     public string $code;
 
     /**
@@ -23,6 +29,7 @@ class AuthChallengeMail extends Mailable implements ShouldBeEncrypted, ShouldQue
     public function __construct(string $code)
     {
         $this->code = $code;
+        $this->onQueue('auth');
     }
 
     /**

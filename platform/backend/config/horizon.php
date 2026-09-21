@@ -199,14 +199,18 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default', 'auth'],
+            // auth: OTP and invitation emails — highest priority, fast retry.
+            // default: sync receipts, welcome mail, misc — moderate retry.
+            // sms: arrival SMS jobs — 2 attempts only; after 2 ambiguous is the policy.
+            'queue' => ['auth', 'default', 'sms'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
             'maxTime' => 0,
             'maxJobs' => 0,
             'memory' => 128,
-            'tries' => 1,
+            'tries' => 3,
+            'backoff' => '10,60,300',
             'timeout' => 60,
             'nice' => 0,
         ],

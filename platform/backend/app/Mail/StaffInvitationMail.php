@@ -15,6 +15,12 @@ class StaffInvitationMail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+    /** @var int Maximum delivery attempts */
+    public int $tries = 3;
+
+    /** @var array<int> Retry backoff in seconds */
+    public array $backoff = [10, 60];
+
     public function __construct(
         public BusinessInvitation $invitation,
         public ?string $rawToken = null
