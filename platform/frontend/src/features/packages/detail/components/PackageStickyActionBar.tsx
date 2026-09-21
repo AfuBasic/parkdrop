@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { PackageCheck, CheckCircle2, RotateCcw, Ban, RefreshCw, AlertCircle } from 'lucide-react';
+import { PackageCheck, CheckCircle2, RotateCcw, Ban, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/design-system';
 import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '../../strings';
 import { formatNaira } from '../../domain/package-filters';
 
 export interface PackageStickyActionBarProps {
