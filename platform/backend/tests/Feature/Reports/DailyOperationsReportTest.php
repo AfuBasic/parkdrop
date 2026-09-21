@@ -344,7 +344,7 @@ test('it prevents CSV formula injection and formats currency accurately in strea
     $content = $response->streamedContent();
 
     // Verify CSV headers
-    expect($content)->toContain('Date,Time (WAT),Event,Package ID,Customer,Pickup Point,Amount (NGN),Payment Method,Staff,Details / Reason');
+    expect($content)->toContain('Date,"Time (WAT)",Event,"Package ID",Customer,"Pickup Point","Amount (NGN)","Payment Method",Staff,"Details / Reason"');
 
     // Verify sanitization of =SUM(A1:A10) to '=SUM(A1:A10)
     expect($content)->toContain("'=SUM(A1:A10)");
