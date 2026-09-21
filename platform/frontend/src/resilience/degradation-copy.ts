@@ -93,7 +93,7 @@ export const DEGRADATION_COPY = {
    * Do not instruct user to pay again.
    */
   PURCHASE_PAYMENT_PENDING: {
-    message: 'Payment is still being confirmed. Do not pay again — we will update you when confirmed.',
+    message: 'Payment is still being confirmed. Do not pay again. We will update you when confirmed.',
     severity: 'warning',
     actionLabel: 'Check status',
   } satisfies DegradationMessage,
