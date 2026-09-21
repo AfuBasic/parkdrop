@@ -1,12 +1,10 @@
-import * as React from 'react';
 import { 
   AlertTriangle, 
   AlertCircle, 
   Info, 
   ImageOff, 
   Clock, 
-  ChevronRight,
-  ExternalLink 
+  ChevronRight 
 } from 'lucide-react';
 import type { AttentionItem } from '@/features/attention/attention-types';
 
@@ -14,7 +12,6 @@ interface AttentionItemRowProps {
   item: AttentionItem;
   isOffline?: boolean;
   onAction?: (item: AttentionItem) => void;
-  onSelect?: (item: AttentionItem) => void;
 }
 
 function formatOccurredAt(dateIso: string): string {
