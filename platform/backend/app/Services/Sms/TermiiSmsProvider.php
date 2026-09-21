@@ -99,7 +99,7 @@ class TermiiSmsProvider implements SmsProvider
                 'error' => $e->getMessage(),
             ]);
 
-            return SmsResult::ambiguous('SMS request timed out — provider may have accepted the message.');
+            return SmsResult::ambiguous('SMS request timed out. Provider may have accepted the message.');
 
         } catch (\Throwable $e) {
             Log::error('Termii SMS Exception: '.$e->getMessage(), [
