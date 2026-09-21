@@ -23,6 +23,7 @@ export const HomeStrings = {
   setupTitle: 'Add your park name. Customers see it in the SMS.',
   setupAction: 'Add now',
   setupPointTitle: 'Add your pickup point name. Customers see it in the SMS.',
+  setupPhoneTitle: 'Add your shop phone number so customers can call you.',
 
   // ── Sync chip ──────────────────────────────────────────────────────────
   syncSaved: 'All saved',
