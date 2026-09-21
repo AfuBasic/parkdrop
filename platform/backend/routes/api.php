@@ -4,6 +4,10 @@ use App\Http\Controllers\Api\Auth\AuthChallengeController;
 use App\Http\Controllers\Api\Auth\OnboardingController;
 use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Media\CloudinarySignController;
+use App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController;
+use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
+use App\Http\Controllers\Api\V1\Sync\SyncController;
+use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,25 +38,24 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/v1/media/cloudinary/sign', [CloudinarySignController::class, 'sign']);
 
     // Sync endpoints
-    Route::post('/v1/sync/push', [\App\Http\Controllers\Api\V1\Sync\SyncController::class, 'push']);
-    Route::get('/v1/sync/pull', [\App\Http\Controllers\Api\V1\Sync\SyncController::class, 'pull']);
-    
+    Route::post('/v1/sync/push', [SyncController::class, 'push']);
+    Route::get('/v1/sync/pull', [SyncController::class, 'pull']);
+
     // Package Media endpoints
     Route::prefix('v1/packages/{package}/media')->group(function () {
-        Route::post('authorize', [\App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController::class, 'authorizeUpload']);
-        Route::post('complete', [\App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController::class, 'completeUpload']);
-        Route::get('{media}/view', [\App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController::class, 'view']);
+        Route::post('authorize', [PackageMediaController::class, 'authorizeUpload']);
+        Route::post('complete', [PackageMediaController::class, 'completeUpload']);
+        Route::get('{media}/view', [PackageMediaController::class, 'view']);
     });
 
     // SMS Credit Purchases
     Route::prefix('v1/sms-credit-purchases')->group(function () {
-        Route::get('bundles', [\App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController::class, 'bundles']);
-        Route::post('', [\App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController::class, 'store']);
-        Route::get('{purchase}', [\App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController::class, 'show']);
-        Route::post('{purchase}/verify', [\App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController::class, 'verify']);
+        Route::get('bundles', [SmsCreditPurchaseController::class, 'bundles']);
+        Route::post('', [SmsCreditPurchaseController::class, 'store']);
+        Route::get('{purchase}', [SmsCreditPurchaseController::class, 'show']);
+        Route::post('{purchase}/verify', [SmsCreditPurchaseController::class, 'verify']);
     });
 });
 
 // Public Payment Provider Webhooks (Signature verified)
-Route::post('/webhooks/payments/{provider}', [\App\Http\Controllers\Webhooks\PaymentWebhookController::class, 'handle']);
-
+Route::post('/webhooks/payments/{provider}', [PaymentWebhookController::class, 'handle']);
