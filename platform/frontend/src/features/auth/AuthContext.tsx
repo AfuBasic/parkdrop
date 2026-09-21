@@ -77,6 +77,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState(localState);
 
       // ─── Phase 2: Validate against server session in background ──────────────
+      //
+      // A first-time visitor has no session cookie at all, so asking the server
+      // about their session can only ever come back 401 — a guaranteed red
+      // error in the console on the very first load, for a state that is
+      // completely normal. Only ask when something local suggests there is a
+      // session worth confirming.
+      const mayHaveServerSession = Boolean(meta || recentIdentity || offlineAuth);
+
+      if (!mayHaveServerSession) {
+        return;
+      }
+
       authApi.getSession().then((res) => {
         if (!res.authenticated || !res.user) return; // no upgrade possible
 
@@ -85,7 +97,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setRole(res.role || null);
 
         if (res.business) {
-           saveOfflineAuthorization(res.user.id, res.business.id, res.business.name, null).catch(console.error);
+           saveOfflineAuthorization(res.user.id, res.business.id, res.business.name, null).catch((err) => {
+             if (import.meta.env.DEV) console.warn('Could not cache offline authorization:', err);
+           });
         }
 
         if (res.needs_onboarding || !res.business) {
@@ -101,16 +115,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }).catch(async (err) => {
         if (err instanceof ApiError && err.status === 401) {
-          // 401 means session truly expired, revoke offline authorization.
+          // An expired session is an ordinary thing that happens to everyone,
+          // not a fault. Revoke the offline authorization and move the user to
+          // the right screen without writing anything to the console.
           await clearOfflineAuthorization();
           setState(recentIdentity ? 'remembered_expired' : 'unknown');
-        } else {
+          return;
+        }
+
+        if (import.meta.env.DEV) {
           console.warn('Background session check failed, keeping local state:', err);
         }
       });
 
     } catch (err) {
-      console.error('Auth initialization error:', err);
+      if (import.meta.env.DEV) console.error('Auth initialization error:', err);
       setState('unknown');
     }
   }, []);
@@ -154,7 +173,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await authApi.logout();
     } catch (e) {
-      console.warn('Logout API error:', e);
+      // Logging out locally is what matters; a failed server call is not
+      // something the user can act on.
+      if (import.meta.env.DEV) console.warn('Logout request failed:', e);
     }
 
     setUser(null);
