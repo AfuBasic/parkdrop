@@ -72,6 +72,7 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
         description: pkg.public_package_id ? `Assigned ID ${pkg.public_package_id}` : undefined,
         timestamp: pkg.client_created_at || new Date().toISOString(),
         actorName: pkg.creator_name || undefined,
+        actorPhone: pkg.creator_phone || undefined,
       });
 
       // 2. Photo attached
@@ -160,6 +161,7 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
           description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` (${pkg.terminal_reason_note})` : ''}` : undefined,
           timestamp: pkg.returned_at,
           actorName: pkg.terminal_actor_name || undefined,
+          actorPhone: pkg.terminal_actor_phone || undefined,
         });
       } else if (pkg.status === 'CANCELLED' && pkg.cancelled_at) {
         timeline.push({
@@ -169,6 +171,7 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
           description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` (${pkg.terminal_reason_note})` : ''}` : undefined,
           timestamp: pkg.cancelled_at,
           actorName: pkg.terminal_actor_name || undefined,
+          actorPhone: pkg.terminal_actor_phone || undefined,
         });
       }
 
