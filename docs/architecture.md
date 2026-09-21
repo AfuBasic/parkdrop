@@ -283,4 +283,45 @@ Domain Actions
 * **Non-Destructive Sign-Out:** Signing out clears the active local session and authorization lease but **never** deletes unsynced local mutations. If offline work is pending across any business, the user is warned and given the choice to sync now or keep the local queue safe.
 * **Multi-User Browser Isolation:** Sign-out cleans up active React Query caches, Reverb listeners, and active workspace state so that a second user signing in on the same browser device never sees cached data from the prior user.
 
+## Data Backup, Recovery & Operational Resilience Architecture (Build 23)
+
+```
+Startup Flow
+├── Phase 0: LocalHealthCheck (<15ms fast path)
+│   ├── Safe db.open() check
+│   ├── Stale SYNCING mutation recovery (>45s reset to PENDING)
+│   └── Fatal recovery marker audit
+├── Phase 1: Local Offline State Snapshot (Dexie)
+└── Phase 2: Background Server Session Validation (Sanctum)
+
+Health States:
+HEALTHY → Normal dashboard & sync operations
+DEGRADED → Quarantined records detected, operations continue safely
+RECOVERY_REQUIRED → Dedicated RecoveryScreen shown; unsafe writes blocked
+REBUILDING → Canonical re-bootstrap in progress
+BLOCKED → Irreplaceable corrupt local state requiring staff/support intervention
+
+Recovery Coordinator Pipeline:
+Acquire Web Lock / Lease
+      ↓
+Audit & Snapshot Unsynced Work (Pending packages, payments, media blobs, conflicts)
+      ↓
+Repair Orphaned Mutations (Reconstruct missing local models from durable payloads)
+      ↓
+Business-Scoped Cursor Reset (Reset target business cursor to 0, other businesses untouched)
+      ↓
+Re-bootstrap Canonical Server State (Pull changes with deduplication by canonical IDs)
+      ↓
+Reattach Local Pending Mutations (Re-queue durable mutations for sync replay)
+      ↓
+Release Lock & Resume Sync
+
+Crash & Storage Resilience:
+* Stale SYNCING Recovery: Automatically resets interrupted pushes on next app launch without losing mutation IDs.
+* Storage Guard: Differentiates essential package creation from optional photo blobs under quota pressure.
+* Storage Eviction Detection: Missing DB on known device triggers clean server re-bootstrap rather than empty account view.
+* React Error Boundary: Top-level error catcher prevents UI white-screen crashes without wiping local storage.
+```
+
+
 
