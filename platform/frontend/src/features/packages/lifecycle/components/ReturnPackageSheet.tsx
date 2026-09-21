@@ -127,12 +127,6 @@ export function ReturnPackageSheet({
             disabled={isSubmitting}
           />
 
-          {!isOnline && (
-            <p className="text-xs text-text-muted text-center">
-              Offline: This return will be saved on your device and synced automatically.
-            </p>
-          )}
-
           {submitError && (
             <div className="p-3 rounded-xl bg-status-danger-bg text-status-danger-text text-xs border border-status-danger-border">
               {submitError}
