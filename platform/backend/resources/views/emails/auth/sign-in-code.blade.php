@@ -37,6 +37,6 @@
 </div>
 
 <p style="color: #94A3B8; font-size: 13px; font-weight: 500; margin: 16px 0 0 0; line-height: 1.5;">
-    Did not ask for this code? You can ignore this email — your account is safe.
+    Did not ask for this code? You can ignore this email. Your account is safe.
 </p>
 @endsection
