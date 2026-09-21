@@ -201,7 +201,8 @@ export interface SmsFit {
  * equivalents. Anything still unsupported afterwards (emoji, non-Latin
  * scripts) is reported so the screen can ask kindly for normal letters.
  */
-export function normaliseForSms(value: string): string {
+export function normaliseForSms(value: string | null | undefined): string {
+  if (!value) return '';
   return value
     .replace(/[‘’‛′]/g, "'")
     .replace(/[“”″]/g, '"')
