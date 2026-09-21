@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Actions\Business\AcceptBusinessInvitationAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RequestChallengeRequest;
 use App\Http\Requests\Auth\VerifyChallengeRequest;
+use App\Models\BusinessInvitation;
 use App\Models\User;
 use App\Models\UserDevice;
 use App\Services\Auth\AuthChallengeService;
@@ -117,7 +119,7 @@ class AuthChallengeController extends Controller
         }
 
         // If user has pending business invitation(s), auto-accept the invitation
-        $pendingInvitation = \App\Models\BusinessInvitation::where('email_normalized', $normalizedEmail)
+        $pendingInvitation = BusinessInvitation::where('email_normalized', $normalizedEmail)
             ->where('status', 'pending')
             ->where('expires_at', '>', now())
             ->latest()
@@ -125,7 +127,7 @@ class AuthChallengeController extends Controller
 
         if ($pendingInvitation) {
             try {
-                $acceptAction = app(\App\Actions\Business\AcceptBusinessInvitationAction::class);
+                $acceptAction = app(AcceptBusinessInvitationAction::class);
                 $acceptAction->execute($pendingInvitation, $user);
             } catch (\Throwable $e) {
                 // Ignore failure and fallback to existing memberships
