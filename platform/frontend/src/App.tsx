@@ -22,6 +22,7 @@ import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetai
 import { AttentionScreen } from '@/features/attention/AttentionScreen';
 import { DailyOperationsScreen } from '@/features/reports/DailyOperationsScreen';
 import { AccountSecurityScreen } from '@/features/account/AccountSecurityScreen';
+import { RecoveryScreen } from '@/features/recovery/RecoveryScreen';
 import { useAttentionItems } from '@/features/attention/hooks/useAttentionItems';
 import { MessageSquare, ChevronRight, Users, Building2, AlertCircle, BarChart3, Shield } from 'lucide-react';
 import { db } from '@/offline/db/database';
@@ -67,6 +68,15 @@ function AppContent() {
         />
         <div className="w-6 h-6 border-2 border-action-primary border-t-transparent rounded-full animate-spin" />
       </div>
+    );
+  }
+
+  if (state === 'recovery') {
+    return (
+      <RecoveryScreen
+        businessId={business?.id}
+        onRecoverySuccess={() => window.location.reload()}
+      />
     );
   }
 
