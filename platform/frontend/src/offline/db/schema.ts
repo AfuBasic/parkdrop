@@ -69,6 +69,14 @@ export interface LocalPackage {
   pickup_point_name?: string | null;
   returned_at?: string | null;
   cancelled_at?: string | null;
+  /**
+   * When this device released the package, captured at the moment of
+   * collection. Local-only: there is no backend column for it yet, so a
+   * package collected on another device (or before this field existed)
+   * will not have it. The UI must fall back gracefully rather than
+   * fabricate a time it does not have.
+   */
+  collected_at?: string | null;
   terminal_reason?: string | null;
   terminal_reason_note?: string | null;
   terminal_actor_name?: string | null;
