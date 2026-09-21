@@ -112,7 +112,9 @@ export function IdentifierScreen({
             By continuing you accept our{' '}
             <a
               href="/privacy.html"
-              className="text-[var(--pd-blue-hover)] font-extrabold underline underline-offset-2"
+              // Padded out to a 48px touch target with the margin pulled back,
+              // so the hit area grows without moving the sentence around it.
+              className="inline-block py-3 -my-3 text-[var(--pd-blue-hover)] font-extrabold underline underline-offset-2"
             >
               {AuthStrings.privacyNoticeLink}
             </a>
