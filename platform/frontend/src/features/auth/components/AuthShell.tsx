@@ -68,12 +68,19 @@ export function AuthShell({
   );
 
   return (
-    <div className="min-h-[100dvh] bg-[var(--pd-page)] flex flex-col md:items-center md:justify-center md:py-8">
+    // Fixed to the viewport height, not a minimum.
+    //
+    // With a minimum, tall content grows the frame and the whole page
+    // scrolls — which quietly defeats the pinned foot, because the button
+    // then sits below the fold exactly when the screen is shortest and the
+    // keyboard is up. Pinning the frame to the viewport and letting only the
+    // sheet's inner area scroll keeps the primary action on screen always.
+    <div className="h-[100dvh] overflow-hidden bg-[var(--pd-page)] flex flex-col md:items-center md:justify-center md:py-8">
       <div
         className={cn(
           'relative w-full flex flex-col bg-[var(--pd-blue)] overflow-hidden',
-          'min-h-[100dvh]',
-          'md:min-h-[860px] md:h-[860px] md:w-[400px] md:rounded-[44px] md:shadow-2xl'
+          'h-full min-h-0',
+          'md:h-[860px] md:max-h-full md:w-[400px] md:rounded-[44px] md:shadow-2xl'
         )}
       >
         {/* ── Header ─────────────────────────────────────────────────────── */}
