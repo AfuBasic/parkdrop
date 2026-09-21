@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { AuthStrings } from '../strings';
-import { PinInput } from '../components/PinInput';
+import { AuthStrings } from '@/features/auth/strings';
+import { PinInput } from '@/features/auth/components/PinInput';
 
 
 interface PinSetupScreenProps {
