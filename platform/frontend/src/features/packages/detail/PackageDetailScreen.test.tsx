@@ -52,8 +52,9 @@ describe('PackageDetailScreen', () => {
       />
     );
 
-    // Header & code (grouped 4 + 3)
-    expect(await screen.findByText('PD-88220')).toBeDefined();
+    // Header & code (grouped 4 + 3) — ID appears in both header and info card
+    const idNodes = await screen.findAllByText('PD-88220');
+    expect(idNodes.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('4K9M 2PX')).toBeDefined();
 
     // Customer
@@ -62,7 +63,7 @@ describe('PackageDetailScreen', () => {
 
     // Payment summary initial state (Unpaid, full balance)
     expect(screen.getByText('Unpaid')).toBeDefined();
-    expect(screen.getByText('Record payment')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Record payment' })).toBeDefined();
 
     // Sticky Action Bar button
     expect(screen.getByText(/Collect ₦3,500 and release/i)).toBeDefined();
@@ -83,8 +84,8 @@ describe('PackageDetailScreen', () => {
       />
     );
 
-    // Open Record Payment bottom sheet
-    const recordBtn = await screen.findByRole('button', { name: /Record payment/i });
+    // Open Record Payment bottom sheet (exact name avoids matching "Record payment only")
+    const recordBtn = await screen.findByRole('button', { name: 'Record payment' });
     await user.click(recordBtn);
 
     // Sheet should be open
