@@ -16,7 +16,7 @@ class SyncController extends Controller
     public function push(PushMutationsRequest $request, PushMutationsAction $action): JsonResponse
     {
         $business = $request->user()->business ?? $request->user()->memberships()->first()->business;
-        
+
         $results = $action->execute(
             $request->validated('mutations'),
             $request->validated('device_uuid'),
@@ -30,7 +30,7 @@ class SyncController extends Controller
     public function pull(PullChangesRequest $request, PullChangesAction $action): JsonResponse
     {
         $business = $request->user()->business ?? $request->user()->memberships()->first()->business;
-        
+
         $result = $action->execute(
             $business,
             $request->validated('cursor', 0),
