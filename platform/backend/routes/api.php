@@ -55,6 +55,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{purchase}', [SmsCreditPurchaseController::class, 'show']);
         Route::post('{purchase}/verify', [SmsCreditPurchaseController::class, 'verify']);
     });
+
+    // Business Staff & Details (Build 18)
+    Route::prefix('v1/business')->group(function () {
+        Route::get('staff', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'index']);
+        Route::post('invitations', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'invite']);
+        Route::post('invitations/{invitation}/resend', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'resend']);
+        Route::post('invitations/{invitation}/revoke', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'revoke']);
+        Route::patch('members/{membership}/role', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'changeRole']);
+        Route::post('members/{membership}/remove', [\App\Http\Controllers\Api\V1\Business\BusinessStaffController::class, 'removeMember']);
+
+        Route::get('details', [\App\Http\Controllers\Api\V1\Business\BusinessDetailsController::class, 'show']);
+        Route::patch('details', [\App\Http\Controllers\Api\V1\Business\BusinessDetailsController::class, 'update']);
+    });
 });
 
 // Public Payment Provider Webhooks (Signature verified)
