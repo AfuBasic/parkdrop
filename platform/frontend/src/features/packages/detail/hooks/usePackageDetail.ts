@@ -112,7 +112,7 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
           id: `return-${pkg.id}`,
           type: 'PACKAGE_RETURNED',
           title: 'Package returned',
-          description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` — ${pkg.terminal_reason_note}` : ''}` : undefined,
+          description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` (${pkg.terminal_reason_note})` : ''}` : undefined,
           timestamp: pkg.returned_at,
           actorName: pkg.terminal_actor_name || undefined,
         });
@@ -121,7 +121,7 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
           id: `cancel-${pkg.id}`,
           type: 'PACKAGE_CANCELLED',
           title: 'Package cancelled',
-          description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` — ${pkg.terminal_reason_note}` : ''}` : undefined,
+          description: pkg.terminal_reason ? `Reason: ${pkg.terminal_reason.replace(/_/g, ' ')}${pkg.terminal_reason_note ? ` (${pkg.terminal_reason_note})` : ''}` : undefined,
           timestamp: pkg.cancelled_at,
           actorName: pkg.terminal_actor_name || undefined,
         });
