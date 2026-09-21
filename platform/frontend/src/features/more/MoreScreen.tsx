@@ -1,9 +1,8 @@
-import * as React from 'react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useAttentionItems } from '@/features/attention/hooks/useAttentionItems';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { Logo } from '@/features/auth/components/Logo';
 import {
   MessageSquare,
@@ -19,7 +18,6 @@ import {
 
 export function MoreScreen() {
   const { user, business, role, logout, forgetRememberedIdentity } = useAuth();
-  const navigate = useNavigate();
 
   const wallet = useLiveQuery(
     () => (business?.id ? db.smsWallets.where('business_id').equals(business.id).first() : undefined),
