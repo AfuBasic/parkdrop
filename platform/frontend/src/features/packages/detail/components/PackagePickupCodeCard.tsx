@@ -1,5 +1,5 @@
 import type { LocalPackage } from '@/offline/db/schema';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '../../strings';
 
 export interface PackagePickupCodeCardProps {
   pkg: LocalPackage;
