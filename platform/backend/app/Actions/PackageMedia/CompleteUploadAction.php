@@ -79,11 +79,11 @@ class CompleteUploadAction
 
             // Broadcast sync change
             SyncChange::create([
-                'entity_type' => 'packageMedia',
+                'entity_type' => 'package_media',
                 'entity_id' => $mediaId,
                 'business_id' => $businessId,
-                'action' => 'upsert',
-                'timestamp' => now(),
+                'operation' => 'UPSERT',
+                'entity_version' => 1,
             ]);
 
             return $media;
