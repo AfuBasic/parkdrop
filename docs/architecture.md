@@ -163,6 +163,39 @@ Queued StaffInvitationMail (passwordless OTP auth integration)
 * **Last-Owner Invariant:** A business cannot demote or remove its last active Owner. Enforced atomically via `DB::transaction()` and row locking on `business_memberships`.
 * **Historical Actor Identity Preserved:** Removing staff deactivates access (`status = 'removed'`) without deleting `User` records or cascading deletions to past packages, payments, or collections.
 
+### Operational Attention Center (Build 19)
+```
+Canonical Local Domain State (Dexie)
+├── db.packageMedia (FAILED_RETRYABLE / NEEDS_ATTENTION)
+├── db.payments (sync_status === 'NEEDS_ATTENTION')
+├── db.conflicts (status === 'UNRESOLVED')
+├── db.smsWallets (balance === 0 or balance < 5)
+└── SmsCreditPurchase (PENDING / FAILED)
+        ↓
+AttentionRepository.getAttentionItems({ businessId, userRole })
+        ↓
+AttentionItem[] (normalized, stable ID, deterministic sort)
+        ↓
+Attention UI Components
+├── More Screen (entry + unresolvedCount badge)
+├── Home Screen (AttentionSummary preview, hidden if 0)
+└── AttentionScreen (/more/attention)
+        ├── View package (/packages/:id)
+        ├── Retry photo (MediaUploadCoordinator.syncPendingMedia)
+        ├── Buy credits (/more/sms-credits/buy)
+        └── View SMS credits (/more/sms-credits)
+```
+**Architecture Rules:**
+* **Derived Read Model:** Attention is not a source of domain truth. It is a pure reactive projection over Dexie domain state. No duplicate mutable notifications table.
+* **Stable IDs:** Items have deterministic stable IDs (e.g. `photo-upload:{id}`, `payment-rejected:{id}`, `sms-wallet-zero:{business_id}`) to prevent flicker and enable stable keys.
+* **Automatic Resolution:** When the underlying domain issue resolves canonically (photo uploads, wallet replenished, purchase verified), the attention item disappears immediately without manual dismissal.
+* **Mutually Exclusive SMS Alerts:** At balance = 0, only `ZERO_SMS_CREDITS` is shown. At 1 to 4, only `LOW_SMS_CREDITS` is shown. Never both simultaneously.
+* **Role-Aware CTAs:**
+  - Owner / Manager: `Buy credits` CTA deep-linking to purchase flow.
+  - Attendant: `View SMS credits` CTA (read-only balance inspection).
+* **Safe Retries:** Conflict rows for collected or terminal packages never offer invalid retries. Only genuinely retryable actions (photo cloud upload) offer retry affordances.
+* **Tenant Isolation:** Scoped strictly by `business_id`. Cross-tenant items never leak.
+
 ## Media Architecture (Cloudinary)
 
 Cloudinary is the ParkDrop media provider for package photos.
