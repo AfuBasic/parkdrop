@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { PackageX, ArrowLeft, RefreshCw } from 'lucide-react';
+import { PackageX, ArrowLeft } from 'lucide-react';
 import { usePackageDetail } from './hooks/usePackageDetail';
 import { PackageIdentityHeader } from './components/PackageIdentityHeader';
 import { PackageCustomerCard } from './components/PackageCustomerCard';
@@ -34,7 +34,6 @@ export function PackageDetailScreen({
   const [isOnline, setIsOnline] = useState(() => connectivityManager.getState() !== 'UNREACHABLE');
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
-  const [releaseToast, setReleaseToast] = useState<{ publicId: string; seconds: number } | null>(null);
 
   useEffect(() => {
     return connectivityManager.subscribe((connState) => {
