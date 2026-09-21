@@ -1,264 +1,334 @@
 import * as React from 'react';
-import { AuthLayout } from './AuthLayout';
-import { EmailScreen } from '@/features/auth/screens/EmailScreen';
+import { IdentifierScreen } from '@/features/auth/screens/IdentifierScreen';
 import { CodeScreen } from '@/features/auth/screens/CodeScreen';
 import { NameScreen } from '@/features/auth/screens/NameScreen';
 import { PinSetupScreen } from '@/features/auth/screens/PinSetupScreen';
 import { PickupPointScreen } from '@/features/auth/screens/PickupPointScreen';
 import { ReadyScreen } from '@/features/auth/screens/ReadyScreen';
+import { HelpSheet } from './HelpSheet';
 import { authApi } from '@/features/auth/api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
-import { ProblemLoggingInSheet } from './ProblemLoggingInSheet';
 import { useAuth } from '@/features/auth/AuthContext';
-import { notify } from '@/lib/notify';
+import { AUTH_IDENTIFIER } from '@/features/auth/config';
+import { useSlowRequest } from '@/features/auth/lib/useSlowRequest';
+import { useOnline } from '@/features/auth/lib/useOnline';
+import { AuthStrings } from '@/features/auth/strings';
 
-type Step = 'email' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
+type Step = 'identifier' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
 
-interface AuthFlowProps {
-  initialEmail?: string;
-}
+const STEP_NUMBER: Record<Step, number> = {
+  identifier: 1,
+  code: 2,
+  name: 3,
+  pin: 4,
+  pickup: 5,
+  ready: 5,
+};
 
-const DRAFT_STORAGE_KEY = 'parkdrop_onboarding_draft';
+const SCREEN_NAME: Record<Step, string> = {
+  identifier: 'Your phone or email',
+  code: 'Enter the code',
+  name: 'Your name',
+  pin: 'Choose a PIN',
+  pickup: 'Your pickup point',
+  ready: 'You are ready',
+};
+
+/**
+ * Draft key. Deliberately localStorage rather than sessionStorage: a cheap
+ * Android will kill a backgrounded browser tab to reclaim memory, and
+ * sessionStorage goes with it. Someone who takes a call halfway through
+ * setup should come back to what they typed, not to an empty first screen.
+ */
+const DRAFT_KEY = 'parkdrop_onboarding_draft_v2';
 
 interface OnboardingDraft {
   step: Step;
-  email: string;
+  identifier: string;
   challengeId: number | null;
   firstName: string;
   pin: string;
+  pickupPointName: string;
+  parkName: string;
 }
+
+const EMPTY_DRAFT: OnboardingDraft = {
+  step: 'identifier',
+  identifier: '',
+  challengeId: null,
+  firstName: '',
+  pin: '',
+  pickupPointName: '',
+  parkName: '',
+};
 
 function loadDraft(): OnboardingDraft | null {
   try {
-    const raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const raw = localStorage.getItem(DRAFT_KEY);
+    return raw ? { ...EMPTY_DRAFT, ...JSON.parse(raw) } : null;
   } catch {
     return null;
   }
 }
 
-function saveDraft(draft: OnboardingDraft) {
+function persistDraft(draft: OnboardingDraft) {
   try {
-    sessionStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft));
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   } catch {
-    // Ignore storage quota errors
+    // Storage full or blocked. Losing the draft is bad but not fatal.
   }
 }
 
 function clearDraft() {
   try {
-    sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+    localStorage.removeItem(DRAFT_KEY);
   } catch {
-    // Ignore
+    // Nothing useful to do.
   }
 }
 
-export function AuthFlow({ initialEmail = '' }: AuthFlowProps) {
+export interface AuthFlowProps {
+  initialIdentifier?: string;
+}
+
+export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   const { user: sessionUser, state: authState, setAuthenticatedUser } = useAuth();
-  const draft = React.useMemo(() => loadDraft(), []);
+  const restored = React.useMemo(loadDraft, []);
+  const online = useOnline();
+  const request = useSlowRequest();
 
-  // Determine initial step
-  const initialStep = React.useMemo<Step>(() => {
-    if (draft && ['name', 'pin', 'pickup'].includes(draft.step)) {
-      return draft.step;
-    }
-    if (authState === 'onboarding') {
-      return 'name';
-    }
-    return 'email';
-  }, [draft, authState]);
+  const [step, setStep] = React.useState<Step>(() => {
+    if (restored && restored.step !== 'ready') return restored.step;
+    if (authState === 'onboarding') return 'name';
+    return 'identifier';
+  });
 
-  const [step, setStep] = React.useState<Step>(initialStep);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState('');
-  
-  // Collected state
-  const [email, setEmail] = React.useState(
-    draft?.email || sessionUser?.email || initialEmail
+  const [identifier, setIdentifier] = React.useState(
+    restored?.identifier || sessionUser?.email || initialIdentifier
   );
-  const [challengeId, setChallengeId] = React.useState<number | null>(
-    draft?.challengeId ?? null
-  );
+  const [challengeId, setChallengeId] = React.useState<number | null>(restored?.challengeId ?? null);
   const [firstName, setFirstName] = React.useState(
-    draft?.firstName || sessionUser?.first_name || ''
+    restored?.firstName || sessionUser?.first_name || ''
   );
-  const [pin, setPin] = React.useState(draft?.pin || '');
+  const [pin, setPin] = React.useState(restored?.pin || '');
+  const [pickupPointName, setPickupPointName] = React.useState(restored?.pickupPointName || '');
+  const [parkName, setParkName] = React.useState(restored?.parkName || '');
 
-  // Persist draft on state changes if in onboarding phase
+  const [error, setError] = React.useState('');
+  const [helpOpen, setHelpOpen] = React.useState(false);
+
+  // Keep every typed value on disk, at every step, so Android back, a
+  // rotation or the tab being killed never costs the user their typing.
   React.useEffect(() => {
-    if (['name', 'pin', 'pickup'].includes(step)) {
-      saveDraft({
-        step,
-        email,
-        challengeId,
-        firstName,
-        pin,
-      });
-    }
-  }, [step, email, challengeId, firstName, pin]);
+    if (step === 'ready') return;
+    persistDraft({ step, identifier, challengeId, firstName, pin, pickupPointName, parkName });
+  }, [step, identifier, challengeId, firstName, pin, pickupPointName, parkName]);
 
-  const handleEmailSubmit = async (submittedEmail: string) => {
-    setIsLoading(true);
+  const readableError = (err: unknown, fallback: string) => {
+    const message = err instanceof Error ? err.message : '';
+    return message || fallback;
+  };
+
+  const sendCode = async (target: string) => {
+    if (request.busy) return; // a double tap must not send two codes
     setError('');
+    request.start();
+
     try {
-      await authApi.requestCode({
-        email: submittedEmail,
-        purpose: 'auth',
-      });
-      setEmail(submittedEmail);
+      await authApi.requestCode({ email: target, purpose: 'auth' });
+      setIdentifier(target);
+      request.finish();
       setStep('code');
-    } catch (err: any) {
-      setError(err.message || 'Failed to send confirmation code');
-      notify.error(err, 'Failed to send confirmation code');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      request.finish();
+      setError(readableError(err, AuthStrings.identifierInvalid(AUTH_IDENTIFIER)));
     }
   };
 
-  const handleCodeSubmit = async (code: string) => {
-    setIsLoading(true);
+  const submitCode = async (code: string) => {
+    if (request.busy) return;
     setError('');
-    try {
-      const res = await authApi.verifyCode({
-        email,
-        code,
-        purpose: 'auth',
-      });
+    request.start();
 
-      if (res.outcome === 'authenticated') {
+    try {
+      const result = await authApi.verifyCode({ email: identifier, code, purpose: 'auth' });
+
+      if (result.outcome === 'authenticated') {
+        request.finish();
         clearDraft();
-        notify.success(`Welcome back, ${res.user.first_name || 'Owner'}!`);
-        await setAuthenticatedUser(res.user, res.business);
+        await setAuthenticatedUser(result.user, result.business);
         return;
       }
 
-      if (res.outcome === 'new_user') {
-        setChallengeId(res.challenge_id);
-        if (res.user?.first_name) {
-          setFirstName(res.user.first_name);
-        }
-        setStep('name');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Invalid or expired confirmation code');
-      notify.error(err, 'Invalid or expired confirmation code');
-    } finally {
-      setIsLoading(false);
+      setChallengeId(result.challenge_id);
+      if (result.user?.first_name) setFirstName(result.user.first_name);
+      request.finish();
+      setStep('name');
+    } catch (err) {
+      request.finish();
+      setError(readableError(err, AuthStrings.codeWrong(AUTH_IDENTIFIER)));
     }
   };
 
-  const handleNameSubmit = (name: string) => {
-    setFirstName(name);
-    setStep('pin');
-  };
+  const completeSetup = async (pickup: string, park: string) => {
+    if (request.busy) return;
+    setPickupPointName(pickup);
+    setParkName(park);
+    setError('');
+    request.start();
 
-  const handlePinSubmit = (selectedPin: string) => {
-    setPin(selectedPin);
-    setStep('pickup');
-  };
+    const deviceUuid = crypto.randomUUID();
 
-  const handlePickupSubmit = async (locationName: string, parkName?: string) => {
-    setIsLoading(true);
     try {
-      const deviceUuid = crypto.randomUUID();
-      const res = await authApi.completeOnboarding({
-        email,
+      const result = await authApi.completeOnboarding({
+        email: identifier,
         first_name: firstName,
-        pickup_point_name: locationName,
-        park_name: parkName,
+        pickup_point_name: pickup,
+        park_name: park,
         challenge_id: challengeId ?? 0,
         device_uuid: deviceUuid,
         device_name: navigator.userAgent.substring(0, 255),
       });
 
-      // Hash PIN and store in IndexedDB
       const salt = generateSalt();
-      const hashedPin = await hashPin(pin, salt);
+      const pinHash = await hashPin(pin, salt);
 
       await db.deviceMeta.put({
         device_uuid: deviceUuid,
-        user_id: res.user.id,
-        business_id: res.business.id,
-        first_name: res.user.first_name,
-        email: res.user.email || email,
-        pin_hash: hashedPin,
+        user_id: result.user.id,
+        business_id: result.business.id,
+        first_name: result.user.first_name,
+        email: result.user.email || identifier,
+        pin_hash: pinHash,
         pin_salt: salt,
         authorized: true,
       });
 
+      request.finish();
       clearDraft();
-      await setAuthenticatedUser(res.user, res.business);
+      await setAuthenticatedUser(result.user, result.business);
       setStep('ready');
-    } catch (err: any) {
-      notify.error(err, 'Onboarding failed');
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      request.finish();
+      setError(readableError(err, 'We could not save your pickup point. Try again.'));
     }
   };
 
   const goBack = () => {
-    switch (step) {
-      case 'code': setStep('email'); break;
-      case 'name': setStep('code'); break;
-      case 'pin': setStep('name'); break;
-      case 'pickup': setStep('pin'); break;
-      default: break;
-    }
     setError('');
+    request.reset();
+    // Values are kept in state, so stepping back always shows what was typed.
+    switch (step) {
+      case 'code':
+        setStep('identifier');
+        break;
+      case 'name':
+        setStep('code');
+        break;
+      case 'pin':
+        setStep('name');
+        break;
+      case 'pickup':
+        setStep('pin');
+        break;
+      default:
+        break;
+    }
   };
 
-  const [showProblemHelp, setShowProblemHelp] = React.useState(false);
-
-  const handleResetToEmail = () => {
-    clearDraft();
-    setStep('email');
-  };
+  const openHelp = () => setHelpOpen(true);
 
   return (
     <>
-      <AuthLayout showBack={step !== 'email' && step !== 'ready'} onBack={goBack}>
-        {step === 'email' && (
-          <EmailScreen 
-            initialEmail={email} 
-            onContinue={handleEmailSubmit} 
-            onProblemLoggingIn={() => setShowProblemHelp(true)}
-            isLoading={isLoading} 
-          />
-        )}
-        {step === 'code' && (
-          <CodeScreen 
-            email={email} 
-            onVerify={handleCodeSubmit} 
-            onResend={() => handleEmailSubmit(email)} 
-            onProblemLoggingIn={() => setShowProblemHelp(true)}
-            isLoading={isLoading} 
-            error={error}
-            onChangeEmail={handleResetToEmail}
-          />
-        )}
-        {step === 'name' && (
-          <NameScreen 
-            initialName={firstName} 
-            onContinue={handleNameSubmit} 
-          />
-        )}
-        {step === 'pin' && <PinSetupScreen onContinue={handlePinSubmit} />}
-        {step === 'pickup' && (
-          <PickupPointScreen 
-            firstName={firstName} 
-            onContinue={handlePickupSubmit} 
-            isLoading={isLoading} 
-          />
-        )}
-        {step === 'ready' && <ReadyScreen onComplete={() => window.location.href = '/'} />}
-      </AuthLayout>
+      {step === 'identifier' && (
+        <IdentifierScreen
+          initialValue={identifier}
+          onContinue={sendCode}
+          onHelp={openHelp}
+          busy={request.busy}
+          requestError={error}
+          slowNetwork={request.showReassurance}
+          timedOut={request.timedOut}
+          onRetry={() => sendCode(identifier)}
+          offline={!online}
+        />
+      )}
 
-      <ProblemLoggingInSheet
-        open={showProblemHelp}
-        onOpenChange={setShowProblemHelp}
-        email={email}
-      />
+      {step === 'code' && (
+        <CodeScreen
+          identifier={identifier}
+          onVerify={submitCode}
+          onResend={() => sendCode(identifier)}
+          onChangeIdentifier={() => {
+            setError('');
+            setStep('identifier');
+          }}
+          onBack={goBack}
+          onHelp={openHelp}
+          busy={request.busy}
+          error={error}
+          step={STEP_NUMBER.code}
+          slowNetwork={request.showReassurance}
+          timedOut={request.timedOut}
+        />
+      )}
+
+      {step === 'name' && (
+        <NameScreen
+          initialName={firstName}
+          onContinue={(name) => {
+            setFirstName(name);
+            setStep('pin');
+          }}
+          onBack={goBack}
+          onHelp={openHelp}
+          step={STEP_NUMBER.name}
+        />
+      )}
+
+      {step === 'pin' && (
+        <PinSetupScreen
+          onContinue={(chosen) => {
+            setPin(chosen);
+            setStep('pickup');
+          }}
+          onBack={goBack}
+          onHelp={openHelp}
+          phone={AUTH_IDENTIFIER === 'phone' ? identifier : null}
+          step={STEP_NUMBER.pin}
+        />
+      )}
+
+      {step === 'pickup' && (
+        <PickupPointScreen
+          initialPickupName={pickupPointName}
+          initialParkName={parkName}
+          onContinue={completeSetup}
+          onBack={goBack}
+          onHelp={openHelp}
+          busy={request.busy}
+          requestError={error}
+          slowNetwork={request.showReassurance}
+          timedOut={request.timedOut}
+          step={STEP_NUMBER.pickup}
+        />
+      )}
+
+      {step === 'ready' && (
+        <ReadyScreen
+          firstName={firstName}
+          pickupPointName={pickupPointName}
+          parkName={parkName}
+          onStart={() => {
+            window.location.href = '/';
+          }}
+          onEditPickupPoint={() => setStep('pickup')}
+          onHelp={openHelp}
+        />
+      )}
+
+      <HelpSheet open={helpOpen} onOpenChange={setHelpOpen} screenName={SCREEN_NAME[step]} />
     </>
   );
 }
