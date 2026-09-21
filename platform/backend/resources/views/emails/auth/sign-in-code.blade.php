@@ -1,34 +1,42 @@
 @extends('emails.layouts.transactional')
 
-@section('preheader', "Your one-time ParkDrop code expires in {$expiryMinutes} minutes.")
+@section('preheader', "Your ParkDrop sign-in code expires in {$expiryMinutes} minutes.")
 
 @section('content')
-<h1 style="color: #0F172A; font-size: 24px; font-weight: 700; margin: 0 0 24px 0;">Your sign-in code</h1>
+<h1 style="color: #0D1B2A; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 10px 0;">Your sign-in code</h1>
 
-<p style="color: #475569; font-size: 16px; margin: 0 0 32px 0; line-height: 1.5;">
+<p style="color: #475569; font-size: 16px; font-weight: 500; margin: 0 0 28px 0; line-height: 1.5;">
     Use this code to continue to ParkDrop.
 </p>
 
-<!-- OTP Panel -->
-<div style="background-color: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 12px; padding: 32px; text-align: center; margin: 0 0 32px 0;">
-    <div style="color: #0F172A; font-size: 36px; font-weight: 700; letter-spacing: 8px; font-family: monospace;">
-        {{ $code }}
-    </div>
-</div>
+<!-- Code panel, six boxes -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 24px 0;">
+    <tr>
+        @foreach (str_split($code) as $digit)
+        <td width="{{ 100 / strlen($code) }}%" align="center" style="padding: 0 4px;">
+            <div style="background-color: #EFF6FF; border: 2px solid #DBEAFE; border-radius: 12px; height: 62px; line-height: 62px; text-align: center; color: #0D1B2A; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums;">
+                {{ $digit }}
+            </div>
+        </td>
+        @endforeach
+    </tr>
+</table>
 
-<p style="color: #475569; font-size: 16px; margin: 0 0 24px 0; line-height: 1.5;">
-    This code expires in {{ $expiryMinutes }} minutes.
+<p style="color: #475569; font-size: 15px; font-weight: 600; margin: 0 0 28px 0; line-height: 1.5;">
+    This code stops working in {{ $expiryMinutes }} minutes.
 </p>
 
-<!-- Security Notice -->
-<div style="margin: 0 0 32px 0; border-top: 1px solid #E2E8F0; padding-top: 24px;">
-    <p style="color: #64748B; font-size: 14px; margin: 0 0 16px 0; line-height: 1.5;">
-        Keep this code private.<br>
-        Do not share it with anyone.
+<!-- Security notice -->
+<div style="background-color: #FFFBEB; border-radius: 12px; padding: 16px 18px; margin: 0 0 8px 0;">
+    <p style="color: #92400E; font-size: 14px; font-weight: 700; margin: 0 0 4px 0; line-height: 1.5;">
+        Keep this code to yourself.
     </p>
-    
-    <p style="color: #64748B; font-size: 14px; margin: 0; line-height: 1.5;">
-        If you didn't request this code, you can safely ignore this email.
+    <p style="color: #92400E; font-size: 14px; font-weight: 500; margin: 0; line-height: 1.5;">
+        Nobody from ParkDrop will ever ask you for it.
     </p>
 </div>
+
+<p style="color: #94A3B8; font-size: 13px; font-weight: 500; margin: 16px 0 0 0; line-height: 1.5;">
+    Did not ask for this code? You can ignore this email — your account is safe.
+</p>
 @endsection
