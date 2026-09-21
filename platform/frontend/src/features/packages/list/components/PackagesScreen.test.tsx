@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { PackagesScreen } from '../PackagesScreen';
+import { PackagesScreen } from '@/features/packages/list/PackagesScreen';
 import { AuthContext } from '@/features/auth/AuthContext';
 import { db } from '@/offline/db/database';
 import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
