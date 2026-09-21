@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('outbox_events', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('business_id')->constrained()->cascadeOnDelete();
+            $table->string('type');
+            $table->json('payload');
             $table->timestamps();
         });
     }
