@@ -1,5 +1,5 @@
 import { PlusCircle, CheckCircle2 } from 'lucide-react';
-import type { PaymentSummaryData } from '../domain/payment-summary';
+import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 import { formatMoney } from '@/lib/formatters';
 
 interface PaymentSummaryCardProps {
