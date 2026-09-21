@@ -116,8 +116,27 @@ class AuthChallengeController extends Controller
             $request->session()->regenerate();
         }
 
-        // Load primary business membership
-        $membership = $user->businessMemberships()->with('business.pickupPoints')->first();
+        // If user has pending business invitation(s), auto-accept the invitation
+        $pendingInvitation = \App\Models\BusinessInvitation::where('email_normalized', $normalizedEmail)
+            ->where('status', 'pending')
+            ->where('expires_at', '>', now())
+            ->latest()
+            ->first();
+
+        if ($pendingInvitation) {
+            try {
+                $acceptAction = app(\App\Actions\Business\AcceptBusinessInvitationAction::class);
+                $acceptAction->execute($pendingInvitation, $user);
+            } catch (\Throwable $e) {
+                // Ignore failure and fallback to existing memberships
+            }
+        }
+
+        // Load primary active business membership
+        $membership = $user->businessMemberships()
+            ->where('status', 'active')
+            ->with('business.pickupPoints')
+            ->first();
         $business = $membership?->business;
 
         if ($business) {
