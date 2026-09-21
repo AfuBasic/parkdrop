@@ -20,8 +20,9 @@ import { CustomerDetailScreen } from '@/features/customers/detail/CustomerDetail
 import { StaffScreen } from '@/features/business/staff/StaffScreen';
 import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetailsScreen';
 import { AttentionScreen } from '@/features/attention/AttentionScreen';
+import { DailyOperationsScreen } from '@/features/reports/DailyOperationsScreen';
 import { useAttentionItems } from '@/features/attention/hooks/useAttentionItems';
-import { MessageSquare, ChevronRight, Users, Building2, AlertCircle } from 'lucide-react';
+import { MessageSquare, ChevronRight, Users, Building2, AlertCircle, BarChart3 } from 'lucide-react';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 
@@ -209,6 +210,12 @@ function AppContent() {
         />
       )}
 
+      {currentPath === '/more/reports' && (
+        <DailyOperationsScreen 
+          onBack={() => setCurrentPath('/more')}
+        />
+      )}
+
       {currentPath === '/more' && (
         <div className="flex flex-col h-full max-w-lg mx-auto pb-4 pt-4">
           <h2 className="text-2xl font-bold text-text-primary mb-6 tracking-tight">Settings & More</h2>
@@ -258,6 +265,26 @@ function AppContent() {
                   <ChevronRight className="w-5 h-5 text-text-muted" />
                 </div>
               </button>
+
+              {/* Daily Operations & Reports (Owner & Manager only) */}
+              {(role === 'owner' || role === 'manager') && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentPath('/more/reports')}
+                  className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                      <BarChart3 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-text-primary text-[15px]">Reports</div>
+                      <div className="text-xs text-text-secondary">Daily package & payment operations</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-text-muted" />
+                </button>
+              )}
 
               {/* Staff Management */}
               <button
