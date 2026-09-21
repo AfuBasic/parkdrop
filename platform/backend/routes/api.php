@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\AuthChallengeController;
 use App\Http\Controllers\Api\Auth\OnboardingController;
 use App\Http\Controllers\Api\Auth\SessionController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\Media\CloudinarySignController;
 use App\Http\Controllers\Api\V1\Account\AccountSecurityController;
 use App\Http\Controllers\Api\V1\Business\BusinessDetailsController;
@@ -12,7 +13,6 @@ use App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController;
 use App\Http\Controllers\Api\V1\Reports\DailyOperationsReportController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
-use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
