@@ -67,7 +67,7 @@ class ExportDailyOperationsReportAction
             $handle = fopen('php://output', 'w');
 
             // Write UTF-8 BOM for Microsoft Excel / spreadsheet compatibility
-            fputs($handle, "\xEF\xBB\xBF");
+            fwrite($handle, "\xEF\xBB\xBF");
 
             // CSV Column Headers
             fputcsv($handle, [
