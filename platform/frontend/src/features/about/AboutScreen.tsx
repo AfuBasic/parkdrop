@@ -1,12 +1,15 @@
 import { useRef, useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Shield, Smartphone, Copy, Check, Info } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 
 interface AboutScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export function AboutScreen({ onBack }: AboutScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
   const { business, user } = useAuth();
   const [copiedCode, setCopiedCode] = useState(false);
 
@@ -29,7 +32,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
       <header className="px-4 py-3 bg-surface-default border-b border-border-subtle flex items-center gap-3 sticky top-0 z-10">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="p-2 -ml-2 text-text-secondary hover:text-text-primary rounded-full transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Back to settings"
         >
