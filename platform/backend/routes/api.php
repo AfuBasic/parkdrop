@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\AuthChallengeController;
 use App\Http\Controllers\Api\Auth\OnboardingController;
 use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Media\CloudinarySignController;
+use App\Http\Controllers\Api\V1\Account\AccountSecurityController;
 use App\Http\Controllers\Api\V1\Business\BusinessDetailsController;
 use App\Http\Controllers\Api\V1\Business\BusinessStaffController;
 use App\Http\Controllers\Api\V1\Business\PickupPointController;
@@ -85,6 +86,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', [DailyOperationsReportController::class, 'summary']);
         Route::get('events', [DailyOperationsReportController::class, 'events']);
         Route::get('export', [DailyOperationsReportController::class, 'export']);
+    });
+
+    // Account, Security & Device Management (Build 22)
+    Route::prefix('v1/account')->group(function () {
+        Route::get('profile', [AccountSecurityController::class, 'profile']);
+        Route::patch('profile', [AccountSecurityController::class, 'updateProfile']);
+        Route::get('devices', [AccountSecurityController::class, 'devices']);
+        Route::post('devices/{id}/revoke', [AccountSecurityController::class, 'revokeDevice']);
+        Route::post('devices/revoke-others', [AccountSecurityController::class, 'revokeOtherDevices']);
     });
 });
 
