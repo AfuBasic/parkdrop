@@ -217,8 +217,9 @@ export function PackagePaymentCard({
 
                   <button
                     type="submit"
+                    onClick={handleCustomSubmit}
                     disabled={isSaving || !customAmountNaira}
-                    className="w-full min-h-[52px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[17px] font-extrabold active:scale-98 disabled:opacity-50"
+                    className="w-full min-h-[52px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[17px] font-extrabold active:scale-98 disabled:opacity-50 cursor-pointer"
                   >
                     {PackagesStrings.recordAmountButton(
                       customAmountNaira ? formatNaira(Number(customAmountNaira) * 100) : formatNaira(0)
