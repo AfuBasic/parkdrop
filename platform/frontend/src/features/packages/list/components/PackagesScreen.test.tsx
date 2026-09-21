@@ -81,13 +81,14 @@ describe('PackagesScreen', () => {
     );
   };
 
-  it('defaults to WAITING tab and displays waiting packages', async () => {
+  it('defaults to WAITING tab, displays waiting packages, and NEVER displays pickup codes on rows', async () => {
     renderScreen();
 
     await waitFor(() => {
       expect(screen.getByText('Chinedu Okafor')).toBeDefined();
       expect(screen.getByText('PD-8K42Q')).toBeDefined();
-      expect(screen.getByText('7K4P2MX')).toBeDefined();
+      // Pickup code must NEVER appear in the list row
+      expect(screen.queryByText('7K4P2MX')).toBeNull();
     });
 
     // Check tabs
@@ -95,7 +96,7 @@ describe('PackagesScreen', () => {
     expect(waitingTab.getAttribute('aria-selected')).toBe('true');
   });
 
-  it('switches to COLLECTED tab when tapped and displays collected packages', async () => {
+  it('switches to COLLECTED tab when tapped and displays collected packages without pickup code', async () => {
     renderScreen();
 
     const collectedTab = screen.getByRole('tab', { name: /collected/i });
@@ -104,28 +105,32 @@ describe('PackagesScreen', () => {
     await waitFor(() => {
       expect(collectedTab.getAttribute('aria-selected')).toBe('true');
       expect(screen.getByText('PD-7J22P')).toBeDefined();
-      expect(screen.getByText('3B8M4XY')).toBeDefined();
+      // Never expose pickup code in collected list row
+      expect(screen.queryByText('3B8M4XY')).toBeNull();
     });
   });
 
-  it('clicking search bar entry triggers onNavigateToSearch', () => {
-    const onNavigateToSearch = vi.fn();
-    renderScreen({ onNavigateToSearch });
-
-    const searchEntry = screen.getByRole('button', { name: /search packages/i });
-    fireEvent.click(searchEntry);
-
-    expect(onNavigateToSearch).toHaveBeenCalledTimes(1);
-  });
-
-  it('renders empty state when a tab has 0 packages', async () => {
+  it('performs live cross-tab search across all packages', async () => {
     renderScreen();
 
-    const returnedTab = screen.getByRole('tab', { name: /returned/i });
-    fireEvent.click(returnedTab);
+    const searchInput = screen.getByPlaceholderText(/Name, phone or code/i);
+    fireEvent.change(searchInput, { target: { value: '3B8M4XY' } });
 
     await waitFor(() => {
-      expect(screen.getByText(/no returned packages/i)).toBeDefined();
+      // Cross-tab search finds collected package even while waiting tab is visually active
+      expect(screen.getByText('Searching all packages')).toBeDefined();
+      expect(screen.getByText('PD-7J22P')).toBeDefined();
+    });
+  });
+
+  it('renders positive empty state when a tab has 0 packages', async () => {
+    renderScreen();
+
+    const otherTab = screen.getByRole('tab', { name: /other/i });
+    fireEvent.click(otherTab);
+
+    await waitFor(() => {
+      expect(screen.getByText(/No packages here yet/i)).toBeDefined();
     });
   });
 });
