@@ -2,7 +2,6 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -24,7 +23,7 @@ class SyncHint implements ShouldBroadcast
             new PrivateChannel('business.'.$this->businessId),
         ];
     }
-    
+
     public function broadcastAs(): string
     {
         return 'sync.hint';
