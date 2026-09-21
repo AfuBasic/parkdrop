@@ -15,8 +15,9 @@
 **Build 14 — Payments (Append-Only Payment Recording + Offline Support + Derived Payment State + Concurrency Safety): COMPLETED**
 **Build 16 — Return & Cancel Package Lifecycle (Deliberate Terminal Actions + Reasons + Offline Support + Concurrency Safety): COMPLETED**
 **Build 17 — Customers Directory & Customer Detail (Local-First Customer Browse + Package History + Active Package Visibility): COMPLETED**
+**Build 18 — Staff & Business Management (Memberships + Invitations + Roles + Safe Removal + Basic Business Settings): COMPLETED**
 
-Next build: Build 18.
+Next build: Build 19.
 
 ## Core Architecture Decisions
 
@@ -56,7 +57,18 @@ Multi-tenancy is centered around the `Business` model.
 
 The application relies on explicit `business_id` scoping in Eloquent Queries and Policies, never trusting frontend-provided business IDs for authorization.
 
-### 3. Media (Cloudinary)
+### 3. Staff & Business Management (Build 18)
+- **Tenancy Boundary:** The tenant is `Business`, not `User`. `User` access exists strictly through `BusinessMembership` (`owner`, `manager`, `attendant`).
+- **Universal Passwordless Auth Integration:** Staff invitations are sent by email with a configurable TTL (`BUSINESS_INVITATION_TTL_DAYS=7`). When the invitee opens ParkDrop and completes 6-digit email OTP verification, the matching invitation is auto-accepted into an active `BusinessMembership`. No staff passwords or temporary credentials ever exist.
+- **Strict Role Permissions Matrix:**
+  - `OWNER`: Full business & staff management, invite all roles, change roles, remove staff (except last owner), edit business name.
+  - `MANAGER`: Operational package tasks, view staff, invite Attendants only. Cannot invite, demote, or remove Owners or Managers.
+  - `ATTENDANT`: Operational package tasks only. No access to staff administration or business settings.
+- **Last-Owner Invariant & Concurrency Safety:** A business must always have at least one active `owner`. Removing or demoting an owner executes inside a database transaction with row locks, recalculating active owner counts authoritatively before applying mutations.
+- **Safe Staff Removal:** Removing staff sets `status = 'removed'`. It does NOT delete the `User` account or any historical Package, Payment, or Collection activity records. Once removed, online API requests for that business are immediately blocked (403), and active sessions return `needs_onboarding: true`.
+- **Online-Only Administration:** Staff invitations, role changes, staff removal, and business details updates are strictly online-only. Offline devices display last-known read-only staff lists with clear internet prompts, without queuing administrative changes locally.
+
+### 4. Media (Cloudinary)
 - **Direct Uploads:** React uploads directly to Cloudinary using signed parameters.
 - **Idempotency:** Uploads are hashed (SHA-256) locally. The backend checks for duplicate hashes before generating a signature, preventing duplicate uploads and saving bandwidth.
 - **Delivery:** Package photos use restricted/authenticated delivery.
