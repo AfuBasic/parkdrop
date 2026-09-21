@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { db } from '../db/database';
+import { db } from '@/offline/db/database';
 import { PackageSearchRepository } from './package-search-repository';
-import type { LocalPackage, LocalCustomer } from '../db/schema';
+import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 
 describe('PackageSearchRepository', () => {
   const businessA = 1;
