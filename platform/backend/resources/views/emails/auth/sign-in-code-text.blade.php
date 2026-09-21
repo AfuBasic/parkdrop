@@ -1,13 +1,15 @@
 ParkDrop
 
-Your sign-in code is:
+Your sign-in code
+
+Use this code to continue to ParkDrop:
 
 {{ $code }}
 
-This code expires in {{ $expiryMinutes }} minutes.
+This code stops working in {{ $expiryMinutes }} minutes.
 
-Do not share this code with anyone.
+Keep this code to yourself. Nobody from ParkDrop will ever ask you for it.
 
-If you did not request this code, you can ignore this email.
+Did not ask for this code? You can ignore this email — your account is safe.
 
 https://parkdrop.com.ng
