@@ -13,6 +13,7 @@ import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
 import { RecordPaymentSheet } from '@/features/payments/components/RecordPaymentSheet';
 import { ReturnPackageSheet } from '@/features/packages/lifecycle/components/ReturnPackageSheet';
 import { CancelPackageSheet } from '@/features/packages/lifecycle/components/CancelPackageSheet';
+import { ReleasePackageSheet } from '@/features/packages/lifecycle/components/ReleasePackageSheet';
 import { PaymentRepository } from '@/offline/repositories/PaymentRepository';
 import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecycleRepository';
 import { connectivityManager } from '@/offline/sync/connectivity-manager';
@@ -31,6 +32,7 @@ export function PackageDetailScreen({
   onBack,
 }: PackageDetailScreenProps) {
   const [isOnline, setIsOnline] = useState(() => connectivityManager.getState() !== 'UNREACHABLE');
+  const [isReleaseSheetOpen, setIsReleaseSheetOpen] = useState(false);
   const [isRecordSheetOpen, setIsRecordSheetOpen] = useState(false);
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
@@ -120,6 +122,16 @@ export function PackageDetailScreen({
     });
   };
 
+  const handleConfirmRelease = async (pickupCode: string, notes?: string | null) => {
+    await PackageLifecycleRepository.collectPackageLocally({
+      businessId,
+      pickupPointId: pkg.pickup_point_id,
+      packageId: pkg.id,
+      pickupCode,
+      notes,
+    });
+  };
+
   const canRecordPayment = pkg.status === 'WAITING';
 
   return (
@@ -158,11 +170,24 @@ export function PackageDetailScreen({
         <PackageActionSlots
           pkg={pkg}
           paymentSummary={paymentSummary}
+          onOpenRelease={() => setIsReleaseSheetOpen(true)}
           onOpenRecordPayment={() => setIsRecordSheetOpen(true)}
           onOpenReturn={() => setIsReturnSheetOpen(true)}
           onOpenCancel={() => setIsCancelSheetOpen(true)}
         />
       </main>
+
+      {/* Release Package Bottom Sheet */}
+      <ReleasePackageSheet
+        isOpen={isReleaseSheetOpen}
+        onClose={() => setIsReleaseSheetOpen(false)}
+        pkg={pkg}
+        customer={customer}
+        paymentSummary={paymentSummary}
+        onConfirmRelease={handleConfirmRelease}
+        onOpenRecordPayment={() => setIsRecordSheetOpen(true)}
+        isOnline={isOnline}
+      />
 
       {/* Record Payment Bottom Sheet */}
       <RecordPaymentSheet
