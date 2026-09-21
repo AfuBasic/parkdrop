@@ -23,8 +23,10 @@ import { AttentionScreen } from '@/features/attention/AttentionScreen';
 import { DailyOperationsScreen } from '@/features/reports/DailyOperationsScreen';
 import { AccountSecurityScreen } from '@/features/account/AccountSecurityScreen';
 import { RecoveryScreen } from '@/features/recovery/RecoveryScreen';
+import { HelpScreen } from '@/features/help/HelpScreen';
+import { AboutScreen } from '@/features/about/AboutScreen';
 import { useAttentionItems } from '@/features/attention/hooks/useAttentionItems';
-import { MessageSquare, ChevronRight, Users, Building2, AlertCircle, BarChart3, Shield } from 'lucide-react';
+import { MessageSquare, ChevronRight, Users, Building2, AlertCircle, BarChart3, Shield, HelpCircle, Info } from 'lucide-react';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 
@@ -233,173 +235,260 @@ function AppContent() {
         />
       )}
 
+      {(currentPath === '/more/help' || currentPath === '/help' || currentPath.startsWith('/more/help?')) && (
+        <HelpScreen 
+          onBack={() => setCurrentPath('/more')}
+          initialTopicId={new URLSearchParams(currentPath.split('?')[1] || '').get('topic')}
+        />
+      )}
+
+      {currentPath === '/more/about' && (
+        <AboutScreen 
+          onBack={() => setCurrentPath('/more')}
+        />
+      )}
+
       {currentPath === '/more' && (
-        <div className="flex flex-col h-full max-w-lg mx-auto pb-4 pt-4">
-          <h2 className="text-2xl font-bold text-text-primary mb-6 tracking-tight">Settings & More</h2>
+        <div className="flex flex-col h-full max-w-lg mx-auto pb-8 pt-4">
+          <h2 className="text-2xl font-bold text-text-primary mb-5 tracking-tight">Settings & More</h2>
           
-          <div className="flex flex-col gap-4">
-            {/* Account Info */}
-            <div className="bg-surface-default rounded-[var(--radius-xl)] p-5 shadow-sm border border-border-subtle">
-              <p className="text-text-secondary text-sm">Signed in as</p>
-              <p className="text-text-primary font-semibold text-base mt-0.5">
-                {user?.first_name ? `${user.first_name} (${user.email})` : user?.email}
-              </p>
-              {business?.name && (
-                <p className="text-text-muted text-xs mt-1">Business: {business.name}</p>
-              )}
+          <div className="flex flex-col gap-5">
+            {/* Account Profile Header */}
+            <div className="bg-surface-default rounded-[var(--radius-xl)] p-4 shadow-xs border border-border-subtle flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Signed in as</p>
+                <p className="text-text-primary font-bold text-base mt-0.5">
+                  {user?.first_name ? `${user.first_name}` : user?.email}
+                </p>
+                {user?.first_name && user?.email && (
+                  <p className="text-text-secondary text-xs">{user.email}</p>
+                )}
+                {business?.name && (
+                  <p className="text-action-primary text-xs font-medium mt-1">Workspace: {business.name}</p>
+                )}
+              </div>
+              <span className="px-2.5 py-1 rounded-full bg-blue-50 text-action-primary text-xs font-bold uppercase tracking-wider">
+                {role || 'Staff'}
+              </span>
             </div>
 
-            {/* Navigation Sections */}
-            <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-sm border border-border-subtle divide-y divide-border-subtle overflow-hidden">
-              {/* Attention Center */}
-              <button
-                type="button"
-                onClick={() => setCurrentPath('/more/attention')}
-                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                    unresolvedCount > 0 
-                      ? 'bg-status-danger-bg text-status-danger-text' 
-                      : 'bg-blue-50 text-action-primary'
-                  }`}>
-                    <AlertCircle className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-text-primary text-[15px]">Attention</div>
-                    <div className="text-xs text-text-secondary">Operational exceptions and conflicts</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {unresolvedCount > 0 && (
-                    <span 
-                      className="text-xs font-semibold px-2 py-0.5 rounded-full bg-status-danger-bg text-status-danger-text border border-status-danger-border tabular-nums"
-                      aria-label={`${unresolvedCount} items need attention`}
-                    >
-                      {unresolvedCount > 99 ? '99+' : unresolvedCount}
-                    </span>
-                  )}
-                  <ChevronRight className="w-5 h-5 text-text-muted" />
-                </div>
-              </button>
-
-              {/* Daily Operations & Reports (Owner & Manager only) */}
-              {(role === 'owner' || role === 'manager') && (
+            {/* Section 1: Operations */}
+            <div>
+              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider px-1 mb-2">
+                Operations
+              </h3>
+              <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-xs border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+                {/* Attention Center */}
                 <button
                   type="button"
-                  onClick={() => setCurrentPath('/more/reports')}
-                  className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
+                  onClick={() => setCurrentPath('/more/attention')}
+                  className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
-                      <BarChart3 className="w-5 h-5" />
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                      unresolvedCount > 0 
+                        ? 'bg-status-danger-bg text-status-danger-text' 
+                        : 'bg-blue-50 text-action-primary'
+                    }`}>
+                      <AlertCircle className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="font-semibold text-text-primary text-[15px]">Reports</div>
-                      <div className="text-xs text-text-secondary">Daily package & payment operations</div>
+                      <div className="font-semibold text-text-primary text-sm">Attention</div>
+                      <div className="text-xs text-text-secondary">Operational exceptions & retries</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-text-muted" />
+                  <div className="flex items-center gap-2">
+                    {unresolvedCount > 0 && (
+                      <span 
+                        className="text-xs font-semibold px-2 py-0.5 rounded-full bg-status-danger-bg text-status-danger-text border border-status-danger-border tabular-nums"
+                        aria-label={`${unresolvedCount} items need attention`}
+                      >
+                        {unresolvedCount > 99 ? '99+' : unresolvedCount}
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-text-muted" />
+                  </div>
                 </button>
-              )}
 
-              {/* Staff Management */}
-              <button
-                type="button"
-                onClick={() => setCurrentPath('/more/staff')}
-                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-text-primary text-[15px]">Staff</div>
-                    <div className="text-xs text-text-secondary">Members, roles, and invitations</div>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-text-muted" />
-              </button>
+                {/* Daily Operations & Reports (Owner & Manager only) */}
+                {(role === 'owner' || role === 'manager') && (
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPath('/more/reports')}
+                    className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                        <BarChart3 className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-text-primary text-sm">Daily Reports</div>
+                        <div className="text-xs text-text-secondary">Package metrics & payment activity</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-text-muted" />
+                  </button>
+                )}
 
-              {/* Business Details */}
-              <button
-                type="button"
-                onClick={() => setCurrentPath('/more/business')}
-                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
-                    <Building2 className="w-5 h-5" />
+                {/* SMS Credits */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPath('/more/sms-credits')}
+                  className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-text-primary text-sm">SMS Credits</div>
+                      <div className="text-xs text-text-secondary">Customer notification balance</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-text-primary text-[15px]">Business details</div>
-                    <div className="text-xs text-text-secondary">Name, pickup point, and role</div>
+                  <div className="flex items-center gap-2">
+                    {wallet !== undefined && (
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        wallet.balance === 0
+                          ? 'bg-status-danger-bg text-status-danger-text'
+                          : wallet.balance < 5
+                          ? 'bg-status-warning-bg text-status-warning-text'
+                          : 'bg-surface-page text-text-secondary border border-border-subtle'
+                      }`}>
+                        {wallet.balance} {wallet.balance === 1 ? 'credit' : 'credits'}
+                      </span>
+                    )}
+                    <ChevronRight className="w-4 h-4 text-text-muted" />
                   </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-text-muted" />
-              </button>
-
-              {/* SMS Credits */}
-              <button
-                type="button"
-                onClick={() => setCurrentPath('/more/sms-credits')}
-                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-text-primary text-[15px]">SMS Credits</div>
-                    <div className="text-xs text-text-secondary">Customer notification delivery balance</div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {wallet !== undefined && (
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      wallet.balance === 0
-                        ? 'bg-status-danger-bg text-status-danger-text'
-                        : wallet.balance < 5
-                        ? 'bg-status-warning-bg text-status-warning-text'
-                        : 'bg-surface-page text-text-secondary border border-border-subtle'
-                    }`}>
-                      {wallet.balance} {wallet.balance === 1 ? 'credit' : 'credits'}
-                    </span>
-                  )}
-                  <ChevronRight className="w-5 h-5 text-text-muted" />
-                </div>
-              </button>
-
-              {/* Account & Security */}
-              <button
-                type="button"
-                onClick={() => setCurrentPath('/more/account')}
-                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
-                    <Shield className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-text-primary text-[15px]">Account & Security</div>
-                    <div className="text-xs text-text-secondary">Passwordless identity, devices, and sessions</div>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-text-muted" />
-              </button>
+                </button>
+              </div>
             </div>
 
-            {/* Actions */}
-            <div className="bg-surface-default rounded-[var(--radius-xl)] p-5 shadow-sm border border-border-subtle flex flex-col gap-3">
+            {/* Section 2: Business & Team (Owner/Manager only) */}
+            {(role === 'owner' || role === 'manager') && (
+              <div>
+                <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider px-1 mb-2">
+                  Business Administration
+                </h3>
+                <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-xs border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+                  {/* Staff Management */}
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPath('/more/staff')}
+                    className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-text-primary text-sm">Staff</div>
+                        <div className="text-xs text-text-secondary">Members, roles, and invitations</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-text-muted" />
+                  </button>
+
+                  {/* Business Details */}
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPath('/more/business')}
+                    className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                        <Building2 className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-text-primary text-sm">Business details</div>
+                        <div className="text-xs text-text-secondary">Name, pickup point, and settings</div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-text-muted" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Section 3: Account & Device Security */}
+            <div>
+              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider px-1 mb-2">
+                Account
+              </h3>
+              <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-xs border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPath('/more/account')}
+                  className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-text-primary text-sm">Account & Security</div>
+                      <div className="text-xs text-text-secondary">Devices, offline access, and sessions</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-muted" />
+                </button>
+              </div>
+            </div>
+
+            {/* Section 4: Support & About */}
+            <div>
+              <h3 className="text-xs font-bold text-text-muted uppercase tracking-wider px-1 mb-2">
+                Support & Guides
+              </h3>
+              <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-xs border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+                {/* Help Center */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPath('/more/help')}
+                  className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                      <HelpCircle className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-text-primary text-sm">Help & Guides</div>
+                      <div className="text-xs text-text-secondary">Offline-ready instructions & best practices</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-muted" />
+                </button>
+
+                {/* About ParkDrop */}
+                <button
+                  type="button"
+                  onClick={() => setCurrentPath('/more/about')}
+                  className="w-full flex items-center justify-between p-3.5 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[52px]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-action-primary flex items-center justify-center shrink-0">
+                      <Info className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-text-primary text-sm">About ParkDrop</div>
+                      <div className="text-xs text-text-secondary">Version 1.0.0, diagnostics, and privacy</div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-text-muted" />
+                </button>
+              </div>
+            </div>
+
+            {/* Actions: Sign Out / Reset Device */}
+            <div className="bg-surface-default rounded-[var(--radius-xl)] p-4 shadow-xs border border-border-subtle flex flex-col gap-2.5">
               <button 
                 onClick={logout}
-                className="px-6 py-3 w-full bg-surface-page hover:bg-surface-subtle text-text-primary border border-border-default font-semibold rounded-xl transition-colors cursor-pointer text-sm"
+                className="px-5 py-2.5 w-full bg-surface-page hover:bg-surface-subtle text-text-primary border border-border-default font-semibold rounded-xl transition-colors cursor-pointer text-xs min-h-[44px]"
               >
                 Sign Out
               </button>
               <button 
                 onClick={forgetRememberedIdentity}
-                className="px-6 py-3 w-full bg-status-danger-bg text-status-danger-text border border-status-danger-border font-semibold rounded-xl hover:opacity-90 transition-opacity cursor-pointer text-sm"
+                className="px-5 py-2.5 w-full bg-status-danger-bg text-status-danger-text border border-status-danger-border font-semibold rounded-xl hover:opacity-90 transition-opacity cursor-pointer text-xs min-h-[44px]"
               >
                 Reset Device Identity
               </button>
