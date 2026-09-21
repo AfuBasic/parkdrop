@@ -3,8 +3,8 @@ import { CreditCard, Check, Minus, Clock, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/design-system';
 import type { LocalPayment, PaymentMethod } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
-import { PackagesStrings } from '../../strings';
-import { formatNaira } from '../../domain/package-filters';
+import { PackagesStrings } from '@/features/packages/strings';
+import { formatNaira } from '@/features/packages/domain/package-filters';
 
 export interface PackagePaymentCardProps {
   paymentSummary: PaymentSummaryData;
