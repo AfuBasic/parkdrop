@@ -1,7 +1,7 @@
-import { db } from '../db/database';
-import { MutationQueue } from '../mutations/mutation-queue';
-import type { LocalPayment, PaymentMethod } from '../db/schema';
-import { calculatePaymentSummary, type PaymentSummaryData } from '../../features/payments/domain/payment-summary';
+import { db } from '@/offline/db/database';
+import { MutationQueue } from '@/offline/mutations/mutation-queue';
+import type { LocalPayment, PaymentMethod } from '@/offline/db/schema';
+import { calculatePaymentSummary, type PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 
 export interface RecordPaymentInput {
   businessId: number;
