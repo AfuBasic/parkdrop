@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { PackageListItem } from '../patterns/PackageListItem';
+import { PackageListItem } from '@/design-system/patterns/PackageListItem';
 
 const meta = {
   title: 'Patterns/PackageListItem',
