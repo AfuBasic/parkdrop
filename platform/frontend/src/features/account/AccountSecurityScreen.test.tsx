@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import React from 'react';
+import '@testing-library/jest-dom';
 import { AccountSecurityScreen } from './AccountSecurityScreen';
 import { AuthContext } from '@/features/auth/AuthContext';
 import { accountApi } from './api/account-api';
@@ -101,10 +101,10 @@ describe('AccountSecurityScreen', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('ada@example.com')).toBeInTheDocument();
-      expect(screen.getByText('Read-only')).toBeInTheDocument();
-      expect(screen.getByText('Ada')).toBeInTheDocument();
-      expect(screen.getByText('Lagos Logistics')).toBeInTheDocument();
+      expect(screen.getByText('ada@example.com')).toBeDefined();
+      expect(screen.getByText('Read-only')).toBeDefined();
+      expect(screen.getByText('Ada')).toBeDefined();
+      expect(screen.getByText('Lagos Logistics')).toBeDefined();
     });
   });
 
@@ -121,7 +121,7 @@ describe('AccountSecurityScreen', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Change name')).toBeInTheDocument();
+      expect(screen.getByText('Change name')).toBeDefined();
     });
 
     fireEvent.click(screen.getByText('Change name'));
@@ -132,7 +132,7 @@ describe('AccountSecurityScreen', () => {
 
     await waitFor(() => {
       expect(accountApi.updateProfile).toHaveBeenCalledWith({ first_name: 'Adanna' });
-      expect(screen.getByText('Display name updated successfully.')).toBeInTheDocument();
+      expect(screen.getByText('Display name updated successfully.')).toBeDefined();
     });
   });
 
@@ -149,16 +149,16 @@ describe('AccountSecurityScreen', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Chrome on macOS')).toBeInTheDocument();
-      expect(screen.getByText('Safari on iPhone')).toBeInTheDocument();
-      expect(screen.getByText('Revoke')).toBeInTheDocument();
+      expect(screen.getByText('Chrome on macOS')).toBeDefined();
+      expect(screen.getByText('Safari on iPhone')).toBeDefined();
+      expect(screen.getByText('Revoke')).toBeDefined();
     });
 
     fireEvent.click(screen.getByText('Revoke'));
 
     await waitFor(() => {
       expect(accountApi.revokeDevice).toHaveBeenCalledWith(2);
-      expect(screen.getByText('Revoked')).toBeInTheDocument();
+      expect(screen.getByText('Revoked')).toBeDefined();
     });
   });
 
@@ -189,15 +189,15 @@ describe('AccountSecurityScreen', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Sign Out')).toBeInTheDocument();
+      expect(screen.getByText('Sign Out')).toBeDefined();
     });
 
     fireEvent.click(screen.getByText('Sign Out'));
 
     await waitFor(() => {
-      expect(screen.getByText('Unsynced Work on Device')).toBeInTheDocument();
-      expect(screen.getByText('1 pending change')).toBeInTheDocument();
-      expect(screen.getByText('Sign out anyway (Keep local queue)')).toBeInTheDocument();
+      expect(screen.getByText('Unsynced Work on Device')).toBeDefined();
+      expect(screen.getByText('1 pending change')).toBeDefined();
+      expect(screen.getByText('Sign out anyway (Keep local queue)')).toBeDefined();
     });
 
     fireEvent.click(screen.getByText('Sign out anyway (Keep local queue)'));
