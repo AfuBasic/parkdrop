@@ -30,6 +30,7 @@ function AppContent() {
     state, 
     user, 
     business,
+    role,
     deviceMeta, 
     rememberedIdentity, 
     unlock, 
@@ -51,7 +52,7 @@ function AppContent() {
   // Operational Attention items
   const { unresolvedCount } = useAttentionItems({
     businessId: business?.id ?? 0,
-    userRole: business?.role,
+    userRole: role,
   });
 
   if (state === 'booting') {
