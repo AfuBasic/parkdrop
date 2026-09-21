@@ -7,6 +7,7 @@ import { PickupPointScreen } from '@/features/auth/screens/PickupPointScreen';
 import { ReadyScreen } from '@/features/auth/screens/ReadyScreen';
 import { HelpSheet } from './HelpSheet';
 import { authApi } from '@/features/auth/api';
+import { ApiError } from '@/lib/api';
 import { db } from '@/lib/db';
 import { hashPin, generateSalt } from '@/lib/pin';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -125,9 +126,23 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
     persistDraft({ step, identifier, challengeId, firstName, pin, pickupPointName, parkName });
   }, [step, identifier, challengeId, firstName, pin, pickupPointName, parkName]);
 
-  const readableError = (err: unknown, fallback: string) => {
-    const message = err instanceof Error ? err.message : '';
-    return message || fallback;
+  /**
+   * Server messages are written for developers, not for this audience: they
+   * say things like "Invalid or expired code", which is both jargon and
+   * blame-shaped. We always show our own copy instead, and keep the server's
+   * text in the console for debugging rather than on the screen.
+   *
+   * The one exception is rate limiting, where the server knows something we
+   * genuinely cannot work out on the client.
+   */
+  const readableError = (err: unknown, ours: string) => {
+    if (err instanceof ApiError && err.status === 429) {
+      return 'Too many tries. Wait a minute, then try again.';
+    }
+    if (import.meta.env.DEV && err instanceof Error) {
+      console.debug('[auth] request failed:', err.message);
+    }
+    return ours;
   };
 
   const sendCode = async (target: string) => {
@@ -142,7 +157,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
       setStep('code');
     } catch (err) {
       request.finish();
-      setError(readableError(err, AuthStrings.identifierInvalid(AUTH_IDENTIFIER)));
+      setError(readableError(err, 'We could not send your code. Check your data and try again.'));
     }
   };
 
