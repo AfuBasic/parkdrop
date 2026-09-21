@@ -4,7 +4,6 @@ namespace App\Actions\Sync;
 
 use App\Models\Business;
 use App\Models\Device;
-use App\Models\SyncChange;
 use App\Models\SyncMutationReceipt;
 use App\Services\Sync\MutationRegistry;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +34,7 @@ class PushMutationsAction
                     'error' => 'DEVICE_REVOKED',
                 ];
             }
+
             return $results;
         }
 
@@ -44,7 +44,7 @@ class PushMutationsAction
             $payload = $mutation['payload'] ?? [];
             $deviceSequence = $mutation['device_sequence'] ?? null;
             $pickupPointId = $mutation['pickup_point_id'] ?? null;
-            
+
             $payloadHash = md5(json_encode($payload));
 
             try {
@@ -57,25 +57,27 @@ class PushMutationsAction
                         'status' => $receipt->result_status,
                         'metadata' => $receipt->result_metadata,
                     ];
+
                     continue;
                 }
 
                 $handler = $this->registry->getHandler($operation);
-                if (!$handler) {
+                if (! $handler) {
                     $this->recordReceipt($mutationId, $deviceUuid, $deviceSequence, $userId, $business->id, $operation, $payloadHash, 'REJECTED', ['error' => 'UNSUPPORTED_OPERATION']);
                     $results[] = [
                         'mutation_id' => $mutationId,
                         'status' => 'REJECTED',
                         'metadata' => ['error' => 'UNSUPPORTED_OPERATION'],
                     ];
+
                     continue;
                 }
 
                 // Execute the mutation in a transaction
                 $result = DB::transaction(function () use ($handler, $payload, $business, $userId, $deviceUuid, $pickupPointId, $mutationId, $deviceSequence, $operation, $payloadHash) {
-                    
+
                     $handlerResult = $handler->handle($payload, $business->id, $userId, $deviceUuid, $pickupPointId);
-                    
+
                     $status = $handlerResult['status'] ?? 'APPLIED';
                     $metadata = $handlerResult['metadata'] ?? [];
 
@@ -95,7 +97,7 @@ class PushMutationsAction
 
             } catch (\Exception $e) {
                 Log::error("Mutation failed: {$operation} ({$mutationId})", ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                
+
                 // For unhandled exceptions, we might not want to record a permanent receipt if it's retryable (e.g., deadlock).
                 // Let's assume generic exceptions are retryable server errors unless they are specific validation exceptions.
                 $results[] = [
