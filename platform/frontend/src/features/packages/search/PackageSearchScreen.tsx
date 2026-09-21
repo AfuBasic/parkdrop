@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Package, Search } from 'lucide-react';
 import { PackageSearchInput } from '@/features/packages/search/components/PackageSearchInput';
 import { PackageSearchResults } from '@/features/packages/search/components/PackageSearchResults';
@@ -19,6 +20,15 @@ export function PackageSearchScreen({
   onNavigateToAdd,
   initialQuery = '',
 }: PackageSearchScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/' }));
+  const handleSelectPackage = onSelectPackage ?? ((result: PackageSearchResult) => {
+    routerNavigate({ to: '/packages/$packageId', params: { packageId: result.packageId } });
+  });
+  const handleNavigateToAdd = onNavigateToAdd ?? ((phone?: string) => {
+    routerNavigate({ to: '/packages/new', search: phone ? { phone } : undefined });
+  });
+
   const { business } = useAuth();
   const businessId = business?.id || 0;
   const activePickupPointId = null; // Can be wired to active pickup point when multi-point selection is added
@@ -43,12 +53,7 @@ export function PackageSearchScreen({
   };
 
   const handleSelect = (result: PackageSearchResult) => {
-    if (onSelectPackage) {
-      onSelectPackage(result);
-    } else {
-      // Temporary until Build 13 (Package Detail)
-      alert(`Selected Package: ${result.publicPackageId} (${result.customerName})`);
-    }
+    handleSelectPackage(result);
   };
 
   const hasQuery = query.trim().length > 0;
@@ -63,7 +68,7 @@ export function PackageSearchScreen({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={onBack}
+              onClick={handleBack}
               className="inline-flex items-center justify-center h-10 w-10 rounded-full hover:bg-bg-action-hover active:bg-border-subtle transition-colors text-text-primary"
               aria-label="Back"
             >
@@ -126,15 +131,13 @@ export function PackageSearchScreen({
             <p className="text-sm text-text-secondary max-w-xs leading-relaxed mb-5">
               Try another name, phone number, pickup code or package ID.
             </p>
-            {onNavigateToAdd && (
-              <button
-                type="button"
-                onClick={() => onNavigateToAdd(query)}
-                className="inline-flex items-center justify-center min-h-[48px] px-5 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white font-extrabold text-[15px] hover:bg-[var(--pd-blue-hover)] active:scale-[0.98] transition-transform"
-              >
-                Add package for this number
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => handleNavigateToAdd(query)}
+              className="inline-flex items-center justify-center min-h-[48px] px-5 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white font-extrabold text-[15px] hover:bg-[var(--pd-blue-hover)] active:scale-[0.98] transition-transform"
+            >
+              Add package for this number
+            </button>
           </div>
         )}
       </main>
