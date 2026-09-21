@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { CloudOff } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useKeyboardOpen } from '@/features/auth/lib/useKeyboardOpen';
@@ -55,6 +56,14 @@ export function HomeScreen({
   onNavigateToAttention,
   onSelectPackage,
 }: HomeScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleNavigateToSearch = onNavigateToSearch ?? (() => routerNavigate({ to: '/packages/search' }));
+  const handleNavigateToAdd = onNavigateToAdd ?? (() => routerNavigate({ to: '/packages/new' }));
+  const handleNavigateToPackages = onNavigateToPackages ?? ((status) => routerNavigate({ to: '/packages', search: status ? { status } : undefined }));
+  const handleNavigateToSetup = onNavigateToSetup ?? (() => routerNavigate({ to: '/more/business' }));
+  const handleNavigateToAttention = onNavigateToAttention ?? (() => routerNavigate({ to: '/more/attention' }));
+  const handleSelectPackage = onSelectPackage ?? ((id: string) => routerNavigate({ to: '/packages/$packageId', params: { packageId: id } }));
+
   const { user, business } = useAuth();
   const identity = usePickupIdentity();
   const syncState = useSyncState(business?.id);
@@ -114,15 +123,15 @@ export function HomeScreen({
       >
         <div className="mx-auto w-full max-w-[520px] px-4 pb-8 flex flex-col gap-4">
           <ActionTiles
-            onAddPackage={() => onNavigateToAdd?.()}
-            onFindPackage={() => onNavigateToSearch?.()}
+            onAddPackage={handleNavigateToAdd}
+            onFindPackage={handleNavigateToSearch}
             className="relative z-10 -mt-[calc(var(--pd-tile-overlap)*2)]"
           />
 
           {identity.needsSetup && identity.missing && (
             <SetupBanner
               missing={identity.missing}
-              onFinishSetup={() => onNavigateToSetup?.()}
+              onFinishSetup={handleNavigateToSetup}
             />
           )}
 
@@ -140,13 +149,13 @@ export function HomeScreen({
           {showStats && (
             <StatStrip
               stats={data.stats}
-              onOpenWaiting={() => onNavigateToPackages?.('WAITING')}
+              onOpenWaiting={() => handleNavigateToPackages('WAITING')}
               // Unpaid is a payment state rather than a package status, and
               // the Packages screen filters by status. Narrowing this list is
               // the honest version of "filtered that way" until it can filter
               // by money owed too.
               onOpenUnpaid={() => setFilter('unpaid')}
-              onOpenCollected={() => onNavigateToPackages?.('COLLECTED')}
+              onOpenCollected={() => handleNavigateToPackages('COLLECTED')}
             />
           )}
 
@@ -158,8 +167,8 @@ export function HomeScreen({
                 rows={rows}
                 filter={filter}
                 onFilterChange={setFilter}
-                onSelectPackage={(id) => onSelectPackage?.(id)}
-                onSeeAll={() => onNavigateToPackages?.('WAITING')}
+                onSelectPackage={(id) => handleSelectPackage(id)}
+                onSeeAll={() => handleNavigateToPackages('WAITING')}
               />
             ))}
         </div>
