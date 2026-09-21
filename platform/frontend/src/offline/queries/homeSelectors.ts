@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/database';
-import type { LocalPackage } from '../db/schema';
+import { db } from '@/offline/db/database';
+import type { LocalPackage } from '@/offline/db/schema';
 
 export function useWaitingCount(businessId?: number): number {
   const count = useLiveQuery(
