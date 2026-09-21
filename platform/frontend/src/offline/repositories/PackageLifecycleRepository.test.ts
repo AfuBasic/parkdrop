@@ -110,4 +110,36 @@ describe('PackageLifecycleRepository', () => {
       })
     ).rejects.toThrow('PACKAGE_NOT_WAITING');
   });
+
+  it('marks a package as COLLECTED and queues a COLLECT_PACKAGE mutation', async () => {
+    const updated = await PackageLifecycleRepository.collectPackageLocally({
+      businessId,
+      pickupPointId: null,
+      packageId,
+      pickupCode: '7K4P2MX',
+      notes: 'Collected by customer',
+      actorName: 'Ada',
+    });
+
+    expect(updated.status).toBe('COLLECTED');
+
+    const inDb = await db.packages.get(packageId);
+    expect(inDb?.status).toBe('COLLECTED');
+
+    const mutations = await db.mutations.toArray();
+    expect(mutations).toHaveLength(1);
+    expect(mutations[0].operation).toBe('COLLECT_PACKAGE');
+    expect(mutations[0].payload.pickup_code).toBe('7K4P2MX');
+  });
+
+  it('rejects collection if pickup code does not match', async () => {
+    await expect(
+      PackageLifecycleRepository.collectPackageLocally({
+        businessId,
+        pickupPointId: null,
+        packageId,
+        pickupCode: 'WRONGCODE',
+      })
+    ).rejects.toThrow('INVALID_PICKUP_CODE');
+  });
 });
