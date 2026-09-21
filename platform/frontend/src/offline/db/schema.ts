@@ -27,6 +27,7 @@ export interface LocalConflict {
   id?: number;
   conflict_id: string;
   mutation_id: string;
+  business_id?: number;
   entity_type: string;
   entity_id: string;
   type: string;
