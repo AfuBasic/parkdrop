@@ -204,6 +204,7 @@ export function PackagePaymentCard({
                     <span className="absolute left-3.5 text-[18px] font-extrabold text-[var(--pd-muted)]">₦</span>
                     <input
                       type="number"
+                      aria-label="Amount"
                       inputMode="numeric"
                       min={1}
                       max={balanceNaira}
