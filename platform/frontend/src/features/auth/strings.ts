@@ -124,10 +124,20 @@ export const AuthStrings = {
     'Phones cannot send those characters in an SMS. Please use normal letters and numbers.',
   pickupPlaceholderName: 'That is the example name. Type the real name your customers know.',
 
-  // ── 6. Ready ───────────────────────────────────────────────────────────
+  // ── 6. Phone number ───────────────────────────────────────────────────
+  phoneTitle: 'What number should customers call?',
+  phoneSubtitle: 'This number goes in the arrival SMS so customers can reach your shop.',
+  phoneLabel: 'Business phone number',
+  phoneCheckTwice: 'Check it twice. Your customers will call this number when their package arrives.',
+  phoneSave: 'Save and continue',
+  phoneEmpty: 'Type your phone number to continue.',
+  phoneInvalid: 'Enter your 11-digit number, like 0803 123 4567.',
+
+  // ── 7. Ready ───────────────────────────────────────────────────────────
   readyTitle: (name: string) => `You are ready, ${name}.`,
   readySubtitle: 'Your pickup point is set up.',
   readyPickupLabel: 'Your pickup point',
+  readyPhoneLabel: 'Customer contact phone',
   readyEdit: 'Edit',
   installTitle: 'Put ParkDrop on your phone screen',
   installSubtitle: 'So it opens in one tap.',
