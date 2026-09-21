@@ -50,6 +50,11 @@ class User extends Authenticatable
         return $this->hasMany(BusinessMembership::class);
     }
 
+    public function memberships()
+    {
+        return $this->businessMemberships();
+    }
+
     public function devices()
     {
         return $this->hasMany(UserDevice::class);
