@@ -20,7 +20,11 @@ export interface SetupBannerProps {
  */
 export function SetupBanner({ missing, onFinishSetup, className }: SetupBannerProps) {
   const message =
-    missing === 'point' ? HomeStrings.setupPointTitle : HomeStrings.setupTitle;
+    missing === 'point'
+      ? HomeStrings.setupPointTitle
+      : missing === 'park'
+        ? HomeStrings.setupTitle
+        : HomeStrings.setupPhoneTitle;
 
   return (
     <div
