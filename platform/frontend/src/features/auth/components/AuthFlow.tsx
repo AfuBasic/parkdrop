@@ -6,6 +6,7 @@ import { PinSetupScreen } from '@/features/auth/screens/PinSetupScreen';
 import { PickupPointScreen } from '@/features/auth/screens/PickupPointScreen';
 import { ReadyScreen } from '@/features/auth/screens/ReadyScreen';
 import { HelpSheet } from './HelpSheet';
+import { InstallSheet, useInstallPrompt } from './InstallSheet';
 import { authApi } from '@/features/auth/api';
 import { ApiError } from '@/lib/api';
 import { db } from '@/lib/db';
@@ -119,6 +120,8 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
 
   const [error, setError] = React.useState('');
   const [helpOpen, setHelpOpen] = React.useState(false);
+  const [installOpen, setInstallOpen] = React.useState(false);
+  const { canInstall, install } = useInstallPrompt();
 
   /**
    * Who we just created, held until the user taps through the Ready screen.
@@ -356,11 +359,18 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
             if (completed) await setAuthenticatedUser(completed.user, completed.business);
           }}
           onEditPickupPoint={() => setStep('pickup')}
+          onShowInstall={async () => {
+            // Prefer the browser's own one-tap install dialog; fall back to
+            // showing the steps when it is not on offer.
+            if (canInstall && (await install())) return;
+            setInstallOpen(true);
+          }}
           onHelp={openHelp}
         />
       )}
 
       <HelpSheet open={helpOpen} onOpenChange={setHelpOpen} screenName={SCREEN_NAME[step]} />
+      <InstallSheet open={installOpen} onOpenChange={setInstallOpen} />
     </>
   );
 }
