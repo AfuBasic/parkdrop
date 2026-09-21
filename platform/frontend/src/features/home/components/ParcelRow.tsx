@@ -96,7 +96,10 @@ export function ParcelRow({ row, onSelect }: ParcelRowProps) {
 
       <span className="flex-1 min-w-0 flex flex-col gap-1.5">
         <span className="flex items-baseline justify-between gap-3">
-          <span className="text-[var(--pd-size-row-name)] font-extrabold leading-tight tracking-[-0.01em] text-[var(--pd-navy)] truncate">
+          {/* Two customers can share the first twenty characters of a long
+              name, so the row gives the name a second line rather than
+              ellipsing it after one. */}
+          <span className="text-[var(--pd-size-row-name)] font-extrabold leading-tight tracking-[-0.01em] text-[var(--pd-navy)] break-words line-clamp-2">
             {row.customerName}
           </span>
           <span
