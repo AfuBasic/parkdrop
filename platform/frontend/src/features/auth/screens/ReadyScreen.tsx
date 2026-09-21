@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Store, Smartphone } from 'lucide-react';
 import { AuthShell } from '../components/AuthShell';
 import { BigButton } from '../components/BigButton';
