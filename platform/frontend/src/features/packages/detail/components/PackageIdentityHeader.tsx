@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, MoreVertical, RotateCcw, Ban, CloudOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/design-system';
 import type { LocalPackage } from '@/offline/db/schema';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '../../strings';
 
 export interface PackageIdentityHeaderProps {
   pkg: LocalPackage;
