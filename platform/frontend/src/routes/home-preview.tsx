@@ -159,8 +159,25 @@ export function HomePreview() {
       )}
 
       <div className={chrome ? 'pt-[52px]' : undefined}>
-        <AppShell currentPath="/" bleed>
-          {seeded && <HomeScreen key={`${scenario}-${naming}`} />}
+        {/*
+          This harness renders outside the app's RouterProvider (see the
+          file header), and NavItem falls back to a plain <a> only when
+          onNavigate is supplied — otherwise it renders a TanStack Link,
+          which throws with no router context. The stub keeps the bottom
+          nav visible for review without needing to mount the full router.
+        */}
+        <AppShell currentPath="/" bleed onNavigate={() => {}}>
+          {seeded && (
+            <HomeScreen
+              key={`${scenario}-${naming}`}
+              onNavigateToSearch={() => {}}
+              onNavigateToAdd={() => {}}
+              onNavigateToPackages={() => {}}
+              onNavigateToSetup={() => {}}
+              onNavigateToAttention={() => {}}
+              onSelectPackage={() => {}}
+            />
+          )}
         </AppShell>
       </div>
     </AuthContext.Provider>
