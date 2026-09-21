@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ArrowLeft, Shield, Smartphone, Copy, Check, Info } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 
@@ -10,10 +10,12 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
   const { business, user } = useAuth();
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Generate safe non-PII diagnostic support identifier
+  // Stable values computed once at mount — never re-computed on re-renders
   const appVersion = '1.0.0';
   const buildDate = '2026-09-21';
-  const diagnosticCode = `PD-${appVersion}-${business?.id ?? 0}-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+  const currentYear = useRef(new Date().getFullYear()).current;
+  const sessionSuffix = useRef(Date.now().toString(36).toUpperCase().slice(-6)).current;
+  const diagnosticCode = `PD-${appVersion}-${business?.id ?? 0}-${sessionSuffix}`;
 
   const handleCopyDiagnostic = () => {
     navigator.clipboard.writeText(diagnosticCode);
@@ -117,7 +119,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
             Customer phone numbers, parcel photos, and collection codes are stored securely on this device and encrypted during sync. ParkDrop operates in accordance with local data protection regulations.
           </p>
           <p className="text-[11px] mt-1">
-            © {new Date().getFullYear()} ParkDrop. All rights reserved.
+            © {currentYear} ParkDrop. All rights reserved.
           </p>
         </div>
       </main>

@@ -22,8 +22,9 @@
 **Build 22 — Account, Security & Device Management (Passwordless Account Settings + Sessions + Registered Devices + Offline Authorization Leases): COMPLETED**
 **Build 23 — Data Backup, Recovery & Operational Resilience (Local Database Integrity + Safe Recovery + Device Replacement + Sync Repair + Crash Hardening): COMPLETED**
 **Build 24 — Production Readiness, Observability & Release Hardening (Deployment Safety + Health Checks + Provider Failure Drills + Security + Performance + Release Runbooks): COMPLETED**
+**Build 25 — Launch Readiness, Complete UI Inspection & First-Run Product Polish (Package Collection Flow + Help Center + About Surface + Visual QA + PWA Polish): COMPLETED**
 
-ParkDrop Core Product Milestones: All Core Builds Complete (Builds 1 through 24).
+ParkDrop Core Product Milestones: **V1 COMPLETE — All 22 Core Builds Delivered (Builds 1 through 25).**
 
 ## Core Architecture Decisions
 
