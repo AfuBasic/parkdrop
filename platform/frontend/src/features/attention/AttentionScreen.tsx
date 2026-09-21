@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { 
   ChevronLeft, 
   WifiOff 
@@ -13,7 +14,7 @@ import { MediaUploadCoordinator } from '@/features/package-media/upload/media-up
 import type { AttentionItem } from '@/features/attention/attention-types';
 
 interface AttentionScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
   onNavigateToPackage?: (packageId: string) => void;
   onNavigateToBuyCredits?: () => void;
   onNavigateToCredits?: () => void;
@@ -25,6 +26,17 @@ export function AttentionScreen({
   onNavigateToBuyCredits,
   onNavigateToCredits,
 }: AttentionScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
+  const handleNavigateToPackage = onNavigateToPackage ?? ((pkgId: string) => {
+    routerNavigate({ to: '/packages/$packageId', params: { packageId: pkgId } });
+  });
+  const handleNavigateToBuyCredits = onNavigateToBuyCredits ?? (() => {
+    routerNavigate({ to: '/more/sms-credits/buy' });
+  });
+  const handleNavigateToCredits = onNavigateToCredits ?? (() => {
+    routerNavigate({ to: '/more/sms-credits' });
+  });
   const { business, role } = useAuth();
   const businessId = business?.id;
   const syncState = useSyncState(businessId);
@@ -40,8 +52,8 @@ export function AttentionScreen({
   const handleAction = async (item: AttentionItem) => {
     switch (item.action?.type) {
       case 'VIEW_PACKAGE':
-        if (item.entityId && onNavigateToPackage) {
-          onNavigateToPackage(String(item.entityId));
+        if (item.entityId) {
+          handleNavigateToPackage(String(item.entityId));
         }
         break;
 
@@ -68,15 +80,11 @@ export function AttentionScreen({
           toast.error('Connect to the internet to buy SMS credits');
           return;
         }
-        if (onNavigateToBuyCredits) {
-          onNavigateToBuyCredits();
-        }
+        handleNavigateToBuyCredits();
         break;
 
       case 'VIEW_SMS_CREDITS':
-        if (onNavigateToCredits) {
-          onNavigateToCredits();
-        }
+        handleNavigateToCredits();
         break;
 
       case 'CHECK_PURCHASE':
@@ -84,9 +92,7 @@ export function AttentionScreen({
           toast.error('Connect to the internet to verify purchase status');
           return;
         }
-        if (onNavigateToBuyCredits) {
-          onNavigateToBuyCredits();
-        }
+        handleNavigateToBuyCredits();
         break;
 
       default:
@@ -100,7 +106,7 @@ export function AttentionScreen({
       <header className="sticky top-0 z-10 bg-surface-page/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center justify-between shrink-0">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center text-text-secondary hover:text-text-primary transition-colors py-2 pr-4 -ml-2 cursor-pointer min-h-[44px]"
         >
           <ChevronLeft className="h-6 w-6" aria-hidden="true" />
