@@ -14,6 +14,7 @@ class Device extends Model
     protected $primaryKey = 'uuid';
 
     protected $fillable = [
+        'uuid',
         'user_id',
         'name',
         'platform',
