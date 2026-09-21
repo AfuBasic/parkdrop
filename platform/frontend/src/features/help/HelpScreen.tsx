@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { 
   ArrowLeft, 
   HelpCircle, 
@@ -182,11 +183,13 @@ const HELP_ARTICLES: HelpArticle[] = [
 ];
 
 interface HelpScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
   initialTopicId?: string | null;
 }
 
 export function HelpScreen({ onBack, initialTopicId }: HelpScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(initialTopicId || null);
 
   const selectedArticle = HELP_ARTICLES.find(a => a.id === selectedArticleId);
@@ -267,7 +270,7 @@ export function HelpScreen({ onBack, initialTopicId }: HelpScreenProps) {
       <header className="px-4 py-3 bg-surface-default border-b border-border-subtle flex items-center gap-3 sticky top-0 z-10">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="p-2 -ml-2 text-text-secondary hover:text-text-primary rounded-full transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Back to settings"
         >
