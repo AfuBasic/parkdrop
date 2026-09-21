@@ -71,6 +71,16 @@ export interface LocalPackage {
   terminal_reason?: string | null;
   terminal_reason_note?: string | null;
   terminal_actor_name?: string | null;
+  /**
+   * Delivery status of the arrival SMS, populated from sms_messages.status via sync pull.
+   * Only present when an SMS was attempted. Never shown as "Delivered" unless Termii
+   * explicitly reported DELIVERED.
+   *
+   * Values: 'PENDING' | 'SENT' | 'DELIVERED' | 'FAILED' | 'UNDELIVERED' | 'NEEDS_RECONCILIATION'
+   */
+  arrival_sms_status?: string | null;
+  /** ISO timestamp when the arrival SMS was last sent (sent_at from sms_messages). */
+  arrival_sms_sent_at?: string | null;
 }
 
 export interface LocalCustomer {
