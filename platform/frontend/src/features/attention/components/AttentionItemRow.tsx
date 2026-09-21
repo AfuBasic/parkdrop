@@ -40,7 +40,6 @@ export function AttentionItemRow({
   item,
   isOffline = false,
   onAction,
-  onSelect,
 }: AttentionItemRowProps) {
   const getIcon = () => {
     switch (item.type) {
