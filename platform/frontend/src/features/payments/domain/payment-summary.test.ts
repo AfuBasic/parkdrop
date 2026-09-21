@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculatePaymentSummary } from './payment-summary';
-import type { LocalPayment } from '../../../offline/db/schema';
+import type { LocalPayment } from '@/offline/db/schema';
 
 describe('calculatePaymentSummary', () => {
   const createPayment = (amountMinor: number, status: 'COMPLETED' | 'REVERSED' = 'COMPLETED', syncStatus: any = 'SYNCED'): LocalPayment => ({
