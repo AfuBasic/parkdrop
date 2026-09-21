@@ -6,23 +6,26 @@ use App\Models\Package;
 use App\Models\User;
 use App\Services\Sync\Handlers\CreatePackageMutationHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
 it('creates a package successfully', function () {
-    $business = Business::factory()->create();
+    $business = Business::create([
+        'public_id' => (string) Str::uuid(),
+        'name' => 'Test Business',
+    ]);
     $user = User::factory()->create();
     $customer = Customer::create([
         'business_id' => $business->id,
         'name' => 'John Doe',
         'phone_display' => '0800000000',
         'phone_normalized' => '+234800000000',
-        'version' => 1
+        'version' => 1,
     ]);
 
-    $handler = new CreatePackageMutationHandler();
+    $handler = new CreatePackageMutationHandler;
 
     $payload = [
         'package_id' => Str::uuid()->toString(),
@@ -36,13 +39,13 @@ it('creates a package successfully', function () {
     $result = $handler->handle(
         $payload,
         $business->id,
-        null,
+        $user->id,
         'device-123',
-        $user->id
+        null
     );
 
     expect($result['status'])->toBe('APPLIED');
-    
+
     $package = Package::find($payload['package_id']);
     expect($package)->not->toBeNull();
     expect($package->business_id)->toBe($business->id);
@@ -53,14 +56,17 @@ it('creates a package successfully', function () {
 });
 
 it('rejects if public package id already exists', function () {
-    $business = Business::factory()->create();
+    $business = Business::create([
+        'public_id' => (string) Str::uuid(),
+        'name' => 'Test Business 2',
+    ]);
     $user = User::factory()->create();
     $customer = Customer::create([
         'business_id' => $business->id,
         'name' => 'John Doe',
         'phone_display' => '0800000000',
         'phone_normalized' => '+234800000000',
-        'version' => 1
+        'version' => 1,
     ]);
 
     // Create existing package
@@ -77,7 +83,7 @@ it('rejects if public package id already exists', function () {
         'version' => 1,
     ]);
 
-    $handler = new CreatePackageMutationHandler();
+    $handler = new CreatePackageMutationHandler;
 
     $payload = [
         'package_id' => Str::uuid()->toString(),
@@ -90,9 +96,9 @@ it('rejects if public package id already exists', function () {
     $result = $handler->handle(
         $payload,
         $business->id,
-        null,
+        $user->id,
         'device-123',
-        $user->id
+        null
     );
 
     expect($result['status'])->toBe('CONFLICT');
