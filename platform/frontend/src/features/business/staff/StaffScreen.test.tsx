@@ -72,7 +72,7 @@ describe('StaffScreen', () => {
     expect(screen.getByText('Tunde Bello')).toBeDefined();
     expect(screen.getByText('Manager')).toBeDefined();
     expect(screen.getByText('Chioma Eze')).toBeDefined();
-    expect(screen.getByText('Attendant')).toBeDefined();
+    expect(screen.getAllByText('Attendant').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('emeka@example.com')).toBeDefined();
     expect(screen.getByText('Invitation pending')).toBeDefined();
     expect(screen.getByText('Invite staff')).toBeDefined();
