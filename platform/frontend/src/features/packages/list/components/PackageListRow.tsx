@@ -1,8 +1,8 @@
 import { Clock, CloudUpload, Check, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatNationalDisplay } from '@/features/auth/lib/phone';
-import { PackagesStrings } from '../strings';
-import { formatNaira, type PackageCardData } from '../domain/package-filters';
+import { PackagesStrings } from '../../strings';
+import { formatNaira, type PackageCardData } from '../../domain/package-filters';
 
 export interface PackageListRowProps {
   data: PackageCardData;
