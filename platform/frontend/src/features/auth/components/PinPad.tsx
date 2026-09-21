@@ -50,7 +50,13 @@ export function PinPad({
   // tool replaying keys loses digits. Reading from a ref means each press
   // always builds on the previous one.
   const latest = React.useRef(value);
-  latest.current = value;
+
+  // Resync whenever the parent changes the value itself — clearing after a
+  // wrong PIN, or moving from "choose" to "type it again". The press handlers
+  // update the ref directly, so this only has to catch outside changes.
+  React.useEffect(() => {
+    latest.current = value;
+  }, [value]);
 
   const press = React.useCallback(
     (digit: string) => {
