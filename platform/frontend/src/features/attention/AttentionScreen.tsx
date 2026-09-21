@@ -1,9 +1,7 @@
 import * as React from 'react';
 import { 
   ChevronLeft, 
-  WifiOff, 
-  RefreshCw, 
-  AlertCircle 
+  WifiOff 
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -27,16 +25,16 @@ export function AttentionScreen({
   onNavigateToBuyCredits,
   onNavigateToCredits,
 }: AttentionScreenProps) {
-  const { business, user } = useAuth();
+  const { business, role } = useAuth();
   const businessId = business?.id;
   const syncState = useSyncState(businessId);
   const isOffline = syncState.connectivity === 'UNREACHABLE' || syncState.connectivity === 'DEGRADED';
 
-  const [isRetryingMedia, setIsRetryingMedia] = React.useState(false);
+  const [, setIsRetryingMedia] = React.useState(false);
 
   const { items, isLoading } = useAttentionItems({
     businessId: businessId ?? 0,
-    userRole: business?.role ?? 'attendant',
+    userRole: role ?? 'attendant',
   });
 
   const handleAction = async (item: AttentionItem) => {
