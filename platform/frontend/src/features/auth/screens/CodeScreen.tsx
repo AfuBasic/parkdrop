@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Button } from '@/design-system';
-import { AuthCodeField } from '../components/AuthCodeField';
+import { AuthCodeField } from '@/features/auth/components/AuthCodeField';
 import { AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
