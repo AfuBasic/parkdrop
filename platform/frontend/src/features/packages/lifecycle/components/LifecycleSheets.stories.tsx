@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ReturnPackageSheet } from './ReturnPackageSheet';
-import { CancelPackageSheet } from './CancelPackageSheet';
-import { ReleasePackageSheet } from './ReleasePackageSheet';
+import { ReturnPackageSheet } from '@/features/packages/lifecycle/components/ReturnPackageSheet';
+import { CancelPackageSheet } from '@/features/packages/lifecycle/components/CancelPackageSheet';
+import { ReleasePackageSheet } from '@/features/packages/lifecycle/components/ReleasePackageSheet';
 import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 
@@ -38,26 +38,38 @@ const mockPackage: LocalPackage = {
   status: 'WAITING',
   client_created_at: new Date().toISOString(),
   server_received_at: null,
+  returned_at: null,
+  cancelled_at: null,
+  released_at: null,
+  return_reason: null,
+  return_note: null,
+  cancel_reason: null,
+  cancel_note: null,
+  shelf_location: null,
+  package_type: null,
+  notes: null,
   version: 1,
   sync_status: 'SYNCED',
+  created_by_user_id: 1,
+  cancelled_by_user_id: null,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
 };
 
 const unpaidSummary: PaymentSummaryData = {
-  amountDueMinor: 350000,
-  paidMinor: 0,
-  balanceMinor: 350000,
-  paymentState: 'UNPAID',
-  isFullyPaid: false,
-  paymentCount: 0,
+  total_paid_minor: 0,
+  amount_due_minor: 350000,
+  balance_minor: 350000,
+  is_fully_paid: false,
+  payments: [],
 };
 
 const paidSummary: PaymentSummaryData = {
-  amountDueMinor: 350000,
-  paidMinor: 350000,
-  balanceMinor: 0,
-  paymentState: 'PAID',
-  isFullyPaid: true,
-  paymentCount: 1,
+  total_paid_minor: 350000,
+  amount_due_minor: 350000,
+  balance_minor: 0,
+  is_fully_paid: true,
+  payments: [],
 };
 
 export const ReturnDefault: StoryObj = {
@@ -69,7 +81,6 @@ export const ReturnDefault: StoryObj = {
       customer={mockCustomer}
       paymentSummary={unpaidSummary}
       onConfirmReturn={async () => {}}
-      isOnline={true}
     />
   ),
 };
@@ -83,12 +94,11 @@ export const ReturnWithPaymentWarning: StoryObj = {
       customer={mockCustomer}
       paymentSummary={paidSummary}
       onConfirmReturn={async () => {}}
-      isOnline={true}
     />
   ),
 };
 
-export const ReturnOffline: StoryObj = {
+export const ReturnSheet: StoryObj = {
   render: () => (
     <ReturnPackageSheet
       isOpen={true}
@@ -97,7 +107,6 @@ export const ReturnOffline: StoryObj = {
       customer={mockCustomer}
       paymentSummary={unpaidSummary}
       onConfirmReturn={async () => {}}
-      isOnline={false}
     />
   ),
 };
@@ -111,7 +120,6 @@ export const CancelDefault: StoryObj = {
       customer={mockCustomer}
       paymentSummary={unpaidSummary}
       onConfirmCancel={async () => {}}
-      isOnline={true}
     />
   ),
 };
@@ -125,12 +133,11 @@ export const CancelWithPaymentWarning: StoryObj = {
       customer={mockCustomer}
       paymentSummary={paidSummary}
       onConfirmCancel={async () => {}}
-      isOnline={true}
     />
   ),
 };
 
-export const CancelOffline: StoryObj = {
+export const CancelSheet: StoryObj = {
   render: () => (
     <CancelPackageSheet
       isOpen={true}
@@ -139,7 +146,6 @@ export const CancelOffline: StoryObj = {
       customer={mockCustomer}
       paymentSummary={unpaidSummary}
       onConfirmCancel={async () => {}}
-      isOnline={false}
     />
   ),
 };
