@@ -43,8 +43,8 @@ export function FirstPackageCard({ className }: { className?: string }) {
               aria-hidden="true"
               className={cn(
                 'flex-none grid place-items-center w-8 h-8 rounded-full',
-                'bg-[var(--pd-tint)] text-[var(--pd-blue-dark)]',
-                'text-[var(--pd-size-small)] font-extrabold leading-none tabular-nums'
+                // Size before colour — tailwind-merge drops an earlier text-*.
+                'bg-[var(--pd-tint)] text-[var(--pd-size-small)] font-extrabold leading-none tabular-nums text-[var(--pd-blue-dark)]'
               )}
             >
               {index + 1}
