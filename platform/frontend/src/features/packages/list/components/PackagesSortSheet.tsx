@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/design-system';
 import { cn } from '@/lib/utils';
-import { PackagesStrings } from '../strings';
-import type { SortOrder } from '../domain/package-filters';
+import { PackagesStrings } from '../../strings';
+import type { SortOrder } from '../../domain/package-filters';
 
 export interface PackagesSortSheetProps {
   currentSort: SortOrder;
