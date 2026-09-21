@@ -1,7 +1,7 @@
 import { Cloud, CloudOff, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { SyncUIState } from '../hooks/useSyncState';
+import type { SyncUIState } from '@/offline/hooks/useSyncState';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
