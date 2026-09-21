@@ -112,7 +112,7 @@ export function ReleasePackageSheet({
                 <div>
                   <p className="font-semibold">Outstanding balance due</p>
                   <p className="mt-0.5">
-                    This package has an unpaid balance of ₦{(paymentSummary.balanceDueMinor / 100).toLocaleString()}.
+                    This package has an unpaid balance of ₦{(paymentSummary.balanceMinor / 100).toLocaleString()}.
                   </p>
                 </div>
               </div>
