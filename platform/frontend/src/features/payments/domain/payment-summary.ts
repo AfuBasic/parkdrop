@@ -1,4 +1,4 @@
-import type { LocalPayment, PaymentMethod } from '../../../offline/db/schema';
+import type { LocalPayment, PaymentMethod } from '@/offline/db/schema';
 
 export type PaymentState = 'UNPAID' | 'PART_PAID' | 'PAID';
 
