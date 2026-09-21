@@ -43,7 +43,7 @@ export async function seedRealisticPackages(businessId: number = 1): Promise<{ p
     {
       id: 'cust-3',
       business_id: businessId,
-      name: null, // Phone-only customer
+      name: '', // Phone-only customer
       phone_display: '0905 555 1234',
       phone_normalized: '+2349055551234',
       version: 1,
@@ -89,7 +89,7 @@ export async function seedRealisticPackages(businessId: number = 1): Promise<{ p
     {
       id: 'cust-8',
       business_id: businessId,
-      name: null, // Phone-only
+      name: '', // Phone-only
       phone_display: '0818 777 6666',
       phone_normalized: '+2348187776666',
       version: 1,
