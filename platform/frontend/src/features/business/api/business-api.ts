@@ -38,8 +38,11 @@ export interface BusinessDetailsResponse {
   current_pickup_point: {
     id: number;
     name: string;
-    address: string | null;
-    landmark: string | null;
+    park_name?: string | null;
+    contact_phone?: string | null;
+    contact_phone_confirmed_at?: string | null;
+    address?: string | null;
+    landmark?: string | null;
   } | null;
   current_user_role: BusinessRole;
 }
@@ -96,6 +99,17 @@ export const businessApi = {
     const res = await fetchApi('/api/v1/business/details', {
       method: 'PATCH',
       body: JSON.stringify({ name }),
+    });
+    return res.json();
+  },
+
+  async updatePickupPoint(
+    pickupPointId: number,
+    data: { name: string; park_name?: string | null; contact_phone?: string | null }
+  ): Promise<{ message: string; pickup_point: any }> {
+    const res = await fetchApi(`/api/v1/business/pickup-points/${pickupPointId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
     });
     return res.json();
   },
