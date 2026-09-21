@@ -1,90 +1,85 @@
 import { useState, useEffect } from 'react';
-import { PackageX, ArrowLeft } from 'lucide-react';
+import { PackageX, ArrowLeft, RefreshCw } from 'lucide-react';
 import { usePackageDetail } from './hooks/usePackageDetail';
 import { PackageIdentityHeader } from './components/PackageIdentityHeader';
-import { PackagePickupCodeCard } from './components/PackagePickupCodeCard';
 import { PackageCustomerCard } from './components/PackageCustomerCard';
+import { PackagePickupCodeCard } from './components/PackagePickupCodeCard';
+import { PackagePaymentCard } from './components/PackagePaymentCard';
 import { PackagePhotoCard } from './components/PackagePhotoCard';
 import { PackageInfoCard } from './components/PackageInfoCard';
 import { PackageActivitySection } from './components/PackageActivitySection';
-import { PackageActionSlots } from './components/PackageActionSlots';
-import { PaymentSummaryCard } from '@/features/payments/components/PaymentSummaryCard';
-import { PaymentHistory } from '@/features/payments/components/PaymentHistory';
-import { RecordPaymentSheet } from '@/features/payments/components/RecordPaymentSheet';
+import { PackageStickyActionBar } from './components/PackageStickyActionBar';
 import { ReturnPackageSheet } from '@/features/packages/lifecycle/components/ReturnPackageSheet';
 import { CancelPackageSheet } from '@/features/packages/lifecycle/components/CancelPackageSheet';
-import { ReleasePackageSheet } from '@/features/packages/lifecycle/components/ReleasePackageSheet';
 import { PaymentRepository } from '@/offline/repositories/PaymentRepository';
 import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecycleRepository';
 import { connectivityManager } from '@/offline/sync/connectivity-manager';
 import type { PaymentMethod } from '@/offline/db/schema';
 import type { ReturnReason, CancelReason } from '@/features/packages/lifecycle/domain/lifecycle-reasons';
+import { PackagesStrings } from '../strings';
 
-interface PackageDetailScreenProps {
+export interface PackageDetailScreenProps {
   packageId: string;
   businessId: number;
+  pickupPointName?: string | null;
   onBack: () => void;
 }
 
 export function PackageDetailScreen({
   packageId,
   businessId,
+  pickupPointName,
   onBack,
 }: PackageDetailScreenProps) {
   const [isOnline, setIsOnline] = useState(() => connectivityManager.getState() !== 'UNREACHABLE');
-  const [isReleaseSheetOpen, setIsReleaseSheetOpen] = useState(false);
-  const [isRecordSheetOpen, setIsRecordSheetOpen] = useState(false);
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
+  const [releaseToast, setReleaseToast] = useState<{ publicId: string; seconds: number } | null>(null);
 
   useEffect(() => {
-    return connectivityManager.subscribe(connState => {
+    return connectivityManager.subscribe((connState) => {
       setIsOnline(connState !== 'UNREACHABLE');
     });
   }, []);
 
   const { data, isLoading, notFound } = usePackageDetail(packageId, businessId);
 
-  // Loading State
+  // Loading Skeleton State
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen bg-surface-page max-w-lg mx-auto">
-        <header className="px-4 py-3 border-b border-border-subtle flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="p-2 -ml-2 text-text-secondary hover:text-text-primary rounded-full"
-          >
+      <div className="flex flex-col min-h-screen bg-[var(--pd-page)] max-w-lg mx-auto">
+        <header className="bg-[var(--pd-blue)] px-4 py-3 flex items-center gap-3 text-white">
+          <button type="button" onClick={onBack} className="p-2 -ml-2 text-white/80">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="h-6 w-32 bg-surface-active rounded-lg animate-pulse" />
+          <div className="h-6 w-32 bg-white/30 rounded-lg animate-pulse" />
         </header>
         <div className="p-4 flex flex-col gap-4">
-          <div className="h-36 bg-surface-default rounded-[var(--radius-2xl)] border border-border-subtle animate-pulse" />
-          <div className="h-24 bg-surface-default rounded-[var(--radius-2xl)] border border-border-subtle animate-pulse" />
-          <div className="h-44 bg-surface-default rounded-[var(--radius-2xl)] border border-border-subtle animate-pulse" />
+          <div className="h-36 bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] animate-pulse" />
+          <div className="h-28 bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] animate-pulse" />
+          <div className="h-44 bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] animate-pulse" />
         </div>
       </div>
     );
   }
 
-  // Not Found or Unauthorized State
+  // Not Found State
   if (notFound || !data) {
     return (
-      <div className="flex flex-col min-h-screen bg-surface-page max-w-lg mx-auto p-6 items-center justify-center text-center">
-        <div className="w-16 h-16 rounded-full bg-status-neutral-bg flex items-center justify-center text-text-muted mb-4 border border-border-subtle">
+      <div className="flex flex-col min-h-screen bg-[var(--pd-page)] max-w-lg mx-auto p-6 items-center justify-center text-center">
+        <div className="w-16 h-16 rounded-full bg-[var(--pd-page)] flex items-center justify-center text-[var(--pd-muted)] mb-4 border border-[var(--pd-line)]">
           <PackageX className="w-8 h-8" />
         </div>
-        <h2 className="text-xl font-bold text-text-primary mb-1">Package not found</h2>
-        <p className="text-sm text-text-secondary mb-6 max-w-xs">
-          This parcel could not be found in your active workspace, or you do not have permission to view it.
+        <h2 className="text-[20px] font-extrabold text-[var(--pd-navy)] mb-1">Package not found</h2>
+        <p className="text-[15px] font-bold text-[var(--pd-muted)] mb-6 max-w-xs">
+          This package could not be found in your active account.
         </p>
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-3 bg-action-primary text-white font-semibold rounded-[var(--radius-xl)] shadow-sm hover:bg-action-primary-hover active:scale-95 transition-all cursor-pointer"
+          className="min-h-[48px] px-6 py-2.5 bg-[var(--pd-blue)] text-white font-extrabold rounded-[var(--pd-field-radius)] shadow-xs hover:bg-[var(--pd-blue-hover)] active:scale-95 transition-all cursor-pointer"
         >
-          Return to previous screen
+          {PackagesStrings.backAction}
         </button>
       </div>
     );
@@ -92,6 +87,7 @@ export function PackageDetailScreen({
 
   const { package: pkg, customer, media, mediaPreviewUrl, payments, paymentSummary, activityTimeline } = data;
 
+  // 1. Payment Recording Handler
   const handleRecordPayment = async (amountMinor: number, method: PaymentMethod) => {
     await PaymentRepository.recordPayment({
       businessId,
@@ -102,6 +98,59 @@ export function PackageDetailScreen({
     });
   };
 
+  // 2. Release with Payment Collection Handler
+  const handleConfirmCollectAndRelease = async (pickupCode: string) => {
+    if (paymentSummary.balanceMinor > 0) {
+      await PaymentRepository.recordPayment({
+        businessId,
+        pickupPointId: pkg.pickup_point_id,
+        packageId: pkg.id,
+        amountMinor: paymentSummary.balanceMinor,
+        method: 'CASH',
+      });
+    }
+
+    await PackageLifecycleRepository.collectPackageLocally({
+      businessId,
+      pickupPointId: pkg.pickup_point_id,
+      packageId: pkg.id,
+      pickupCode,
+      notes: null,
+      actorName: 'Staff',
+    });
+
+    onBack();
+  };
+
+  // 3. Release Without Payment (Owing) Handler
+  const handleConfirmReleaseWithoutPayment = async (pickupCode: string) => {
+    await PackageLifecycleRepository.collectPackageLocally({
+      businessId,
+      pickupPointId: pkg.pickup_point_id,
+      packageId: pkg.id,
+      pickupCode,
+      notes: 'Released owing balance',
+      actorName: 'Staff',
+    });
+
+    onBack();
+  };
+
+  // 4. Release Paid Handler
+  const handleConfirmReleasePaid = async (pickupCode: string) => {
+    await PackageLifecycleRepository.collectPackageLocally({
+      businessId,
+      pickupPointId: pkg.pickup_point_id,
+      packageId: pkg.id,
+      pickupCode,
+      notes: null,
+      actorName: 'Staff',
+    });
+
+    onBack();
+  };
+
+  // 5. Lifecycle Action Handlers (Return & Cancel)
   const handleConfirmReturn = async (reason: ReturnReason, note?: string | null) => {
     await PackageLifecycleRepository.returnPackageLocally({
       businessId,
@@ -110,6 +159,7 @@ export function PackageDetailScreen({
       reason,
       reasonNote: note,
     });
+    setIsReturnSheetOpen(false);
   };
 
   const handleConfirmCancel = async (reason: CancelReason, note?: string | null) => {
@@ -120,84 +170,74 @@ export function PackageDetailScreen({
       reason,
       reasonNote: note,
     });
+    setIsCancelSheetOpen(false);
   };
-
-  const handleConfirmRelease = async (pickupCode: string, notes?: string | null) => {
-    await PackageLifecycleRepository.collectPackageLocally({
-      businessId,
-      pickupPointId: pkg.pickup_point_id,
-      packageId: pkg.id,
-      pickupCode,
-      notes,
-    });
-  };
-
-  const canRecordPayment = pkg.status === 'WAITING';
 
   return (
-    <div className="flex flex-col min-h-screen bg-surface-page max-w-lg mx-auto pb-12">
-      {/* 1. Sticky Header */}
-      <PackageIdentityHeader pkg={pkg} onBack={onBack} isOnline={isOnline} />
+    <div className="flex flex-col min-h-screen bg-[var(--pd-page)] max-w-lg mx-auto pb-28">
+      {/* 1. Compact Blue Header with More Sheet */}
+      <PackageIdentityHeader
+        pkg={pkg}
+        onBack={onBack}
+        isOnline={isOnline}
+        onMarkReturned={() => setIsReturnSheetOpen(true)}
+        onCancelPackage={() => setIsCancelSheetOpen(true)}
+      />
 
       {/* 2. Scrollable Body Content */}
-      <main className="p-4 flex flex-col gap-4">
-        {/* Pickup Code Hero */}
-        <PackagePickupCodeCard pkg={pkg} />
-
-        {/* Customer Identity */}
-        <PackageCustomerCard customer={customer} />
-
-        {/* Parcel Photo Preview */}
-        <PackagePhotoCard media={media} mediaPreviewUrl={mediaPreviewUrl} />
-
-        {/* Payment Summary */}
-        <PaymentSummaryCard
-          summary={paymentSummary}
-          onOpenRecordPayment={() => setIsRecordSheetOpen(true)}
-          canRecordPayment={canRecordPayment}
+      <main className="px-4 pt-2 pb-6 flex flex-col gap-4">
+        {/* Customer Summary Card (overlaps header) */}
+        <PackageCustomerCard
+          customer={customer}
+          pkg={pkg}
+          paymentSummary={paymentSummary}
         />
 
-        {/* Payment History */}
-        <PaymentHistory payments={payments} />
+        {/* Large Grouped Monospace Pickup Code Card */}
+        <PackagePickupCodeCard pkg={pkg} />
 
-        {/* Operational Package Metadata */}
-        <PackageInfoCard pkg={pkg} />
+        {/* Payment Card with Quick Modal */}
+        <PackagePaymentCard
+          paymentSummary={paymentSummary}
+          payments={payments}
+          canRecordPayment={pkg.status === 'WAITING'}
+          onRecordPayment={handleRecordPayment}
+        />
+
+        {/* Photo Card with Direct Camera Capture */}
+        <PackagePhotoCard
+          packageId={pkg.id}
+          businessId={businessId}
+          media={media}
+          mediaPreviewUrl={mediaPreviewUrl}
+        />
 
         {/* Activity Timeline */}
         <PackageActivitySection timeline={activityTimeline} />
 
-        {/* Action Slots / Release & Terminal Boundary */}
-        <PackageActionSlots
+        {/* Operational Package Metadata with Real Location Name */}
+        <PackageInfoCard
           pkg={pkg}
-          paymentSummary={paymentSummary}
-          onOpenRelease={() => setIsReleaseSheetOpen(true)}
-          onOpenRecordPayment={() => setIsRecordSheetOpen(true)}
-          onOpenReturn={() => setIsReturnSheetOpen(true)}
-          onOpenCancel={() => setIsCancelSheetOpen(true)}
+          pickupPointName={pickupPointName}
         />
       </main>
 
-      {/* Release Package Bottom Sheet */}
-      <ReleasePackageSheet
-        isOpen={isReleaseSheetOpen}
-        onClose={() => setIsReleaseSheetOpen(false)}
+      {/* 3. Sticky 84px Action Bar replacing bottom nav */}
+      <PackageStickyActionBar
         pkg={pkg}
         customer={customer}
         paymentSummary={paymentSummary}
-        onConfirmRelease={handleConfirmRelease}
-        onOpenRecordPayment={() => setIsRecordSheetOpen(true)}
-        isOnline={isOnline}
+        onOpenRecordPaymentOnly={() => {
+          // Trigger payment sheet by proxy
+          const btn = document.querySelector('button[aria-label="Record payment"]') as HTMLButtonElement | null;
+          btn?.click();
+        }}
+        onConfirmCollectAndRelease={handleConfirmCollectAndRelease}
+        onConfirmReleaseWithoutPayment={handleConfirmReleaseWithoutPayment}
+        onConfirmReleasePaid={handleConfirmReleasePaid}
       />
 
-      {/* Record Payment Bottom Sheet */}
-      <RecordPaymentSheet
-        isOpen={isRecordSheetOpen}
-        onClose={() => setIsRecordSheetOpen(false)}
-        remainingBalanceMinor={paymentSummary.balanceMinor}
-        onRecord={handleRecordPayment}
-      />
-
-      {/* Return Package Bottom Sheet */}
+      {/* Lifecycle Action Sheets */}
       <ReturnPackageSheet
         isOpen={isReturnSheetOpen}
         onClose={() => setIsReturnSheetOpen(false)}
@@ -208,7 +248,6 @@ export function PackageDetailScreen({
         isOnline={isOnline}
       />
 
-      {/* Cancel Package Bottom Sheet */}
       <CancelPackageSheet
         isOpen={isCancelSheetOpen}
         onClose={() => setIsCancelSheetOpen(false)}
