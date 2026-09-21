@@ -28,3 +28,6 @@ coverage/
 *.sln
 *.sw?
 *~
+
+# Agent tooling worktrees — checkouts of this repo, never part of a commit
+.claude/worktrees/
