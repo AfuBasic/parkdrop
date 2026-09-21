@@ -111,6 +111,34 @@ Reverb SyncHint broadcast & other devices reconcile
 * Invariant: First valid terminal transition committed by the server wins. Competing attempts receive structured conflict `PACKAGE_ALREADY_RETURNED` / `PACKAGE_ALREADY_CANCELLED` / `PACKAGE_ALREADY_COLLECTED`.
 * Payments remain: Returning or cancelling preserves recorded payment history without automatic refunds. Ordinary new payments are forbidden on terminal packages.
 
+### Customers Directory & Customer Detail (Build 17)
+```
+Customers Bottom Nav
+        ↓
+CustomersScreen
+        ↓
+CustomerDirectoryRepository (getDirectoryItems)
+        ↓
+Dexie Customers (business_id) + Packages aggregation + EntityAliases remap
+        ↓
+CustomerListItem[] (sorted by waiting packages > recent activity > name, reactive to mutations)
+        ↓ tap customer
+CustomerDetailScreen (/customers/:customerId)
+        ↓
+CustomerDirectoryRepository (getCustomerDetail)
+        ↓
+Waiting Packages (top priority) + Recent Package History (collected, returned, cancelled)
+        ↓ tap package
+PackageDetailScreen (/packages/:packageId)
+```
+**Architecture Rules:**
+* **Operational Scope Only:** ParkDrop Customers is not a CRM. No customer notes, sales tags, marketing consent, loyalty programs, debtor accounts, or analytics graphs.
+* **Deterministic Sort:** Customers with waiting packages are ordered first, followed by the most recently active customer (newest package `client_created_at`), then name alphabetically.
+* **Phone & Name Search:** Reuses canonical Nigerian phone normalizer (`+234...`) across display variants and supports case-insensitive partial/token matching on names.
+* **Alias Resilience:** Local duplicate customer records reconciled by the server (`db.entityAliases`) render as a single canonical customer record across directory, search, and detail.
+* **Add Package Integration:** Customer Detail provides an "Add package" action which pre-populates the customer in `AddPackageScreen` without duplicate record creation.
+
+
 
 
 ## Media Architecture (Cloudinary)
