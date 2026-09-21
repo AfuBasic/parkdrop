@@ -141,8 +141,9 @@ class ProcessOutboxCommand extends Command
             return;
         }
 
-        // Eagerly load package + customer to avoid the job needing to query in isolation
-        $package = Package::with('customer')->find($packageId);
+        // Eagerly load package + customer + pickup point to avoid the job needing to
+        // query in isolation. The pickup point is what tells the customer where to go.
+        $package = Package::with(['customer', 'pickupPoint'])->find($packageId);
         if (! $package || ! $package->customer) {
             Log::warning('[ProcessOutboxCommand] Package or customer not found for SMS event.', [
                 'id' => $event->id,
@@ -164,12 +165,38 @@ class ProcessOutboxCommand extends Command
             return;
         }
 
-        $message = sprintf(
-            'Hi %s, your parcel %s has arrived. Use code %s to collect it. – ParkDrop',
-            $customer->first_name ?? 'there',
-            $package->public_package_id,
-            $package->pickup_code,
-        );
+        // Where to collect it. Without this the customer is told a parcel arrived
+        // but not where to go, and the pickup-point names the owner types during
+        // setup would never actually reach a customer.
+        $pickupPoint = $package->pickupPoint;
+        $place = $pickupPoint?->name;
+        if ($place && ! empty($pickupPoint->park_name)) {
+            $place .= ', '.$pickupPoint->park_name;
+        }
+
+        // NOTE: keep this wording in step with the frontend copy of the template in
+        // platform/frontend/src/lib/smsTemplate.ts — the pickup-point setup screen
+        // previews this exact message to the business owner.
+        //
+        // Every character here stays inside the GSM 03.38 alphabet. A single
+        // character outside it (the en dash this line used to end with) switches
+        // the whole SMS to UCS-2 and cuts the single-segment budget from 160
+        // characters to 70, which was silently billing most arrival messages as
+        // two or three segments.
+        $message = $place
+            ? sprintf(
+                'Hi %s, your parcel %s has arrived at %s. Use code %s to collect it. - ParkDrop',
+                $customer->first_name ?? 'there',
+                $package->public_package_id,
+                $place,
+                $package->pickup_code,
+            )
+            : sprintf(
+                'Hi %s, your parcel %s has arrived. Use code %s to collect it. - ParkDrop',
+                $customer->first_name ?? 'there',
+                $package->public_package_id,
+                $package->pickup_code,
+            );
 
         SendArrivalSmsJob::dispatch(
             packageId: $event->id,
