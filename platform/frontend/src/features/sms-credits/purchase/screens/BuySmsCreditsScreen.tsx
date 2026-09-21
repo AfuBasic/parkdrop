@@ -5,13 +5,13 @@ import { useSyncState } from '@/offline/hooks/useSyncState';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { SyncEngine } from '@/offline/sync/sync-engine';
-import { SmsCreditBundleOption } from '../components/SmsCreditBundleOption';
+import { SmsCreditBundleOption } from '@/features/sms-credits/purchase/components/SmsCreditBundleOption';
 import {
   fetchCreditBundles,
   initializePurchase,
   verifyPurchaseOnServer,
-} from '../api';
-import type { SmsCreditBundle, SmsCreditPurchase, PurchaseFlowState } from '../types';
+} from '@/features/sms-credits/purchase/api';
+import type { SmsCreditBundle, SmsCreditPurchase, PurchaseFlowState } from '@/features/sms-credits/purchase/types';
 
 interface BuySmsCreditsScreenProps {
   onBack: () => void;
