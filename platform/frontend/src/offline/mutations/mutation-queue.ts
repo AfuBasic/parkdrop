@@ -1,6 +1,6 @@
-import { db } from '../db/database';
-import { getDeviceUuid } from '../device/device-identity';
-import type { LocalMutation } from '../db/schema';
+import { db } from '@/offline/db/database';
+import { getDeviceUuid } from '@/offline/device/device-identity';
+import type { LocalMutation } from '@/offline/db/schema';
 
 export class MutationQueue {
   static async enqueue(
