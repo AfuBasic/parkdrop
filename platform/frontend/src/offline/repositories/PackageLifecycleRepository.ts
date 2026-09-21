@@ -21,6 +21,15 @@ export interface CancelPackageLocalParams {
   actorName?: string | null;
 }
 
+export interface CollectPackageLocalParams {
+  businessId: number;
+  pickupPointId: number | null;
+  packageId: string;
+  pickupCode?: string;
+  notes?: string | null;
+  actorName?: string | null;
+}
+
 export class PackageLifecycleRepository {
   /**
    * Atomically mark a local package as RETURNED and enqueue RETURN_PACKAGE mutation.
@@ -117,6 +126,56 @@ export class PackageLifecycleRepository {
           package_id: packageId,
           reason,
           reason_note: reasonNote ? reasonNote.trim() : null,
+          client_event_at: now,
+        },
+        pickupPointId,
+        packageId,
+        existing.version
+      );
+
+      return updatedPackage;
+    });
+  }
+
+  /**
+   * Atomically mark a local package as COLLECTED and enqueue COLLECT_PACKAGE mutation.
+   */
+  static async collectPackageLocally(params: CollectPackageLocalParams): Promise<LocalPackage> {
+    const { businessId, pickupPointId, packageId, pickupCode, notes, actorName } = params;
+    const eventId = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    return db.transaction('rw', db.packages, db.mutations, async () => {
+      const existing = await db.packages.get(packageId);
+
+      if (!existing || existing.business_id !== businessId) {
+        throw new Error('PACKAGE_NOT_FOUND');
+      }
+
+      if (existing.status !== 'WAITING') {
+        throw new Error(`PACKAGE_NOT_WAITING: Current status is ${existing.status}`);
+      }
+
+      if (pickupCode && existing.pickup_code.toUpperCase().trim() !== pickupCode.toUpperCase().trim()) {
+        throw new Error('INVALID_PICKUP_CODE');
+      }
+
+      const updatedPackage: LocalPackage = {
+        ...existing,
+        status: 'COLLECTED',
+        terminal_actor_name: actorName || 'Staff',
+      };
+
+      await db.packages.put(updatedPackage);
+
+      await MutationQueue.enqueue(
+        businessId,
+        'COLLECT_PACKAGE',
+        {
+          event_id: eventId,
+          package_id: packageId,
+          pickup_code: pickupCode || existing.pickup_code,
+          notes: notes ? notes.trim() : null,
           client_event_at: now,
         },
         pickupPointId,
