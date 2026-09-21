@@ -44,8 +44,11 @@ class BusinessDetailsController extends Controller
             'current_pickup_point' => $currentPickupPoint ? [
                 'id' => $currentPickupPoint->id,
                 'name' => $currentPickupPoint->name,
-                'address' => $currentPickupPoint->address,
-                'landmark' => $currentPickupPoint->landmark,
+                'park_name' => $currentPickupPoint->park_name,
+                'contact_phone' => $currentPickupPoint->contact_phone,
+                'contact_phone_confirmed_at' => $currentPickupPoint->contact_phone_confirmed_at?->toIso8601String(),
+                'address' => $currentPickupPoint->address ?? null,
+                'landmark' => $currentPickupPoint->landmark ?? null,
             ] : null,
             'current_user_role' => $membership->role,
         ]);
