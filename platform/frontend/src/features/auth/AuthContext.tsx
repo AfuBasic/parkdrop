@@ -19,9 +19,10 @@ interface AuthContextValue {
   state: AuthState;
   user: AuthUser | null;
   business: AuthBusiness | null;
+  role: string | null;
   deviceMeta: DeviceMeta | null;
   rememberedIdentity: RememberedIdentity | null;
-  setAuthenticatedUser: (user: AuthUser, business: AuthBusiness | null) => Promise<void>;
+  setAuthenticatedUser: (user: AuthUser, business: AuthBusiness | null, role?: string | null) => Promise<void>;
   unlock: () => void;
   logout: () => Promise<void>;
   forgetRememberedIdentity: () => Promise<void>;
@@ -34,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = React.useState<AuthState>('booting');
   const [user, setUser] = React.useState<AuthUser | null>(null);
   const [business, setBusiness] = React.useState<AuthBusiness | null>(null);
+  const [role, setRole] = React.useState<string | null>(null);
   const [deviceMeta, setDeviceMeta] = React.useState<DeviceMeta | null>(null);
   const [rememberedIdentity, setRememberedIdentity] = React.useState<RememberedIdentity | null>(null);
 
@@ -70,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser(res.user);
         setBusiness(res.business);
+        setRole(res.role || null);
 
         if (res.business) {
            saveOfflineAuthorization(res.user.id, res.business.id, res.business.name, null).catch(console.error);
@@ -106,9 +109,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, [initAuth]);
 
-  const setAuthenticatedUser = async (authUser: AuthUser, authBusiness: AuthBusiness | null) => {
+  const setAuthenticatedUser = async (authUser: AuthUser, authBusiness: AuthBusiness | null, authRole?: string | null) => {
     setUser(authUser);
     setBusiness(authBusiness);
+    setRole(authRole || null);
 
     // Persist to remembered identity in Dexie
     await saveRememberedIdentity({
@@ -145,6 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setUser(null);
     setBusiness(null);
+    setRole(null);
     await clearOfflineAuthorization();
     
     const recent = await getMostRecentRememberedIdentity();
@@ -163,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setDeviceMeta(null);
     setUser(null);
     setBusiness(null);
+    setRole(null);
     setState('unknown');
   };
 
@@ -176,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         state,
         user,
         business,
+        role,
         deviceMeta,
         rememberedIdentity,
         setAuthenticatedUser,
