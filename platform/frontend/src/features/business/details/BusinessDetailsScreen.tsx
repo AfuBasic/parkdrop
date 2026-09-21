@@ -5,7 +5,7 @@ import { businessApi, type BusinessDetailsResponse } from '@/features/business/a
 import type { BusinessRole } from '@/features/business/permissions/business-permissions';
 import { getBusinessPermissions } from '@/features/business/permissions/business-permissions';
 import { validateNigerianMobile, toCanonicalPhone, formatPhoneDisplay } from '@/features/auth/lib/phone';
-import { renderCustomerSms, countGsm7Chars, SMS_MAX_CHARS } from '@/lib/smsTemplate';
+import { renderCustomerSms, SMS_MAX_CHARS } from '@/lib/smsTemplate';
 import { SmsPreview } from '@/features/auth/components/SmsPreview';
 import { verifyPin } from '@/lib/pin';
 import { db } from '@/lib/db';
@@ -155,8 +155,13 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
       const parkName = details.current_pickup_point.park_name || 'Park';
       const canonicalPhone = toCanonicalPhone(phoneInput);
       const displayPhone = formatPhoneDisplay(canonicalPhone);
-      const sampleSms = renderCustomerSms(pickupPointName, parkName, 'ABCDEFG', displayPhone);
-      if (countGsm7Chars(sampleSms) > SMS_MAX_CHARS) {
+      const result = renderCustomerSms({
+        pickupPointName,
+        parkName,
+        code: 'ABCDEFG',
+        phone: displayPhone,
+      });
+      if (!result.valid || result.length > SMS_MAX_CHARS) {
         setPhoneError('This phone number makes the SMS too long. Please contact support.');
         return;
       }
@@ -243,12 +248,13 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
     ? formatPhoneDisplay(details.current_pickup_point.contact_phone)
     : null;
 
-  const previewSms = renderCustomerSms(
-    currentPickupName,
-    currentParkName,
-    'K7X9W2P',
-    previewPhone
-  );
+  const previewSmsResult = renderCustomerSms({
+    pickupPointName: currentPickupName,
+    parkName: currentParkName,
+    code: 'K7X9W2P',
+    phone: previewPhone,
+  });
+  const previewSms = previewSmsResult.text;
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 w-full max-w-lg mx-auto pb-12">
