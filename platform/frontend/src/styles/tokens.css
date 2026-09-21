@@ -25,6 +25,9 @@
   --pd-line: #cbd5e1;
   --pd-line-2: #e2e8f0;
   --pd-page: #e8eef7;
+  /* The signed-in surface. Cooler and lighter than the sign-in backdrop so a
+     white card still reads as a card against it. */
+  --pd-page-2: #f8fafc;
 
   /* ── Status (never colour alone: always icon + words) ───────────────── */
   --pd-ok: #15803d;
@@ -52,6 +55,25 @@
   --pd-size-helper: 16px;
   /* Nothing in the auth flow may go below this. */
   --pd-size-min: 15px;
+
+  /* ── Home dashboard type ────────────────────────────────────────────── */
+  /* Named for the thing they size, so a row and a tile cannot drift apart. */
+  --pd-size-point: 22px; /* pickup point name in the header */
+  --pd-size-tile: 20px; /* action tile label */
+  --pd-size-row-name: 18px; /* customer name in a parcel row */
+  --pd-size-section: 18px; /* section header */
+  --pd-size-meta: 16px; /* phone, amount, sublines */
+  --pd-size-small: 15px; /* chips, nav labels — the floor */
+
+  /* ── Home metrics ───────────────────────────────────────────────────── */
+  --pd-tile-h: 112px;
+  --pd-row-h: 84px;
+  --pd-nav-h: 64px;
+  --pd-card-radius: 20px;
+  --pd-tile-radius: 20px;
+  --pd-chip-radius: 12px;
+  /* How far the action tiles climb into the blue header. */
+  --pd-tile-overlap: 28px;
 
   --pd-weight-body: 600;
   --pd-weight-field: 700;
