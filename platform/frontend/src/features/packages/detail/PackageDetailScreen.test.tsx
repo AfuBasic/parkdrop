@@ -91,9 +91,12 @@ describe('PackageDetailScreen', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog).toBeDefined();
 
-    // Amount input is pre-filled with remaining balance (3500)
-    // Clear and enter 1000
-    const amountInput = screen.getByLabelText(/Amount/i);
+    // Toggle part payment to reveal custom input
+    const partPaymentToggle = screen.getByText(/Part payment/i);
+    await user.click(partPaymentToggle);
+
+    // Enter 1000
+    const amountInput = await screen.findByLabelText(/Amount/i);
     await user.clear(amountInput);
     await user.type(amountInput, '1000');
 
