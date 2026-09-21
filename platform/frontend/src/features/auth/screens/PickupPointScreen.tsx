@@ -5,7 +5,7 @@ import { BigButton } from '../components/BigButton';
 import { Notice } from '../components/Notice';
 import { SmsPreview } from '../components/SmsPreview';
 import { AuthStrings } from '../strings';
-import { checkSmsFit, normaliseForSms, isPlaceholderName } from '@/lib/smsTemplate';
+import { checkSmsFit, normaliseForSms, isPlaceholderName, isExamplePair } from '@/lib/smsTemplate';
 
 export interface PickupPointScreenProps {
   onContinue: (pickupPointName: string, parkName: string) => void;
@@ -71,7 +71,10 @@ export function PickupPointScreen({
     else if (isPlaceholderName(park)) next.park = AuthStrings.pickupPlaceholderName;
 
     if (!next.pickup && !next.park) {
-      if (fit.unsupportedCharacters.length > 0) next.form = AuthStrings.pickupOddCharacters;
+      // Both fields left as the on-screen examples: they have not filled
+      // this in, they have just tapped past it.
+      if (isExamplePair(pickup, park)) next.form = AuthStrings.pickupPlaceholderName;
+      else if (fit.unsupportedCharacters.length > 0) next.form = AuthStrings.pickupOddCharacters;
       else if (!fit.fitsOneSms) next.form = AuthStrings.pickupTooLong;
     }
 
