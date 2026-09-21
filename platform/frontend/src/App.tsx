@@ -15,6 +15,8 @@ import { PackagesScreen } from '@/features/packages/list/PackagesScreen';
 import { PackageDetailScreen } from '@/features/packages/detail/PackageDetailScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
 import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
+import { CustomersScreen } from '@/features/customers/list/CustomersScreen';
+import { CustomerDetailScreen } from '@/features/customers/detail/CustomerDetailScreen';
 import { MessageSquare, ChevronRight } from 'lucide-react';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -132,13 +134,36 @@ function AppContent() {
           onSelectPackage={(pkg) => setCurrentPath(`/packages/${pkg.id}`)}
         />
       )}
-      {currentPath === '/add' && (
+      {currentPath.startsWith('/add') && (
         <AddPackageScreen 
+          initialCustomerId={new URLSearchParams(currentPath.split('?')[1] || '').get('customerId')}
           onNavigate={setCurrentPath}
-          onBack={() => setCurrentPath('/')}
+          onBack={() => {
+            const customerId = new URLSearchParams(currentPath.split('?')[1] || '').get('customerId');
+            if (customerId) {
+              setCurrentPath(`/customers/${customerId}`);
+            } else {
+              setCurrentPath('/');
+            }
+          }}
         />
       )}
-      {currentPath === '/customers' && renderPlaceholder('Customers', 'Customer directory and lookup will be built in a future milestone.')}
+      {currentPath === '/customers' && (
+        <CustomersScreen
+          businessId={business?.id || 0}
+          onSelectCustomer={(id) => setCurrentPath(`/customers/${id}`)}
+          onNavigateToAdd={() => setCurrentPath('/add')}
+        />
+      )}
+      {currentPath.startsWith('/customers/') && (
+        <CustomerDetailScreen
+          customerId={currentPath.replace('/customers/', '')}
+          businessId={business?.id || 0}
+          onBack={() => setCurrentPath('/customers')}
+          onSelectPackage={(pkgId) => setCurrentPath(`/packages/${pkgId}`)}
+          onAddPackageForCustomer={(customerId) => setCurrentPath(`/add?customerId=${customerId}`)}
+        />
+      )}
       {currentPath === '/packages/search' && (
         <PackageSearchScreen 
           onBack={() => setCurrentPath('/')}
