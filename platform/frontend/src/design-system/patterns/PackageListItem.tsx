@@ -1,5 +1,5 @@
 import * as React from "react"
-import { StatusBadge } from "../components/StatusBadge"
+import { StatusBadge } from "@/design-system/components/StatusBadge"
 import { cn } from "@/lib/utils"
 
 export type PackageStatus = "WAITING" | "COLLECTED" | "RETURNED" | "CANCELLED"
