@@ -1,4 +1,4 @@
-import type { MatchQuality, PackageSearchResult } from './package-search-types';
+import type { MatchQuality, PackageSearchResult } from '@/features/packages/search/package-search-types';
 import type { LocalPackage } from '@/offline/db/schema';
 
 // Centralized score rules
