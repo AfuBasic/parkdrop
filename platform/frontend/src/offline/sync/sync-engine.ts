@@ -99,7 +99,7 @@ export class SyncEngine {
           // Session expired — preserve mutations as PENDING, stop sync.
           // Do NOT mark as RETRYABLE — the auth layer will handle re-auth.
           for (const mId of mutationIds) {
-            await MutationQueue.resolveResult(mId, 'RETRYABLE', 'Session expired — reconnect to continue');
+            await MutationQueue.resolveResult(mId, 'RETRYABLE', 'Session expired. Reconnect to continue');
           }
           this.backoffTracker.recordFailure();
           return;
