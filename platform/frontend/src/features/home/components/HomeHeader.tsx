@@ -86,7 +86,9 @@ export function HomeHeader({
       {/* The strip the action tiles climb into. */}
       <div
         aria-hidden="true"
-        style={{ height: 'var(--pd-tile-overlap)' }}
+        // Twice the overlap: the sheet's rounded top edge takes one, and the
+        // tiles climb one further. Anything less and the park name is cut.
+        style={{ height: 'calc(var(--pd-tile-overlap) * 2)' }}
         className={collapsed ? 'mt-3' : 'mt-5'}
       />
     </header>
