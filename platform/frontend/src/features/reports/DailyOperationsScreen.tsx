@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Download, WifiOff } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { ReportDateNavigator } from '@/features/reports/components/ReportDateNavigator';
@@ -11,10 +12,12 @@ import { downloadDailyReportCsv } from '@/features/reports/api/reports-api';
 import { DailyOperationsReportRepository } from '@/offline/read-models/daily-operations-report-repository';
 
 interface DailyOperationsScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 export function DailyOperationsScreen({ onBack }: DailyOperationsScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
   const { business, role } = useAuth();
   const [currentDate, setCurrentDate] = React.useState<string>(() =>
     DailyOperationsReportRepository.getTodayLocalString()
@@ -55,7 +58,7 @@ export function DailyOperationsScreen({ onBack }: DailyOperationsScreenProps) {
       <div className="flex flex-col h-full max-w-lg mx-auto p-4">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center gap-2 text-text-secondary hover:text-text-primary text-sm font-semibold mb-4 min-h-[44px]"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -76,7 +79,7 @@ export function DailyOperationsScreen({ onBack }: DailyOperationsScreenProps) {
       <div className="flex items-center justify-between">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center gap-2 text-text-secondary hover:text-text-primary text-sm font-semibold min-h-[44px] cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5" />
