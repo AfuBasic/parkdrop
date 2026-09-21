@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { AuthLayout } from './AuthLayout';
-import { CodeScreen } from '../screens/CodeScreen';
-import { authApi } from '../api';
-import { useAuth } from '../AuthContext';
+import { CodeScreen } from '@/features/auth/screens/CodeScreen';
+import { authApi } from '@/features/auth/api';
+import { useAuth } from '@/features/auth/AuthContext';
 import { notify } from '@/lib/notify';
 import { db, type DeviceMeta, type RememberedIdentity } from '@/lib/db';
 
