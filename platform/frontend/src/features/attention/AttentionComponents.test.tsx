@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { AttentionItemRow } from './components/AttentionItemRow';
 import { AttentionEmptyState } from './components/AttentionEmptyState';
 import { AttentionSummary } from './components/AttentionSummary';
@@ -31,13 +31,13 @@ describe('Attention Components', () => {
       const handleAction = vi.fn();
       render(<AttentionItemRow item={mockItem} onAction={handleAction} />);
 
-      expect(screen.getByText("Package photo couldn't upload")).toBeInTheDocument();
-      expect(screen.getByText('PD-8K42Q')).toBeInTheDocument();
-      expect(screen.getByText('Chinedu Okafor')).toBeInTheDocument();
-      expect(screen.getByText('Network timed out during upload to storage.')).toBeInTheDocument();
+      expect(screen.getByText("Package photo couldn't upload")).toBeDefined();
+      expect(screen.getByText('PD-8K42Q')).toBeDefined();
+      expect(screen.getByText('Chinedu Okafor')).toBeDefined();
+      expect(screen.getByText('Network timed out during upload to storage.')).toBeDefined();
 
       const btn = screen.getByRole('button', { name: /retry upload/i });
-      expect(btn).toBeInTheDocument();
+      expect(btn).toBeDefined();
       fireEvent.click(btn);
       expect(handleAction).toHaveBeenCalledWith(mockItem);
     });
@@ -45,17 +45,17 @@ describe('Attention Components', () => {
     it('disables action requiring online connection when offline', () => {
       render(<AttentionItemRow item={mockItem} isOffline={true} />);
 
-      const btn = screen.getByRole('button', { name: /connect to internet/i });
-      expect(btn).toBeInTheDocument();
-      expect(btn).toBeDisabled();
+      const btn = screen.getByRole('button', { name: /connect to internet/i }) as HTMLButtonElement;
+      expect(btn).toBeDefined();
+      expect(btn.disabled).toBe(true);
     });
   });
 
   describe('AttentionEmptyState', () => {
     it('renders calm caught-up message', () => {
       render(<AttentionEmptyState />);
-      expect(screen.getByText("You're all caught up")).toBeInTheDocument();
-      expect(screen.getByText(/successful operations remain quiet/i)).toBeInTheDocument();
+      expect(screen.getByText("You're all caught up")).toBeDefined();
+      expect(screen.getByText(/successful operations remain quiet/i)).toBeDefined();
     });
   });
 
@@ -69,9 +69,9 @@ describe('Attention Components', () => {
       const handleViewAll = vi.fn();
       render(<AttentionSummary items={[mockItem]} onViewAll={handleViewAll} />);
 
-      expect(screen.getByText('Needs attention (1)')).toBeInTheDocument();
-      expect(screen.getByText("Package photo couldn't upload")).toBeInTheDocument();
-      expect(screen.getByText(/· PD-8K42Q/i)).toBeInTheDocument();
+      expect(screen.getByText('Needs attention (1)')).toBeDefined();
+      expect(screen.getByText("Package photo couldn't upload")).toBeDefined();
+      expect(screen.getByText(/· PD-8K42Q/i)).toBeDefined();
 
       const viewAllBtn = screen.getByRole('button', { name: /view all/i });
       fireEvent.click(viewAllBtn);
