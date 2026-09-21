@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/design-system';
 import { cn } from '@/lib/utils';
 import { AddPackageStrings } from '../strings';
