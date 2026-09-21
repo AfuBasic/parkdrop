@@ -67,6 +67,7 @@ describe('package-filters', () => {
           recorded_at: baseNow.toISOString(),
           client_recorded_at: baseNow.toISOString(),
           status: 'COMPLETED',
+          version: 1,
           sync_status: 'SYNCED',
         },
       ];
