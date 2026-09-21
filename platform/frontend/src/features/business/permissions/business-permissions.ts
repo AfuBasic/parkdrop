@@ -6,6 +6,8 @@ export interface BusinessPermissions {
   canChangeRole: boolean;
   canRemoveStaff: boolean;
   canEditBusinessDetails: boolean;
+  canViewReports: boolean;
+  canExportReports: boolean;
 }
 
 export function getBusinessPermissions(role: BusinessRole | string | null | undefined): BusinessPermissions {
@@ -19,6 +21,8 @@ export function getBusinessPermissions(role: BusinessRole | string | null | unde
         canChangeRole: true,
         canRemoveStaff: true,
         canEditBusinessDetails: true,
+        canViewReports: true,
+        canExportReports: true,
       };
     case 'manager':
       return {
@@ -27,6 +31,8 @@ export function getBusinessPermissions(role: BusinessRole | string | null | unde
         canChangeRole: false, // Managers cannot alter owner/manager roles
         canRemoveStaff: false, // In fallback matrix, removing staff is restricted or attendant-only; conservative V1 blocks manager
         canEditBusinessDetails: false,
+        canViewReports: true,
+        canExportReports: true,
       };
     case 'attendant':
     default:
@@ -36,6 +42,8 @@ export function getBusinessPermissions(role: BusinessRole | string | null | unde
         canChangeRole: false,
         canRemoveStaff: false,
         canEditBusinessDetails: false,
+        canViewReports: false,
+        canExportReports: false,
       };
   }
 }
