@@ -6,7 +6,9 @@ use App\Contracts\Payments\PaymentGateway;
 use App\Contracts\Payments\PaymentInitializationResult;
 use App\Contracts\Payments\PaymentVerificationResult;
 use App\Contracts\Payments\WebhookEventResult;
+use App\Exceptions\Payments\PaymentProviderUnavailableException;
 use App\Models\SmsCreditPurchase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -47,9 +49,24 @@ class PaystackPaymentGateway implements PaymentGateway
             'channels' => ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'],
         ];
 
-        $response = Http::withToken($this->secretKey)
-            ->baseUrl($this->baseUrl)
-            ->post('/transaction/initialize', $payload);
+        try {
+            $response = Http::withToken($this->secretKey)
+                ->connectTimeout(5)
+                ->timeout(30)
+                ->baseUrl($this->baseUrl)
+                ->post('/transaction/initialize', $payload);
+        } catch (ConnectionException $e) {
+            Log::error('Paystack payment initialization connection failed', [
+                'purchase_id' => $purchase->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new PaymentProviderUnavailableException(
+                message: 'Payment provider could not be reached. No charge was made.',
+                provider: 'paystack',
+                previous: $e,
+            );
+        }
 
         if (! $response->successful() || ! ($response->json('status') === true)) {
             Log::error('Paystack payment initialization failed', [
@@ -58,7 +75,10 @@ class PaystackPaymentGateway implements PaymentGateway
                 'response' => $response->json(),
             ]);
 
-            throw new \RuntimeException('Failed to initialize payment with Paystack: '.($response->json('message') ?? 'Unknown error'));
+            throw new PaymentProviderUnavailableException(
+                message: 'Failed to initialize payment with Paystack: '.($response->json('message') ?? 'Unknown error'),
+                provider: 'paystack',
+            );
         }
 
         $data = $response->json('data') ?? [];
@@ -74,9 +94,27 @@ class PaystackPaymentGateway implements PaymentGateway
 
     public function verifyPayment(string $reference): PaymentVerificationResult
     {
-        $response = Http::withToken($this->secretKey)
-            ->baseUrl($this->baseUrl)
-            ->get('/transaction/verify/'.urlencode($reference));
+        try {
+            $response = Http::withToken($this->secretKey)
+                ->connectTimeout(5)
+                ->timeout(30)
+                ->baseUrl($this->baseUrl)
+                ->get('/transaction/verify/'.urlencode($reference));
+        } catch (ConnectionException $e) {
+            Log::warning('Paystack payment verification connection failed — returning PENDING', [
+                'reference' => $reference,
+                'error' => $e->getMessage(),
+            ]);
+
+            return new PaymentVerificationResult(
+                status: 'PENDING',
+                reference: $reference,
+                providerTransactionId: null,
+                amountMinor: 0,
+                currency: 'NGN',
+                rawPayload: [],
+            );
+        }
 
         if (! $response->successful() || ! ($response->json('status') === true)) {
             Log::warning('Paystack payment verification request failed', [

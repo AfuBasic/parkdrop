@@ -6,7 +6,9 @@ use App\Contracts\Payments\PaymentGateway;
 use App\Contracts\Payments\PaymentInitializationResult;
 use App\Contracts\Payments\PaymentVerificationResult;
 use App\Contracts\Payments\WebhookEventResult;
+use App\Exceptions\Payments\PaymentProviderUnavailableException;
 use App\Models\SmsCreditPurchase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -59,9 +61,24 @@ class FlutterwavePaymentGateway implements PaymentGateway
             ],
         ];
 
-        $response = Http::withToken($this->secretKey)
-            ->baseUrl($this->baseUrl)
-            ->post('/payments', $payload);
+        try {
+            $response = Http::withToken($this->secretKey)
+                ->connectTimeout(5)
+                ->timeout(30)
+                ->baseUrl($this->baseUrl)
+                ->post('/payments', $payload);
+        } catch (ConnectionException $e) {
+            Log::error('Flutterwave payment initialization connection failed', [
+                'purchase_id' => $purchase->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new PaymentProviderUnavailableException(
+                message: 'Payment provider could not be reached. No charge was made.',
+                provider: 'flutterwave',
+                previous: $e,
+            );
+        }
 
         if (! $response->successful() || ! ($response->json('status') === 'success')) {
             Log::error('Flutterwave payment initialization failed', [
@@ -70,7 +87,10 @@ class FlutterwavePaymentGateway implements PaymentGateway
                 'response' => $response->json(),
             ]);
 
-            throw new \RuntimeException('Failed to initialize payment with Flutterwave: '.($response->json('message') ?? 'Unknown error'));
+            throw new PaymentProviderUnavailableException(
+                message: 'Failed to initialize payment with Flutterwave: '.($response->json('message') ?? 'Unknown error'),
+                provider: 'flutterwave',
+            );
         }
 
         $data = $response->json('data') ?? [];
@@ -92,9 +112,27 @@ class FlutterwavePaymentGateway implements PaymentGateway
             ? "/transactions/{$reference}/verify"
             : '/transactions/verify_by_reference?tx_ref='.urlencode($reference);
 
-        $response = Http::withToken($this->secretKey)
-            ->baseUrl($this->baseUrl)
-            ->get($endpoint);
+        try {
+            $response = Http::withToken($this->secretKey)
+                ->connectTimeout(5)
+                ->timeout(30)
+                ->baseUrl($this->baseUrl)
+                ->get($endpoint);
+        } catch (ConnectionException $e) {
+            Log::warning('Flutterwave payment verification connection failed — returning PENDING', [
+                'reference' => $reference,
+                'error' => $e->getMessage(),
+            ]);
+
+            return new PaymentVerificationResult(
+                status: 'PENDING',
+                reference: $reference,
+                providerTransactionId: null,
+                amountMinor: 0,
+                currency: 'NGN',
+                rawPayload: [],
+            );
+        }
 
         if (! $response->successful() || ! ($response->json('status') === 'success')) {
             Log::warning('Flutterwave payment verification request failed or pending', [
