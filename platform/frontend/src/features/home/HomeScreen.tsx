@@ -23,10 +23,10 @@ export function HomeScreen({
   onNavigateToAttention,
   onSelectPackage 
 }: HomeScreenProps) {
-  const { business } = useAuth();
+  const { business, role } = useAuth();
   const { items } = useAttentionItems({
     businessId: business?.id ?? 0,
-    userRole: business?.role,
+    userRole: role,
   });
 
   return (
