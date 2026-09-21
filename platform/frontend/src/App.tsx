@@ -19,7 +19,9 @@ import { CustomersScreen } from '@/features/customers/list/CustomersScreen';
 import { CustomerDetailScreen } from '@/features/customers/detail/CustomerDetailScreen';
 import { StaffScreen } from '@/features/business/staff/StaffScreen';
 import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetailsScreen';
-import { MessageSquare, ChevronRight, Users, Building2 } from 'lucide-react';
+import { AttentionScreen } from '@/features/attention/AttentionScreen';
+import { useAttentionItems } from '@/features/attention/hooks/useAttentionItems';
+import { MessageSquare, ChevronRight, Users, Building2, AlertCircle } from 'lucide-react';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
 
@@ -45,6 +47,12 @@ function AppContent() {
     () => business?.id ? db.smsWallets.where('business_id').equals(business.id).first() : undefined,
     [business?.id]
   );
+
+  // Operational Attention items
+  const { unresolvedCount } = useAttentionItems({
+    businessId: business?.id ?? 0,
+    userRole: business?.role,
+  });
 
   if (state === 'booting') {
     return (
@@ -109,7 +117,17 @@ function AppContent() {
           onNavigateToAdd={() => setCurrentPath('/add')}
           onNavigateToPackages={() => setCurrentPath('/packages')}
           onNavigateToCredits={() => setCurrentPath('/more/sms-credits')}
+          onNavigateToAttention={() => setCurrentPath('/more/attention')}
           onSelectPackage={(id) => setCurrentPath(`/packages/${id}`)}
+        />
+      )}
+      
+      {(currentPath === '/attention' || currentPath === '/more/attention') && (
+        <AttentionScreen
+          onBack={() => setCurrentPath('/more')}
+          onNavigateToPackage={(id) => setCurrentPath(`/packages/${id}`)}
+          onNavigateToBuyCredits={() => setCurrentPath('/more/sms-credits/buy')}
+          onNavigateToCredits={() => setCurrentPath('/more/sms-credits')}
         />
       )}
       
@@ -208,6 +226,38 @@ function AppContent() {
 
             {/* Navigation Sections */}
             <div className="bg-surface-default rounded-[var(--radius-xl)] shadow-sm border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+              {/* Attention Center */}
+              <button
+                type="button"
+                onClick={() => setCurrentPath('/more/attention')}
+                className="w-full flex items-center justify-between p-4 hover:bg-surface-subtle transition-colors cursor-pointer text-left min-h-[56px]"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                    unresolvedCount > 0 
+                      ? 'bg-status-danger-bg text-status-danger-text' 
+                      : 'bg-blue-50 text-action-primary'
+                  }`}>
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-text-primary text-[15px]">Attention</div>
+                    <div className="text-xs text-text-secondary">Operational exceptions and conflicts</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {unresolvedCount > 0 && (
+                    <span 
+                      className="text-xs font-semibold px-2 py-0.5 rounded-full bg-status-danger-bg text-status-danger-text border border-status-danger-border tabular-nums"
+                      aria-label={`${unresolvedCount} items need attention`}
+                    >
+                      {unresolvedCount > 99 ? '99+' : unresolvedCount}
+                    </span>
+                  )}
+                  <ChevronRight className="w-5 h-5 text-text-muted" />
+                </div>
+              </button>
+
               {/* Staff Management */}
               <button
                 type="button"
