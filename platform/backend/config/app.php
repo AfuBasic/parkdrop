@@ -130,4 +130,11 @@ return [
     */
     'initial_sms_credits' => (int) env('INITIAL_SMS_CREDITS', 20),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Business Staff Invitation TTL Days
+    |--------------------------------------------------------------------------
+    */
+    'invitation_ttl_days' => (int) env('BUSINESS_INVITATION_TTL_DAYS', 7),
+
 ];
