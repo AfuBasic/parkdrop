@@ -16,7 +16,6 @@ interface ReturnPackageSheetProps {
   customer: LocalCustomer | null;
   paymentSummary: PaymentSummaryData;
   onConfirmReturn: (reason: ReturnReason, note?: string | null) => Promise<void>;
-  isOnline?: boolean;
 }
 
 export function ReturnPackageSheet({
@@ -26,7 +25,6 @@ export function ReturnPackageSheet({
   customer,
   paymentSummary,
   onConfirmReturn,
-  isOnline = true,
 }: ReturnPackageSheetProps) {
   const [selectedReason, setSelectedReason] = useState<ReturnReason | null>(null);
   const [note, setNote] = useState('');
