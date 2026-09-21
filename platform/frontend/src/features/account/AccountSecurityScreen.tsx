@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { accountApi } from './api/account-api';
-import type { UserProfile, BusinessMembershipSummary, RegisteredDevice } from './account-types';
-import { AccountIdentitySection } from './components/AccountIdentitySection';
-import { CurrentDeviceSection } from './components/CurrentDeviceSection';
-import { DeviceList } from './components/DeviceList';
-import { SignOutConfirmDialog } from './components/SignOutConfirmDialog';
+import { useNavigate } from '@tanstack/react-router';
+import { accountApi } from '@/features/account/api/account-api';
+import type { UserProfile, BusinessMembershipSummary, RegisteredDevice } from '@/features/account/account-types';
+import { AccountIdentitySection } from '@/features/account/components/AccountIdentitySection';
+import { CurrentDeviceSection } from '@/features/account/components/CurrentDeviceSection';
+import { DeviceList } from '@/features/account/components/DeviceList';
+import { SignOutConfirmDialog } from '@/features/account/components/SignOutConfirmDialog';
 import { getLocalAuthorization } from '@/offline/device/device-identity';
 import type { LocalAuthorization } from '@/offline/db/schema';
 import { db } from '@/offline/db/database';
@@ -16,6 +17,8 @@ interface AccountSecurityScreenProps {
 }
 
 export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ onBack }) => {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
   const { logout, user: authUser, business } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -197,21 +200,19 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-neutral-200/80 px-4 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="p-1.5 -ml-1.5 rounded-xl text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 transition-colors"
-              aria-label="Go back"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleBack}
+            className="p-1.5 -ml-1.5 rounded-xl text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer"
+            aria-label="Go back"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
           <div>
-            <h1 className="text-base font-bold text-neutral-900 tracking-tight">Account & Security</h1>
-            <p className="text-[11px] text-neutral-500">Identity, sessions, and offline authorization</p>
+            <h1 className="text-lg font-bold text-neutral-900 leading-tight">Account & Security</h1>
+            <p className="text-xs text-neutral-500">Manage identity, active devices, and sessions</p>
           </div>
         </div>
       </header>
