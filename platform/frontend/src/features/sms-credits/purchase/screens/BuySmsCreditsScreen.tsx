@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, MessageSquare, WifiOff, AlertCircle, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useSyncState } from '@/offline/hooks/useSyncState';
@@ -14,11 +15,14 @@ import {
 import type { SmsCreditBundle, SmsCreditPurchase, PurchaseFlowState } from '@/features/sms-credits/purchase/types';
 
 interface BuySmsCreditsScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
   onSuccessDone?: () => void;
 }
 
 export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more/sms-credits' }));
+  const handleSuccessDone = onSuccessDone ?? (() => routerNavigate({ to: '/more/sms-credits' }));
   const { business } = useAuth();
   const businessId = business?.id;
   const syncState = useSyncState(businessId);
@@ -128,11 +132,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
   };
 
   const handleDone = () => {
-    if (onSuccessDone) {
-      onSuccessDone();
-    } else {
-      onBack();
-    }
+    handleSuccessDone();
   };
 
   return (
@@ -141,7 +141,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
       <header className="sticky top-0 z-10 bg-surface-page/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center justify-between shrink-0">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           disabled={flowState === 'INITIALIZING' || flowState === 'CONFIRMING'}
           className="flex items-center text-text-secondary hover:text-text-primary transition-colors py-2 pr-4 -ml-2 cursor-pointer disabled:opacity-50"
         >
@@ -237,7 +237,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
               </button>
               <button
                 type="button"
-                onClick={onBack}
+                onClick={handleBack}
                 className="w-full h-13 bg-surface-default border border-border-default text-text-primary font-medium text-[15px] rounded-xl hover:bg-surface-subtle transition-all cursor-pointer"
               >
                 Back to SMS credits
@@ -267,7 +267,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
               </button>
               <button
                 type="button"
-                onClick={onBack}
+                onClick={handleBack}
                 className="w-full h-13 bg-surface-default border border-border-default text-text-primary font-medium text-[15px] rounded-xl hover:bg-surface-subtle transition-all cursor-pointer"
               >
                 Back
