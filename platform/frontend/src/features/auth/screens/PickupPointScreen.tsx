@@ -1,78 +1,187 @@
 import * as React from 'react';
-import { AuthStrings } from '@/features/auth/strings';
-import { Field, Input, Button } from '@/design-system';
+import { AuthShell } from '../components/AuthShell';
+import { TextField } from '../components/TextField';
+import { BigButton } from '../components/BigButton';
+import { Notice } from '../components/Notice';
+import { SmsPreview } from '../components/SmsPreview';
+import { AuthStrings } from '../strings';
+import { checkSmsFit, normaliseForSms, isPlaceholderName } from '@/lib/smsTemplate';
 
-interface PickupPointScreenProps {
-  firstName: string;
-  onContinue: (locationName: string, parkName?: string) => void;
-  isLoading?: boolean;
+export interface PickupPointScreenProps {
+  onContinue: (pickupPointName: string, parkName: string) => void;
+  onBack: () => void;
+  onHelp: () => void;
+  initialPickupName?: string;
+  initialParkName?: string;
+  busy?: boolean;
+  requestError?: string;
+  slowNetwork?: boolean;
+  timedOut?: boolean;
+  step?: number;
+  totalSteps?: number;
 }
 
-export function PickupPointScreen({ firstName, onContinue, isLoading }: PickupPointScreenProps) {
-  const [locationName, setLocationName] = React.useState('');
-  const [parkName, setParkName] = React.useState('');
+/**
+ * Screen 5. The two names the owner's customers will read in an SMS.
+ *
+ * The preview is the whole point of the screen. Asking someone to name their
+ * business in the abstract gets vague answers; showing them the exact text
+ * message their customer will receive gets the name their customer actually
+ * knows them by.
+ *
+ * The length limit is not arbitrary: each SMS segment is separately billed,
+ * and these names are in every single arrival message this business ever
+ * sends. Two long names quietly double their running cost forever.
+ */
+export function PickupPointScreen({
+  onContinue,
+  onBack,
+  onHelp,
+  initialPickupName = '',
+  initialParkName = '',
+  busy,
+  requestError,
+  slowNetwork,
+  timedOut,
+  step = 5,
+  totalSteps = 5,
+}: PickupPointScreenProps) {
+  const [pickupName, setPickupName] = React.useState(initialPickupName);
+  const [parkName, setParkName] = React.useState(initialParkName);
+  const [errors, setErrors] = React.useState<{ pickup?: string; park?: string; form?: string }>({});
+  const pickupRef = React.useRef<HTMLInputElement>(null);
+  const parkRef = React.useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (locationName.trim()) {
-      onContinue(locationName.trim(), parkName.trim() || undefined);
+  const fit = React.useMemo(
+    () => checkSmsFit({ pickupPointName: pickupName, parkName }),
+    [pickupName, parkName]
+  );
+
+  const submit = () => {
+    if (busy) return;
+
+    const pickup = normaliseForSms(pickupName).trim().replace(/\s+/g, ' ');
+    const park = normaliseForSms(parkName).trim().replace(/\s+/g, ' ');
+    const next: typeof errors = {};
+
+    if (!pickup) next.pickup = AuthStrings.pickupNameEmpty;
+    else if (isPlaceholderName(pickup)) next.pickup = AuthStrings.pickupPlaceholderName;
+
+    if (!park) next.park = AuthStrings.parkNameEmpty;
+    else if (isPlaceholderName(park)) next.park = AuthStrings.pickupPlaceholderName;
+
+    if (!next.pickup && !next.park) {
+      if (fit.unsupportedCharacters.length > 0) next.form = AuthStrings.pickupOddCharacters;
+      else if (!fit.fitsOneSms) next.form = AuthStrings.pickupTooLong;
     }
+
+    if (next.pickup || next.park || next.form) {
+      setErrors(next);
+      navigator.vibrate?.(30);
+      (next.pickup ? pickupRef : next.park ? parkRef : pickupRef).current?.focus();
+      return;
+    }
+
+    setErrors({});
+    onContinue(pickup, park);
   };
 
+  const showPreview = pickupName.trim().length > 0;
+  const counter = `${fit.used} / ${fit.budget}`;
+
   return (
-    <div className="flex flex-col h-full animate-in fade-in slide-in-from-right-4 duration-300">
-      <div className="mb-5">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight mb-1 text-text-primary">{AuthStrings.pickupPointTitle}</h1>
-        <p className="text-sm font-medium text-text-secondary m-0">{AuthStrings.pickupPointSubtitle}</p>
+    <AuthShell
+      size="compact"
+      onBack={onBack}
+      onHelp={onHelp}
+      step={step}
+      totalSteps={totalSteps}
+      foot={
+        <BigButton onClick={submit} busy={busy} busyLabel={AuthStrings.saving}>
+          {AuthStrings.pickupSave}
+        </BigButton>
+      }
+    >
+      <h1 className="m-0 mb-2 text-[var(--pd-size-title)] font-extrabold leading-[1.15] tracking-[-0.025em] text-[var(--pd-navy)]">
+        {AuthStrings.pickupTitle}
+      </h1>
+      <p className="m-0 mb-6 text-[var(--pd-size-body)] font-semibold text-[var(--pd-muted)] leading-[1.45]">
+        {AuthStrings.pickupSubtitle}
+      </p>
+
+      <div className="flex flex-col gap-5">
+        <TextField
+          ref={pickupRef}
+          label={AuthStrings.pickupNameLabel}
+          placeholder={AuthStrings.pickupNamePlaceholder}
+          value={pickupName}
+          onChange={(event) => {
+            setPickupName(event.target.value);
+            setErrors((current) => ({ ...current, pickup: undefined, form: undefined }));
+          }}
+          error={errors.pickup}
+          clearable
+          onClear={() => setPickupName('')}
+          autoFocus
+          autoCapitalize="words"
+          enterKeyHint="next"
+          counter={counter}
+          counterOver={!fit.fitsOneSms}
+          maxLength={60}
+        />
+
+        <TextField
+          ref={parkRef}
+          label={AuthStrings.parkNameLabel}
+          placeholder={AuthStrings.parkNamePlaceholder}
+          value={parkName}
+          onChange={(event) => {
+            setParkName(event.target.value);
+            setErrors((current) => ({ ...current, park: undefined, form: undefined }));
+          }}
+          error={errors.park}
+          clearable
+          onClear={() => setParkName('')}
+          autoCapitalize="words"
+          enterKeyHint="done"
+          maxLength={60}
+        />
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <div className="space-y-4">
-          <Field label={AuthStrings.pickupPointLabel} htmlFor="locationName">
-            <Input
-              id="locationName"
-              autoFocus
-              placeholder={AuthStrings.pickupPointPlaceholder}
-              value={locationName}
-              onChange={(e) => setLocationName(e.target.value)}
-              disabled={isLoading}
-              className="h-12 text-base font-medium rounded-xl"
-            />
-          </Field>
+      {showPreview && (
+        <SmsPreview
+          className="mt-6"
+          message={fit.message}
+          highlight={[normaliseForSms(pickupName).trim(), normaliseForSms(parkName).trim()]}
+          overBudget={!fit.fitsOneSms}
+        />
+      )}
 
-          <Field label={AuthStrings.parkNameLabel} htmlFor="parkName">
-            <Input
-              id="parkName"
-              placeholder={AuthStrings.parkNamePlaceholder}
-              value={parkName}
-              onChange={(e) => setParkName(e.target.value)}
-              disabled={isLoading}
-              className="h-12 text-base font-medium rounded-xl"
-            />
-          </Field>
-        </div>
+      {errors.form && (
+        <Notice tone="warning" className="mt-4">
+          {errors.form}
+        </Notice>
+      )}
 
-        {locationName && (
-          <div className="mt-4 p-3.5 bg-surface-subtle rounded-xl border border-border-default animate-in fade-in">
-            <span className="text-[11px] uppercase tracking-wider text-text-muted mb-1.5 block font-bold">{AuthStrings.smsPreviewTitle}</span>
-            <p className="text-xs font-medium leading-relaxed text-text-primary">
-              {AuthStrings.smsPreviewText(firstName, locationName, parkName)}
-            </p>
-          </div>
-        )}
+      {requestError && !timedOut && (
+        <Notice tone="error" className="mt-4">
+          {requestError}
+        </Notice>
+      )}
 
-        <div className="mt-auto pt-6">
-          <Button 
-            type="submit" 
-            className="w-full h-12 text-base font-bold" 
-            size="lg" 
-            disabled={!locationName.trim()} 
-            loading={isLoading}
-          >
-            {AuthStrings.continue}
-          </Button>
-        </div>
-      </form>
-    </div>
+      {slowNetwork && !timedOut && (
+        <Notice tone="info" className="mt-4">
+          {AuthStrings.slowNetwork}
+        </Notice>
+      )}
+
+      {timedOut && (
+        <Notice tone="error" className="mt-4">
+          {AuthStrings.tookTooLong}
+        </Notice>
+      )}
+
+      <div className="h-4" />
+    </AuthShell>
   );
 }
