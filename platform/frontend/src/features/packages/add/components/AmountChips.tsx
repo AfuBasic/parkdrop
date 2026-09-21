@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { formatMoney } from '@/lib/formatters';
-import { AddPackageStrings } from '../strings';
+import { AddPackageStrings } from '@/features/packages/add/strings';
 
 export interface AmountChipsProps {
   lastAmountMinor: number | null;
