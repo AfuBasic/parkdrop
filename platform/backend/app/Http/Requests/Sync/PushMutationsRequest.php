@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Sync;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PushMutationsRequest extends FormRequest
