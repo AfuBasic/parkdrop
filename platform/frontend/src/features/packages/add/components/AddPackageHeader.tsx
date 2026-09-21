@@ -1,7 +1,7 @@
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/features/auth/components/Logo';
-import { AddPackageStrings } from '../strings';
+import { AddPackageStrings } from '@/features/packages/add/strings';
 
 export interface AddPackageHeaderProps {
   onClose: () => void;
