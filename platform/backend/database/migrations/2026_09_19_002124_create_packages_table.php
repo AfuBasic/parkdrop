@@ -16,25 +16,25 @@ return new class extends Migration
             $table->foreignId('business_id')->constrained()->cascadeOnDelete();
             $table->foreignId('pickup_point_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignUuid('customer_id')->constrained('customers')->cascadeOnDelete();
-            
+
             // Public package ID is typically unique per business
             $table->string('public_package_id', 50);
-            
+
             // Pickup code is unique per business
             $table->string('pickup_code', 50);
-            
+
             // Amount due in minor units
             $table->integer('amount_due_minor')->default(0);
-            
+
             // Canonical statuses: WAITING, COLLECTED, RETURNED, CANCELLED
             $table->string('status', 20)->default('WAITING');
-            
+
             $table->foreignId('created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->uuid('created_by_device_uuid')->nullable();
-            
+
             $table->timestamp('client_created_at')->nullable();
             $table->integer('version')->default(1);
-            
+
             $table->timestamps();
 
             // Unique constraints
