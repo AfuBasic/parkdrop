@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Media\CloudinarySignController;
 use App\Http\Controllers\Api\V1\Business\BusinessDetailsController;
 use App\Http\Controllers\Api\V1\Business\BusinessStaffController;
+use App\Http\Controllers\Api\V1\Business\PickupPointController;
 use App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
@@ -69,6 +70,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('details', [BusinessDetailsController::class, 'show']);
         Route::patch('details', [BusinessDetailsController::class, 'update']);
+
+        // Pickup Points (Build 20)
+        Route::get('pickup-points', [PickupPointController::class, 'index']);
+        Route::post('pickup-points', [PickupPointController::class, 'store']);
+        Route::patch('pickup-points/{pickupPoint}', [PickupPointController::class, 'update']);
+        Route::post('pickup-points/{pickupPoint}/deactivate', [PickupPointController::class, 'deactivate']);
+        Route::post('pickup-points/{pickupPoint}/reactivate', [PickupPointController::class, 'reactivate']);
     });
 });
 
