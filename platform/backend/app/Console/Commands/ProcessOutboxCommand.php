@@ -168,35 +168,40 @@ class ProcessOutboxCommand extends Command
         // Where to collect it. Without this the customer is told a parcel arrived
         // but not where to go, and the pickup-point names the owner types during
         // setup would never actually reach a customer.
-        $pickupPoint = $package->pickupPoint;
-        $place = $pickupPoint?->name;
-        if ($place && ! empty($pickupPoint->park_name)) {
-            $place .= ', '.$pickupPoint->park_name;
+        // Build place string
+        $pickupPointName = trim($pickupPoint?->name ?? '');
+        $parkName = trim($pickupPoint?->park_name ?? '');
+        $place = $parkName !== ''
+            ? ($pickupPointName !== '' ? "{$pickupPointName}, {$parkName}" : $parkName)
+            : $pickupPointName;
+
+        // Contact phone formatting for SMS display (e.g. 08031234567 or 0803 123 4567)
+        $rawContactPhone = $pickupPoint?->contact_phone;
+        $callLine = '';
+        if (! empty($rawContactPhone)) {
+            // If stored with country code or national, format as 11 digits with leading 0
+            $digits = preg_replace('/\D/', '', $rawContactPhone);
+            if (str_starts_with($digits, '234') && strlen($digits) === 13) {
+                $digits = '0'.substr($digits, 3);
+            } elseif (! str_starts_with($digits, '0') && strlen($digits) === 10) {
+                $digits = '0'.$digits;
+            }
+            $callLine = "Call: {$digits}\n";
         }
 
-        // NOTE: keep this wording in step with the frontend copy of the template in
-        // platform/frontend/src/lib/smsTemplate.ts — the pickup-point setup screen
-        // previews this exact message to the business owner.
-        //
-        // Every character here stays inside the GSM 03.38 alphabet. A single
-        // character outside it (the en dash this line used to end with) switches
-        // the whole SMS to UCS-2 and cuts the single-segment budget from 160
-        // characters to 70, which was silently billing most arrival messages as
-        // two or three segments.
-        $message = $place
-            ? sprintf(
-                'Hi %s, your parcel %s has arrived at %s. Use code %s to collect it. - ParkDrop',
-                $customer->first_name ?? 'there',
-                $package->public_package_id,
-                $place,
-                $package->pickup_code,
-            )
-            : sprintf(
-                'Hi %s, your parcel %s has arrived. Use code %s to collect it. - ParkDrop',
-                $customer->first_name ?? 'there',
-                $package->public_package_id,
-                $package->pickup_code,
-            );
+        // Single shared template (matches frontend renderCustomerSms in smsTemplate.ts)
+        // Your package is at {place}.\nShow code {code} at pickup.\nCall: {phone}\nParkDrop
+        $code = $package->pickup_code;
+        $message = "Your package is at {$place}.\nShow code {$code} at pickup.\n{$callLine}ParkDrop";
+
+        // Hard character limit check: never exceed 130 characters
+        if (mb_strlen($message) > 130) {
+            Log::warning('[ProcessOutboxCommand] Arrival SMS exceeds 130 character limit.', [
+                'outbox_event_id' => $event->id,
+                'package_id' => $packageId,
+                'length' => mb_strlen($message),
+            ]);
+        }
 
         SendArrivalSmsJob::dispatch(
             packageId: $event->id,
