@@ -1,7 +1,7 @@
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AddPackageStrings } from '../strings';
-import type { CustomerSuggestion } from '../hooks/useCustomerLookup';
+import { AddPackageStrings } from '@/features/packages/add/strings';
+import type { CustomerSuggestion } from '@/features/packages/add/hooks/useCustomerLookup';
 
 export interface CustomerMatchChipProps {
   match: CustomerSuggestion;
