@@ -72,20 +72,21 @@ describe('CustomerDetailScreen', () => {
     );
 
     // Customer Identity
-    const nameElements = await screen.findAllByText('Chinedu Okafor');
-    expect(screen.getByText('0803 123 4567')).toBeInTheDocument();
-    const statsMatches = screen.getAllByText((content, element) => {
+    const nameMatches = await screen.findAllByText('Chinedu Okafor');
+    expect(nameMatches.length).toBeGreaterThan(0);
+    expect(screen.getByText('0803 123 4567')).toBeDefined();
+    const statsMatches = screen.getAllByText((_, element) => {
       return Boolean(element && element.children.length === 2 && /1\s*waiting\s*·\s*2\s*total/i.test(element.textContent || ''));
     });
     expect(statsMatches.length).toBeGreaterThan(0);
 
     // Waiting packages section (PD-8K42Q)
-    expect(screen.getByText('PD-8K42Q')).toBeInTheDocument();
-    expect(screen.getByText('7K4P2MX')).toBeInTheDocument();
+    expect(screen.getByText('PD-8K42Q')).toBeDefined();
+    expect(screen.getByText('7K4P2MX')).toBeDefined();
 
     // History section (PD-71KQP)
-    expect(screen.getByText('PD-71KQP')).toBeInTheDocument();
-    expect(screen.getByText('Collected')).toBeInTheDocument();
+    expect(screen.getByText('PD-71KQP')).toBeDefined();
+    expect(screen.getByText('Collected')).toBeDefined();
 
     // Tap waiting package
     fireEvent.click(screen.getByText('PD-8K42Q'));
@@ -112,8 +113,8 @@ describe('CustomerDetailScreen', () => {
       />
     );
 
-    expect(await screen.findByText('Customer not found')).toBeInTheDocument();
-    expect(screen.getByText('This customer may not be available on this device.')).toBeInTheDocument();
+    expect(await screen.findByText('Customer not found')).toBeDefined();
+    expect(screen.getByText('This customer may not be available on this device.')).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: /back to customers/i }));
     expect(handleBack).toHaveBeenCalled();
