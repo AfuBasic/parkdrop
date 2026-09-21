@@ -39,7 +39,7 @@ class WelcomeMail extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome to ParkDrop — Parcel Operations & Delivery',
+            subject: 'You are ready to use ParkDrop',
         );
     }
 
