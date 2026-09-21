@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Contracts\Sms\SmsProvider;
+use App\Models\SmsMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -38,6 +39,7 @@ class SendArrivalSmsJob implements ShouldQueue
         public readonly string $recipientPhone,
         public readonly string $message,
         public readonly string $idempotencyKey,
+        public readonly int $outboxEventId,
     ) {
         $this->onQueue('sms');
     }
@@ -45,10 +47,10 @@ class SendArrivalSmsJob implements ShouldQueue
     /**
      * Execute the SMS send attempt.
      *
-     * On success: marks the outbox event as dispatched + success.
-     * On definitive failure: marks FAILED, creates Attention attention entry via sync change.
-     * On ambiguous timeout: marks NEEDS_RECONCILIATION. Does NOT auto-retry with a fresh send
-     * to prevent duplicate SMS delivery.
+     * On first run: creates an SmsMessage row with status PENDING.
+     * On success: updates to SENT with termii_message_id and sent_at.
+     * On ambiguous timeout: updates to NEEDS_RECONCILIATION.
+     * On definitive failure: updates to FAILED with failed_at and error_message.
      */
     public function handle(SmsProvider $smsProvider): void
     {
@@ -69,14 +71,37 @@ class SendArrivalSmsJob implements ShouldQueue
             return;
         }
 
+        // Create or find the sms_messages row for this attempt.
+        // We use firstOrCreate so that a retry (after ambiguous/reconciliation)
+        // reuses the same row rather than creating duplicates.
+        $smsRecord = SmsMessage::firstOrCreate(
+            ['outbox_event_id' => $this->outboxEventId],
+            [
+                'business_id' => $this->businessId,
+                'package_id' => $this->packageId,
+                'recipient_phone' => $this->recipientPhone,
+                'message_body' => $this->message,
+                'status' => SmsMessage::STATUS_PENDING,
+            ]
+        );
+
         Log::info('[SendArrivalSmsJob] Attempting arrival SMS dispatch.', [
             'package_id' => $this->packageUuid,
             'attempt' => $this->attempts(),
+            'sms_message_id' => $smsRecord->id,
         ]);
 
         $result = $smsProvider->send($this->recipientPhone, $this->message);
 
         if ($result->isSent()) {
+            // Update both the sms_messages row and the outbox event atomically.
+            $smsRecord->update([
+                'status' => SmsMessage::STATUS_SENT,
+                'termii_message_id' => $result->messageId,
+                'sent_at' => now(),
+                'error_message' => null,
+            ]);
+
             DB::table('outbox_events')
                 ->where('business_id', $this->businessId)
                 ->where('type', 'ARRIVAL_SMS_REQUESTED')
@@ -98,16 +123,16 @@ class SendArrivalSmsJob implements ShouldQueue
 
         if ($result->isAmbiguous()) {
             // DO NOT throw — do NOT re-queue — the provider may have already accepted the message.
-            // If attempts are exhausted, failed() hook handles the final state.
-            // If there are retries remaining, Horizon will retry (but our policy is
-            // to mark NEEDS_RECONCILIATION immediately and not re-send).
             Log::warning('[SendArrivalSmsJob] SMS dispatch ambiguous (timeout after connection).', [
                 'package_id' => $this->packageUuid,
                 'attempt' => $this->attempts(),
                 'error' => $result->errorMessage,
             ]);
 
-            $this->markNeedsReconciliation('SMS status could not be confirmed. It may have been sent. No automatic re-send attempted.');
+            $this->markNeedsReconciliation(
+                $smsRecord,
+                'SMS status could not be confirmed. It may have been sent. No automatic re-send attempted.'
+            );
 
             // Release to prevent further automatic retries with duplicate send risk
             $this->release();
@@ -123,7 +148,7 @@ class SendArrivalSmsJob implements ShouldQueue
         ]);
 
         if ($this->attempts() >= $this->tries) {
-            $this->markFailed($result->errorMessage ?? 'SMS provider rejected the message.');
+            $this->markFailed($smsRecord, $result->errorMessage ?? 'SMS provider rejected the message.');
 
             return;
         }
@@ -142,11 +167,24 @@ class SendArrivalSmsJob implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
 
-        $this->markFailed('Arrival SMS failed after all retry attempts: '.$exception->getMessage());
+        // Attempt to find the sms_messages row and mark it FAILED.
+        $smsRecord = SmsMessage::where('outbox_event_id', $this->outboxEventId)->first();
+        if ($smsRecord) {
+            $this->markFailed($smsRecord, 'Arrival SMS failed after all retry attempts: '.$exception->getMessage());
+        } else {
+            // Fallback: if the row was never created (e.g. job died before handle()), create it now.
+            $this->markFailedWithoutRecord('Arrival SMS failed after all retry attempts: '.$exception->getMessage());
+        }
     }
 
-    private function markFailed(string $reason): void
+    private function markFailed(SmsMessage $smsRecord, string $reason): void
     {
+        $smsRecord->update([
+            'status' => SmsMessage::STATUS_FAILED,
+            'failed_at' => now(),
+            'error_message' => $reason,
+        ]);
+
         DB::table('outbox_events')
             ->where('business_id', $this->businessId)
             ->where('type', 'ARRIVAL_SMS_REQUESTED')
@@ -174,8 +212,13 @@ class SendArrivalSmsJob implements ShouldQueue
         ]);
     }
 
-    private function markNeedsReconciliation(string $reason): void
+    private function markNeedsReconciliation(SmsMessage $smsRecord, string $reason): void
     {
+        $smsRecord->update([
+            'status' => SmsMessage::STATUS_NEEDS_RECONCILIATION,
+            'error_message' => $reason,
+        ]);
+
         DB::table('outbox_events')
             ->where('business_id', $this->businessId)
             ->where('type', 'ARRIVAL_SMS_REQUESTED')
@@ -199,6 +242,23 @@ class SendArrivalSmsJob implements ShouldQueue
             ]),
             'created_at' => now(),
             'updated_at' => now(),
+        ]);
+    }
+
+    /**
+     * Fallback: create the sms_messages row and mark it FAILED when handle() never ran.
+     */
+    private function markFailedWithoutRecord(string $reason): void
+    {
+        SmsMessage::create([
+            'business_id' => $this->businessId,
+            'package_id' => $this->packageId,
+            'outbox_event_id' => $this->outboxEventId,
+            'recipient_phone' => $this->recipientPhone,
+            'message_body' => $this->message,
+            'status' => SmsMessage::STATUS_FAILED,
+            'failed_at' => now(),
+            'error_message' => $reason,
         ]);
     }
 }
