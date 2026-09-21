@@ -134,6 +134,9 @@ export function PackagePaymentCard({
           {/* Payment History List */}
           {payments.length > 0 && (
             <div className="flex flex-col gap-1.5 pt-2 border-t border-[var(--pd-line-2)]">
+              <span className="text-[13px] font-bold text-[var(--pd-muted)] uppercase tracking-wider">
+                {PackagesStrings.paymentHistoryTitle}
+              </span>
               {payments.map((p) => (
                 <div key={p.id} className="flex items-center justify-between text-[14px]">
                   <div className="flex items-center gap-1 text-[var(--pd-muted)]">
