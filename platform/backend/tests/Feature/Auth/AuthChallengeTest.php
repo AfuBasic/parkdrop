@@ -4,11 +4,14 @@ namespace Tests\Feature\Auth;
 
 use App\Mail\AuthChallengeMail;
 use App\Models\AuthChallenge;
+use App\Models\Business;
+use App\Models\BusinessMembership;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldBeEncrypted;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AuthChallengeTest extends TestCase
@@ -101,13 +104,13 @@ class AuthChallengeTest extends TestCase
             'status' => 'active',
         ]);
 
-        $business = \App\Models\Business::create([
-            'public_id' => (string) \Illuminate\Support\Str::uuid(),
+        $business = Business::create([
+            'public_id' => (string) Str::uuid(),
             'name' => 'Owner Business',
             'status' => 'active',
         ]);
 
-        \App\Models\BusinessMembership::create([
+        BusinessMembership::create([
             'business_id' => $business->id,
             'user_id' => $user->id,
             'role' => 'owner',
