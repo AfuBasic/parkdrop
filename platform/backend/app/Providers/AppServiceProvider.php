@@ -9,6 +9,7 @@ use App\Services\Payments\FlutterwavePaymentGateway;
 use App\Services\Payments\PaystackPaymentGateway;
 use App\Services\Sms\TermiiSmsProvider;
 use App\Services\Sync\Handlers\CancelPackageMutationHandler;
+use App\Services\Sync\Handlers\CollectPackageMutationHandler;
 use App\Services\Sync\Handlers\CreateCustomerMutationHandler;
 use App\Services\Sync\Handlers\CreatePackageMutationHandler;
 use App\Services\Sync\Handlers\RecordPaymentMutationHandler;
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
             $registry->register($app->make(RecordPaymentMutationHandler::class));
             $registry->register($app->make(ReturnPackageMutationHandler::class));
             $registry->register($app->make(CancelPackageMutationHandler::class));
+            $registry->register($app->make(CollectPackageMutationHandler::class));
 
             return $registry;
         });
