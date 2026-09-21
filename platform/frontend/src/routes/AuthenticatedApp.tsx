@@ -51,17 +51,21 @@ export default function AuthenticatedApp() {
     userRole: role,
   });
 
+  const isAddPackageRoute = currentPath.startsWith('/add') || currentPath.startsWith('/packages/new');
+
   return (
     <AppShell
       currentPath={currentPath.startsWith('/more') ? '/more' : currentPath}
       onNavigate={setCurrentPath}
       // Home paints its own blue header to the edges of the phone.
       bleed={currentPath === '/'}
+      // Add package is a dedicated full-screen task: no bottom nav.
+      fullScreenTask={isAddPackageRoute}
     >
       {currentPath === '/' && (
         <HomeScreen
           onNavigateToSearch={() => setCurrentPath('/packages/search')}
-          onNavigateToAdd={() => setCurrentPath('/add')}
+          onNavigateToAdd={() => setCurrentPath('/packages/new')}
           onNavigateToPackages={(status) => {
             setPackagesStatus(status ?? 'WAITING');
             setCurrentPath('/packages');
@@ -86,13 +90,14 @@ export default function AuthenticatedApp() {
           key={packagesStatus}
           initialStatus={packagesStatus}
           onNavigateToSearch={() => setCurrentPath('/packages/search')}
-          onNavigateToAdd={() => setCurrentPath('/add')}
+          onNavigateToAdd={() => setCurrentPath('/packages/new')}
           onSelectPackage={(pkg) => setCurrentPath(`/packages/${pkg.id}`)}
         />
       )}
-      {currentPath.startsWith('/add') && (
+      {isAddPackageRoute && (
         <AddPackageScreen 
           initialCustomerId={new URLSearchParams(currentPath.split('?')[1] || '').get('customerId')}
+          initialPhone={new URLSearchParams(currentPath.split('?')[1] || '').get('phone')}
           onNavigate={setCurrentPath}
           onBack={() => {
             const customerId = new URLSearchParams(currentPath.split('?')[1] || '').get('customerId');
@@ -108,7 +113,7 @@ export default function AuthenticatedApp() {
         <CustomersScreen
           businessId={business?.id || 0}
           onSelectCustomer={(id) => setCurrentPath(`/customers/${id}`)}
-          onNavigateToAdd={() => setCurrentPath('/add')}
+          onNavigateToAdd={() => setCurrentPath('/packages/new')}
         />
       )}
       {currentPath.startsWith('/customers/') && (
@@ -117,13 +122,14 @@ export default function AuthenticatedApp() {
           businessId={business?.id || 0}
           onBack={() => setCurrentPath('/customers')}
           onSelectPackage={(pkgId) => setCurrentPath(`/packages/${pkgId}`)}
-          onAddPackageForCustomer={(customerId) => setCurrentPath(`/add?customerId=${customerId}`)}
+          onAddPackageForCustomer={(customerId) => setCurrentPath(`/packages/new?customerId=${customerId}`)}
         />
       )}
       {currentPath === '/packages/search' && (
         <PackageSearchScreen 
           onBack={() => setCurrentPath('/')}
           onSelectPackage={(pkg) => setCurrentPath(`/packages/${pkg.packageId}`)}
+          onNavigateToAdd={(phone) => setCurrentPath(phone ? `/packages/new?phone=${encodeURIComponent(phone)}` : '/packages/new')}
         />
       )}
       {currentPath.startsWith('/packages/') && currentPath !== '/packages/search' && (
