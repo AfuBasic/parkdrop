@@ -47,8 +47,10 @@ export function SetupBanner({ missing, onFinishSetup, className }: SetupBannerPr
         className={cn(
           'flex-none inline-flex items-center justify-center',
           'min-h-[var(--pd-tap-min)] px-5 rounded-[var(--pd-chip-radius)]',
-          'bg-[var(--pd-blue)] text-white',
-          'text-[var(--pd-size-small)] font-extrabold leading-none',
+          // Size before colour: tailwind-merge treats every text-* class as
+          // one group, so a text-[size] listed after text-white silently
+          // deletes the white and the label comes out navy on blue.
+          'bg-[var(--pd-blue)] text-[var(--pd-size-small)] font-extrabold leading-none text-white',
           'hover:bg-[var(--pd-blue-hover)] active:scale-[0.97]',
           'transition-[transform,background-color] duration-[var(--pd-motion-fast)]',
           'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/35'
