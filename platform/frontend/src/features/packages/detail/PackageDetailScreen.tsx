@@ -1,22 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { PackageX, ArrowLeft } from 'lucide-react';
-import { usePackageDetail } from './hooks/usePackageDetail';
-import { PackageIdentityHeader } from './components/PackageIdentityHeader';
-import { PackageCustomerCard } from './components/PackageCustomerCard';
-import { PackagePickupCodeCard } from './components/PackagePickupCodeCard';
-import { PackagePaymentCard } from './components/PackagePaymentCard';
-import { PackagePhotoCard } from './components/PackagePhotoCard';
-import { PackageInfoCard } from './components/PackageInfoCard';
-import { PackageActivitySection } from './components/PackageActivitySection';
-import { PackageStickyActionBar } from './components/PackageStickyActionBar';
+import { usePackageDetail } from '@/features/packages/detail/hooks/usePackageDetail';
+import { PackageIdentityHeader } from '@/features/packages/detail/components/PackageIdentityHeader';
+import { PackageCustomerCard } from '@/features/packages/detail/components/PackageCustomerCard';
+import { PackagePickupCodeCard } from '@/features/packages/detail/components/PackagePickupCodeCard';
+import { PackagePaymentCard } from '@/features/packages/detail/components/PackagePaymentCard';
+import { PackagePhotoCard } from '@/features/packages/detail/components/PackagePhotoCard';
+import { PackageInfoCard } from '@/features/packages/detail/components/PackageInfoCard';
+import { PackageActivitySection } from '@/features/packages/detail/components/PackageActivitySection';
+import { PackageStickyActionBar } from '@/features/packages/detail/components/PackageStickyActionBar';
 import { ReturnPackageSheet } from '@/features/packages/lifecycle/components/ReturnPackageSheet';
 import { CancelPackageSheet } from '@/features/packages/lifecycle/components/CancelPackageSheet';
 import { PaymentRepository } from '@/offline/repositories/PaymentRepository';
 import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecycleRepository';
-import { connectivityManager } from '@/offline/sync/connectivity-manager';
 import type { PaymentMethod } from '@/offline/db/schema';
 import type { ReturnReason, CancelReason } from '@/features/packages/lifecycle/domain/lifecycle-reasons';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '@/features/packages/strings';
 
 export interface PackageDetailScreenProps {
   packageId: string;
@@ -31,15 +30,8 @@ export function PackageDetailScreen({
   pickupPointName,
   onBack,
 }: PackageDetailScreenProps) {
-  const [isOnline, setIsOnline] = useState(() => connectivityManager.getState() !== 'UNREACHABLE');
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
-
-  useEffect(() => {
-    return connectivityManager.subscribe((connState) => {
-      setIsOnline(connState !== 'UNREACHABLE');
-    });
-  }, []);
 
   const { data, isLoading, notFound } = usePackageDetail(packageId, businessId);
 
@@ -178,7 +170,6 @@ export function PackageDetailScreen({
       <PackageIdentityHeader
         pkg={pkg}
         onBack={onBack}
-        isOnline={isOnline}
         onMarkReturned={() => setIsReturnSheetOpen(true)}
         onCancelPackage={() => setIsCancelSheetOpen(true)}
       />
@@ -244,7 +235,6 @@ export function PackageDetailScreen({
         customer={customer}
         paymentSummary={paymentSummary}
         onConfirmReturn={handleConfirmReturn}
-        isOnline={isOnline}
       />
 
       <CancelPackageSheet
@@ -254,7 +244,6 @@ export function PackageDetailScreen({
         customer={customer}
         paymentSummary={paymentSummary}
         onConfirmCancel={handleConfirmCancel}
-        isOnline={isOnline}
       />
     </div>
   );
