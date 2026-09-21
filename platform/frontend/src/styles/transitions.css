@@ -1,0 +1,71 @@
+/* Route transition animations via CSS View Transitions API */
+@keyframes pd-slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-20%);
+    opacity: 0.85;
+  }
+}
+
+@keyframes pd-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pd-slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 1;
+  }
+}
+
+@keyframes pd-slide-in-left {
+  from {
+    transform: translateX(-20%);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: pd-slide-out-left 260ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  ::view-transition-new(root) {
+    animation: pd-slide-in-right 260ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  [data-nav-dir="back"]::view-transition-old(root),
+  :root[data-nav-dir="back"] ::view-transition-old(root) {
+    animation: pd-slide-out-right 260ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  [data-nav-dir="back"]::view-transition-new(root),
+  :root[data-nav-dir="back"] ::view-transition-new(root) {
+    animation: pd-slide-in-left 260ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
