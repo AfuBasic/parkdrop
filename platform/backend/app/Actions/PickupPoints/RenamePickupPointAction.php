@@ -55,7 +55,7 @@ class RenamePickupPointAction
 
         $parkName = isset($payload['park_name']) ? trim($payload['park_name']) : $pickupPoint->park_name;
 
-        return DB::transaction(function () use ($business, $pickupPoint, $name, $parkName, $actor) {
+        return DB::transaction(function () use ($business, $pickupPoint, $name, $parkName, $payload, $actor) {
             $locked = PickupPoint::where('id', $pickupPoint->id)
                 ->where('business_id', $business->id)
                 ->lockForUpdate()
