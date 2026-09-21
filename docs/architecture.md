@@ -249,3 +249,38 @@ Streaming CSV Response (No memory exhaustion)
 * **Separation of Workspace from Scope:** Switching report scope to "All pickup points" filters reporting data without mutating the user's active operational workspace.
 * **Safe CSV Streaming:** Streams directly to the browser; sanitizes cells against CSV formula injection (`=`, `+`, `-`, `@`, `\t`, `\r`); omits unnecessary PII (no customer phone, no pickup codes, no internal UUIDs).
 
+## Account, Security & Device Management Architecture (Build 22)
+
+```
+Account & Security UI (/more/account)
+├── AccountIdentitySection (Read-only verified email, editable display name)
+├── CurrentDeviceSection (Active session + offline authorization lease status)
+├── DeviceList (Registered devices, remote sessions, individual & bulk revocation)
+└── SignOutConfirmDialog (Multi-business pending mutation audit before sign-out)
+
+Server Architecture:
+API Routes (/api/v1/account/*)
+      ↓
+Sanctum Authenticated User Middleware
+      ↓
+AccountSecurityController
+├── GET /profile → Verified email, display name, active workplace memberships
+├── PATCH /profile → Validated display name update (2-100 characters)
+├── GET /devices → User's registered devices with X-Device-UUID match flag
+├── POST /devices/{id}/revoke → Revoke single user device (IDOR protected)
+└── POST /devices/revoke-others → Revoke all other registered user devices
+      ↓
+Domain Actions
+├── UpdateAccountProfileAction
+├── RevokeUserDeviceAction (Marks user_devices.revoked_at & devices.is_revoked = true)
+└── RevokeOtherDevicesAction
+```
+
+**Architecture Rules:**
+* **Passwordless Only:** Strictly no password, PIN, SMS OTP, or TOTP fields. Account authentication uses universal email OTP.
+* **Dual Device Table Synchronization:** Revoking a `user_device` immediately marks `devices.is_revoked = true` so any future sync push from that device is blocked by `PushMutationsAction` with `DEVICE_REVOKED`.
+* **Calm Offline Leases:** Offline access expiry is communicated in calm, natural language ("Available until Tomorrow at 2:30 PM") rather than an alarming seconds countdown timer.
+* **Non-Destructive Sign-Out:** Signing out clears the active local session and authorization lease but **never** deletes unsynced local mutations. If offline work is pending across any business, the user is warned and given the choice to sync now or keep the local queue safe.
+* **Multi-User Browser Isolation:** Sign-out cleans up active React Query caches, Reverb listeners, and active workspace state so that a second user signing in on the same browser device never sees cached data from the prior user.
+
+
