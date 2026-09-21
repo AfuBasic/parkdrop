@@ -44,6 +44,11 @@ export async function getValidOfflineAuthorization(): Promise<LocalAuthorization
   return auth;
 }
 
+export async function getLocalAuthorization(): Promise<LocalAuthorization | null> {
+  const auth = await db.authorization.get('current');
+  return auth || null;
+}
+
 export async function clearOfflineAuthorization(): Promise<void> {
   await db.authorization.delete('current');
 }
