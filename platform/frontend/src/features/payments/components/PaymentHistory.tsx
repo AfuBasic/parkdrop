@@ -1,6 +1,6 @@
 import { AlertTriangle, Clock } from 'lucide-react';
 import type { LocalPayment } from '@/offline/db/schema';
-import { PAYMENT_METHOD_LABELS } from '../domain/payment-summary';
+import { PAYMENT_METHOD_LABELS } from '@/features/payments/domain/payment-summary';
 import { formatMoney } from '@/lib/formatters';
 
 interface PaymentRowProps {
