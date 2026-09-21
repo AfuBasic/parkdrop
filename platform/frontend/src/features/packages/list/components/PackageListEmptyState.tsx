@@ -1,5 +1,5 @@
 import { Package, Plus } from 'lucide-react';
-import type { PackageStatusFilter } from '../package-list-types';
+import type { PackageStatusFilter } from '@/features/packages/list/package-list-types';
 
 interface PackageListEmptyStateProps {
   status: PackageStatusFilter;
