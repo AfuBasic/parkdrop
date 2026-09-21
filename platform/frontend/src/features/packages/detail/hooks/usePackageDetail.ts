@@ -127,15 +127,7 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
         });
       }
 
-      // 5. Sync status
-      if (pkg.sync_status === 'SYNCED' && pkg.server_received_at) {
-        timeline.push({
-          id: `sync-${pkg.id}`,
-          type: 'SYNCED',
-          title: 'Synchronized with cloud',
-          timestamp: pkg.server_received_at,
-        });
-      }
+
 
       // Sort timeline newest first
       timeline.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
