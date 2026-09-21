@@ -1,90 +1,166 @@
-import { useState } from 'react';
-import { Camera, X, Image as ImageIcon } from 'lucide-react';
+import { useState, useRef } from 'react';
+import type { ChangeEvent } from 'react';
+import { Camera, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { Dialog, DialogContent } from '@/design-system';
+import { db } from '@/offline/db/database';
 import type { LocalPackageMedia } from '@/offline/db/schema';
+import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
+import { PackagesStrings } from '../strings';
 
-interface PackagePhotoCardProps {
+export interface PackagePhotoCardProps {
+  packageId: string;
+  businessId: number;
   media: LocalPackageMedia | null;
   mediaPreviewUrl: string | null;
 }
 
 export function PackagePhotoCard({
+  packageId,
+  businessId,
   media,
   mediaPreviewUrl,
 }: PackagePhotoCardProps) {
-  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(mediaPreviewUrl);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (!mediaPreviewUrl) {
-    return (
-      <div className="bg-surface-default rounded-[var(--radius-2xl)] border border-border-subtle p-5 shadow-sm flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-surface-active flex items-center justify-center text-text-muted">
-            <Camera className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-text-primary text-sm">Parcel photo</h3>
-            <p className="text-xs text-text-muted">No parcel photo attached</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handlePhotoSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    try {
+      const processedBlob = await processPackagePhoto(file, {
+        maxLongEdge: 1024,
+        quality: 0.7,
+        outputFormat: 'image/jpeg',
+      });
+
+      const url = URL.createObjectURL(processedBlob);
+      setPhotoPreview(url);
+
+      await db.packageMedia.put({
+        id: crypto.randomUUID(),
+        business_id: businessId,
+        package_id: packageId,
+        local_blob: processedBlob,
+        status: 'PENDING_UPLOAD',
+        attempt_count: 0,
+        created_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.error('Failed to attach package photo:', err);
+    } finally {
+      setIsProcessing(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoPreview(null);
+    try {
+      await db.packageMedia.where('package_id').equals(packageId).delete();
+    } catch (err) {
+      console.error('Failed to remove photo:', err);
+    }
+  };
 
   return (
     <>
-      <div className="bg-surface-default rounded-[var(--radius-2xl)] border border-border-subtle p-5 shadow-sm flex flex-col gap-3">
+      <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-4 shadow-xs flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-text-secondary" />
-            <h3 className="font-bold text-text-primary text-sm">Parcel photo</h3>
+            <ImageIcon className="w-5 h-5 text-[var(--pd-blue)]" />
+            <h3 className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">
+              {PackagesStrings.photoCardTitle}
+            </h3>
           </div>
-          {media?.status === 'SYNCED' && (
-            <span className="text-[11px] font-medium text-status-success-text bg-status-success-bg px-2 py-0.5 rounded-full border border-status-success-border">
-              Cloud synced
-            </span>
-          )}
-          {media?.status === 'PENDING_UPLOAD' && (
-            <span className="text-[11px] font-medium text-action-primary bg-action-primary/10 px-2 py-0.5 rounded-full border border-action-primary/20">
-              Pending upload
+
+          {photoPreview && (
+            <span className="text-[13px] font-extrabold text-[#15803D] bg-[#DCFCE7] px-2.5 py-0.5 rounded-full border border-[#86EFAC]">
+              {PackagesStrings.photoAddedStatus}
             </span>
           )}
         </div>
 
-        {/* Thumbnail Preview with tap to zoom */}
-        <button
-          type="button"
-          onClick={() => setIsOpenModal(true)}
-          className="relative w-full h-44 rounded-xl overflow-hidden bg-surface-active border border-border-subtle group cursor-pointer"
-        >
-          <img
-            src={mediaPreviewUrl}
-            alt="Parcel visual record"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
-            Tap to view full photo
-          </div>
-        </button>
-      </div>
+        {/* Hidden Camera Input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={handlePhotoSelect}
+        />
 
-      {/* Lightbox Modal */}
-      {isOpenModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="relative max-w-lg w-full max-h-[90vh] flex flex-col items-center">
+        {!photoPreview ? (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing}
+            className="w-full min-h-[52px] rounded-[var(--pd-field-radius)] border border-dashed border-[var(--pd-line)] bg-[var(--pd-page)] flex items-center justify-center gap-2 text-[16px] font-extrabold text-[var(--pd-blue)] hover:bg-[var(--pd-tint)] active:scale-98 transition-transform cursor-pointer"
+          >
+            {isProcessing ? (
+              <Loader2 className="w-5 h-5 animate-spin text-[var(--pd-blue)]" />
+            ) : (
+              <Camera className="w-5 h-5 text-[var(--pd-blue)]" strokeWidth={2.5} />
+            )}
+            <span>{PackagesStrings.addPhotoAction}</span>
+          </button>
+        ) : (
+          <div className="flex flex-col gap-2">
             <button
               type="button"
-              onClick={() => setIsOpenModal(false)}
-              className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white rounded-full bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
-              aria-label="Close image preview"
+              onClick={() => setIsZoomOpen(true)}
+              className="relative w-full h-44 rounded-xl overflow-hidden bg-[var(--pd-page)] border border-[var(--pd-line)] cursor-pointer group"
             >
-              <X className="w-6 h-6" />
+              <img
+                src={photoPreview}
+                alt="Package"
+                className="w-full h-full object-cover group-hover:scale-102 transition-transform"
+              />
             </button>
-            <img
-              src={mediaPreviewUrl}
-              alt="Parcel full photo"
-              className="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl border border-white/10"
-            />
+
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-blue)] hover:underline active:scale-95"
+              >
+                {PackagesStrings.retakePhotoAction}
+              </button>
+              <button
+                type="button"
+                onClick={handleRemovePhoto}
+                className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-bad)] hover:underline active:scale-95"
+              >
+                {PackagesStrings.removePhotoAction}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+      </div>
+
+      {/* Tap-to-zoom modal */}
+      {photoPreview && (
+        <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
+          <DialogContent className="max-w-lg p-2 bg-black border-none rounded-2xl overflow-hidden flex flex-col items-center">
+            <div className="relative w-full max-h-[80vh] flex items-center justify-center">
+              <img src={photoPreview} alt="Package full" className="max-w-full max-h-[75vh] object-contain rounded-lg" />
+              <button
+                type="button"
+                onClick={() => setIsZoomOpen(false)}
+                className="absolute top-2 right-2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
