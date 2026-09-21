@@ -6,8 +6,8 @@ import {
   type ReturnReason,
   RETURN_REASONS,
 } from '@/features/packages/lifecycle/domain/lifecycle-reasons';
-import { LifecycleReasonField } from './LifecycleReasonField';
-import { ExistingPaymentWarning } from './ExistingPaymentWarning';
+import { LifecycleReasonField } from '@/features/packages/lifecycle/components/LifecycleReasonField';
+import { ExistingPaymentWarning } from '@/features/packages/lifecycle/components/ExistingPaymentWarning';
 
 interface ReturnPackageSheetProps {
   isOpen: boolean;
