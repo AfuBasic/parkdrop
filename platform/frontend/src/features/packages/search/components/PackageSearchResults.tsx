@@ -1,4 +1,4 @@
-import type { PackageSearchResult } from '../package-search-types';
+import type { PackageSearchResult } from '@/features/packages/search/package-search-types';
 import { PackageSearchResultRow } from './PackageSearchResultRow';
 
 interface PackageSearchResultsProps {
