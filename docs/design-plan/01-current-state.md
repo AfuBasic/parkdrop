@@ -312,71 +312,95 @@ renders.
 
 ### 3.1 How navigation actually works today
 
-`src/router.tsx` defines a TanStack Router tree with three shell layouts:
+**A correction, recorded honestly.** Part-way through this audit the working
+tree changed underneath it. When Phase 1 began, `src/App.tsx` carried an
+uncommitted, syntactically invalid edit — two `import` statements sitting in
+the middle of the `AppContent()` function body — which was the residue of the
+interrupted Home redesign session, and which was mid-migration towards the
+TanStack Router. That edit was reverted by someone or something else during
+this session. This audit was not the cause; it writes no application code.
 
-- `bleedShellRoute` — bottom nav visible, screen paints edge to edge. Home only.
-- `mainShellRoute` — bottom nav visible, content constrained. Packages,
-  Customers, More.
-- `taskShellRoute` — bottom nav hidden. Everything else.
+The state described below is the **committed state on `dev`**, re-verified
+after the revert. It is the state a new reader will find.
 
-`FINDING (blocking)` `src/App.tsx` is currently **syntactically invalid** and
-uncommitted. Lines 106–107 place two `import` statements in the middle of the
-`AppContent()` function body:
+Navigation is **not** driven by a router. `src/routes/AuthenticatedApp.tsx`
+holds `const [currentPath, setCurrentPath] = React.useState('/')` and renders
+every signed-in screen through conditional string comparison against that one
+variable. Every navigation is a `setCurrentPath('/some/path')` call. The
+browser URL never changes after sign-in.
 
-```
-  }
+`FINDING (structural)` `src/router.tsx` exists, is complete, defines a full
+TanStack Router tree with three shell layouts (`bleedShellRoute` for Home,
+`mainShellRoute` for Packages/Customers/More, `taskShellRoute` for everything
+else), and is **imported by nothing**. `grep` for `@/router` across the whole
+`src` tree returns no hits outside the file itself. It was committed in
+`74a1d55` ("Create TanStack router configuration and route tree") and never
+wired in.
 
-import { RouterProvider } from '@tanstack/react-router';
-import { router } from '@/router';
+`FINDING (dead screen)` Because the router is the only thing that imports it,
+`src/features/more/MoreScreen.tsx` is also dead. The Settings screen the user
+actually sees is a ~230-line inline copy living inside
+`AuthenticatedApp.tsx`. The two are near-identical in content and copy — the
+findings about More's wording and type sizes apply to both — but only the
+inline one runs. Editing `MoreScreen.tsx` changes nothing the user sees.
 
-  // Authenticated state (active session).
-  return <RouterProvider router={router} />;
-```
+`FINDING` `docs/app-shell/00-diagnosis.md` (dated 2026-09-21) is therefore
+**still accurate**, not stale as a first read suggests. Its headline finding —
+"No real router. State-driven screens only. `@tanstack/react-router` is
+installed but never used" — holds today, with the single amendment that the
+router *file* now exists. Its four listed consequences all still apply:
 
-ES modules require imports at module top level. The application does not build
-in this state. This is the visible residue of the interrupted Home redesign
-session. It is left untouched by this audit, which is documentation-only.
+1. The URL never changes, so `/packages/PD-8K42Q` cannot be opened directly.
+2. Browser and Android hardware **Back exit the app** instead of going back one
+   screen. Nothing is pushed onto `window.history`, so `popstate` never fires.
+3. No deep links. A package cannot be shared or bookmarked.
+4. Screens that opt out of the standard shell lose the logo entirely.
 
-`FINDING` `src/routes/AuthenticatedApp.tsx` still exists and still contains the
-*old* navigation system — a `const [currentPath, setCurrentPath] =
-React.useState('/')` string-matching pseudo-router that conditionally renders
-every screen, plus its own duplicate copy of the whole More/settings menu. It
-is lazily imported by `App.tsx` but no longer reachable through the router
-tree. Two complete navigation systems and two complete settings menus exist in
-the codebase simultaneously.
+Consequence 2 is the one that matters most for the audience this plan is
+written for, and it is dealt with in `02-design-plan.md`.
 
-`FINDING` `docs/app-shell/00-diagnosis.md` is dated 2026-09-21 and states as
-"Confirmed" that there is no real router and that `@tanstack/react-router` is
-installed but unused. That was true when written; it is no longer true.
-`router.tsx` exists and is wired. The document is stale and will mislead the
-next reader.
+### 3.2 Screens and the path strings that reach them
 
-### 3.2 Routes
+These are internal state strings, not URLs. They are listed because they are
+the only map of the app's structure that exists.
 
-| Path | Screen | Shell | Bottom nav | Notes |
-|---|---|---|---|---|
-| `/` | Home | bleed | yes | Blue header, sheet, tiles |
-| `/packages` | Packages list | main | yes | `?status=`, `?pay=`, `?age=` |
-| `/packages/new` | Add package | task | no | `?customerId=`, `?phone=` |
-| `/packages/search` | Find package | task | no | |
-| `/packages/$packageId` | Package detail | task | no | |
-| `/customers` | Customers list | main | yes | |
-| `/customers/$customerId` | Customer detail | task | no | |
-| `/more` | Settings & More | main | yes | |
-| `/more/attention` | Attention | task | no | |
-| `/more/reports` | Daily operations | task | no | owner/manager only |
-| `/more/sms-credits` | SMS credits | task | no | |
-| `/more/sms-credits/buy` | Buy SMS credits | task | no | online only |
-| `/more/staff` | Staff | task | no | owner/manager only |
-| `/more/business` | Business details | task | no | owner/manager only |
-| `/more/account` | Account & Security | task | no | |
-| `/more/help` | Help & Guides | task | no | |
-| `/more/about` | About ParkDrop | task | no | |
-| `/home-preview` | Dev harness | none | no | `import.meta.env.DEV` only |
-| `/theme` | Theme demo | none | no | not dev-gated |
+| Path string | Screen | Bottom nav | Notes |
+|---|---|---|---|
+| `/` | Home | yes (`bleed`) | Blue header, sheet, tiles |
+| `/packages` | Packages list | yes | |
+| `/packages/new` | Add package | no (`fullScreenTask`) | |
+| `/packages/search` | Find package | no | |
+| `/packages/{id}` | Package detail | no (`fullScreenTask`) | |
+| `/customers` | Customers list | yes | |
+| `/customers/{id}` | Customer detail | yes | |
+| `/more` | Settings & More (inline) | yes | |
+| `/more/attention`, `/attention` | Attention | yes | two aliases |
+| `/more/reports` | Daily operations | yes | owner/manager only |
+| `/more/sms-credits` | SMS credits | yes | |
+| `/more/sms-credits/buy` | Buy SMS credits | yes | online only |
+| `/more/staff` | Staff | yes | owner/manager only |
+| `/more/business` | Business details | yes | owner/manager only |
+| `/more/account` | Account & Security | yes | |
+| `/more/help`, `/help` | Help & Guides | yes | two aliases |
+| `/more/about` | About ParkDrop | yes | |
 
-`FINDING` `/theme` is not gated on `DEV`, unlike `/home-preview`. It is a
-developer page reachable in production.
+Two real URLs are checked directly against `window.location.pathname` in
+`App.tsx`, before the auth provider runs:
+
+| URL | Screen | Gating |
+|---|---|---|
+| `/home-preview` | Home state harness | `import.meta.env.DEV` |
+| `/theme` | Theme demo | **none** |
+
+`FINDING` `/theme` is not dev-gated, unlike `/home-preview`. It is a developer
+page reachable in production by anyone who types the URL.
+
+`FINDING` Only Add package and Package detail hide the bottom navigation
+(`fullScreenTask`). Every `/more/*` sub-screen keeps it, so a user sitting in
+Buy SMS Credits still sees Home / Packages / Customers / More underneath —
+five ways out of a payment flow. `router.tsx`, had it been wired, would have
+put all of those on `taskShellRoute` and hidden the bar. The unwired file and
+the live app disagree about the structure of the app.
 
 ### 3.3 Pre-router states (before any route renders)
 
@@ -997,7 +1021,7 @@ Ordered by how likely a novice user is to hit them:
 | `.agents/skills/parkdrop-mobile-design/SKILL.md` | Mobile-first order; 44/48px targets; 52–56px primary buttons; semantic tokens only; offline normal; keyboard-aware forms; no hover-only controls; 10 QA questions | Still the governing intent. The Language B screens fail several of its own rules. |
 | `references/mobile-ui-rules.md` | Design widths; touch table; nav architecture; input modes per field type; thumb ergonomics; offline copy; error anatomy; token table; type scale; composition; illustration; list rows; 10 QA questions; commit discipline | Font instruction (`Inter`) is stale. Nav architecture is stale. 12px caption floor conflicts with the 15px floor. Otherwise sound. |
 | `references/parkdrop-mobile-patterns.md` | Per-screen ASCII anatomies for auth, OTP, PIN, unlock, home, list, create, detail, lookup, SMS credits, offline, loading, toasts, sheets, badges, more, bottom nav, transitions, a11y baseline, token quick reference | **The most stale document in the repository.** Uses "Released" where the product says "Collected"; maps Waiting→Warning where the design system says Waiting→Neutral; shows an SMS checkbox on the create screen that no longer exists; specifies a low-credit threshold of `<10` against an implemented `1–4`; specifies auth order email→OTP→name→PIN→pickup, missing the business phone step; and prescribes swipe-to-dismiss bottom sheets. |
-| `docs/app-shell/00-diagnosis.md` | "Confirmed" that no router exists; plan to migrate to TanStack Router; the staff-phone gap decision | Router migration has since happened. The document is stale but its **staff-phone decision remains live and correct**: show the name only when no phone is present; never invent a number. |
+| `docs/app-shell/00-diagnosis.md` | "Confirmed" that no router exists; plan to migrate to TanStack Router; the staff-phone gap decision | **Still accurate.** The route tree was written (`router.tsx`) but never wired in, so every consequence the document lists still holds — including Back exiting the app. Its **staff-phone decision remains live and correct**: show the name only when no phone is present; never invent a number. |
 | `docs/usability/add-package-test.md` | A field test protocol: 5 real attendants, budget Android, bright sunlight, flaky 3G, 5 packages each, target <12s returning / <25s new, zero "what do I do next?" moments | An excellent, live document. It is a *plan*, not results. There is no record in the repository that it was ever run. |
 | `docs/offline/*`, `docs/production/*`, `docs/runbooks/*` | Sync protocol, local database, security, deployment, observability, release checklist, smoke tests, incident runbooks | Engineering constraints. Design-relevant parts are captured in §1 above. |
 
@@ -1014,7 +1038,9 @@ Recorded here without recommendation.
 
 ### Broken or wrong
 
-1. `src/App.tsx` does not compile — imports inside a function body, uncommitted.
+1. **Back exits the app.** No router is wired; navigation is a state string, so
+   nothing is pushed onto browser history and the Android hardware Back button
+   leaves ParkDrop from any screen, including mid-way through Add package.
 2. Collected / Returned / Cancelled banners display hard-coded `'Today'` and
    `'8:10 PM'` instead of real timestamps.
 3. `HelpScreen` describes a package ID format, a release flow and a navigation
@@ -1027,8 +1053,11 @@ Recorded here without recommendation.
 
 ### Duplicated or dead
 
-8. `AuthenticatedApp.tsx` — an entire second navigation system and a second
-   settings menu, still in the tree.
+8. `router.tsx` — a complete, correct route tree that nothing imports, and
+   `MoreScreen.tsx` — the extracted Settings screen that only the dead router
+   references, shadowed by a near-identical inline copy in
+   `AuthenticatedApp.tsx`. Two navigation structures and two settings menus
+   exist; the *newer, better-structured* one is the dead one.
 9. `ReleasePackageSheet`, `RecordPaymentSheet`, `PaymentHistory`,
    `PaymentSummaryCard`, `PackageActionSlots` — unreferenced, and encoding a
    *different* release policy from the live one.
