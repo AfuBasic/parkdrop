@@ -62,10 +62,26 @@ class CreatePickupPointAction
                 throw new DomainException('DUPLICATE_NAME');
             }
 
+            $rawPhone = isset($payload['contact_phone']) ? trim($payload['contact_phone']) : null;
+            $normalizedContactPhone = null;
+            if ($rawPhone) {
+                $digits = preg_replace('/\D/', '', $rawPhone);
+                if (str_starts_with($digits, '0') && strlen($digits) === 11) {
+                    $normalizedContactPhone = '234'.substr($digits, 1);
+                } elseif (str_starts_with($digits, '234') && strlen($digits) === 13) {
+                    $normalizedContactPhone = $digits;
+                } elseif (strlen($digits) === 10) {
+                    $normalizedContactPhone = '234'.$digits;
+                }
+            }
+
             $pickupPoint = PickupPoint::create([
                 'business_id' => $business->id,
                 'name' => $name,
                 'park_name' => $parkName,
+                'contact_phone' => $normalizedContactPhone,
+                'contact_phone_confirmed_at' => $normalizedContactPhone ? now() : null,
+                'contact_phone_source' => $normalizedContactPhone ? 'entered' : null,
                 'status' => 'active',
             ]);
 
