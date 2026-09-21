@@ -9,14 +9,24 @@ use App\Models\User;
 use App\Services\Cloudinary\CloudinaryMediaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 it('creates an upload intent and generates a signature', function () {
-    $business = Business::factory()->create();
+    $business = Business::create([
+        'public_id' => (string) Str::uuid(),
+        'name' => 'Media Test Business',
+    ]);
     $user = User::factory()->create();
-    $customer = Customer::factory()->create(['business_id' => $business->id]);
-    
+    $customer = Customer::create([
+        'business_id' => $business->id,
+        'name' => 'Media Customer',
+        'phone_display' => '08012345678',
+        'phone_normalized' => '+2348012345678',
+        'version' => 1,
+    ]);
+
     $package = Package::create([
         'id' => Str::uuid(),
         'business_id' => $business->id,
@@ -42,7 +52,7 @@ it('creates an upload intent and generates a signature', function () {
         ]);
 
     $action = new CreateUploadAuthorizationAction($mockCloudinary);
-    
+
     $response = $action->execute($package->id, $mediaId, $business->id, $user->id);
 
     expect($response)->toHaveKey('signature')
