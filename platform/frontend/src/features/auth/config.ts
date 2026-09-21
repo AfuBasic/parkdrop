@@ -44,3 +44,16 @@ export const SUPPORT = {
   phoneNumber: '+2348000000000',
   email: 'support@parkdrop.com.ng',
 } as const;
+
+/**
+ * The marketing site, a separate app on its own domain. The Privacy Notice
+ * lives there as a static page, not in this bundle, so the link is always
+ * absolute — a same-origin "/privacy.html" would 404 once the two are split
+ * across domains.
+ *
+ * Override at build time with VITE_MARKETING_URL.
+ */
+export const MARKETING_URL =
+  import.meta.env?.VITE_MARKETING_URL || 'https://parkdrop.com.ng';
+
+export const PRIVACY_NOTICE_URL = `${MARKETING_URL}/privacy.html`;
