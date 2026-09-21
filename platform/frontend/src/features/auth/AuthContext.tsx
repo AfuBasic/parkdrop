@@ -19,7 +19,7 @@ interface AuthContextValue {
   state: AuthState;
   user: AuthUser | null;
   business: AuthBusiness | null;
-  role: string | null;
+  role?: string | null;
   deviceMeta: DeviceMeta | null;
   rememberedIdentity: RememberedIdentity | null;
   setAuthenticatedUser: (user: AuthUser, business: AuthBusiness | null, role?: string | null) => Promise<void>;
