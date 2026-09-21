@@ -28,7 +28,7 @@
     }
     /* Structure */
     body {
-        background-color: #F8FBFF;
+        background-color: #EFF6FF;
         margin: 0 !important;
         padding: 0 !important;
         width: 100% !important;
@@ -36,81 +36,86 @@
     }
     .email-wrapper {
         width: 100%;
-        background-color: #F8FBFF;
+        background-color: #EFF6FF;
         padding: 40px 20px;
     }
     .email-container {
         max-width: 560px;
         margin: 0 auto;
         background-color: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
         overflow: hidden;
     }
-    .email-header {
-        padding: 40px 40px 20px 40px;
+    .email-banner {
+        padding: 28px 40px;
+        background-color: #2563EB;
         text-align: left;
     }
-    .email-logo {
-        height: 32px;
-        width: auto;
-    }
     .email-body {
-        padding: 0 40px 40px 40px;
+        padding: 40px;
     }
     .email-footer {
         max-width: 560px;
         margin: 0 auto;
-        padding: 30px 20px;
+        padding: 28px 20px;
         text-align: center;
-        color: #64748B;
+        color: #475569;
         font-size: 13px;
-        line-height: 1.5;
+        font-weight: 600;
+        line-height: 1.6;
     }
     /* Mobile Responsive */
     @media screen and (max-width: 600px) {
         .email-wrapper {
-            padding: 20px 16px !important;
+            padding: 20px 12px !important;
         }
-        .email-header {
-            padding: 30px 24px 20px 24px !important;
+        .email-banner {
+            padding: 22px 24px !important;
         }
         .email-body {
-            padding: 0 24px 30px 24px !important;
+            padding: 28px 24px !important;
         }
         .email-footer {
-            padding: 24px 16px !important;
+            padding: 22px 16px !important;
         }
     }
 </style>
 </head>
-<body style="background-color: #F8FBFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0;">
-    
+<body style="background-color: #EFF6FF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0;">
+
     <!-- Preheader Text (Invisible) -->
-    <div style="display: none; max-height: 0px; overflow: hidden; opacity: 0; font-size: 1px; line-height: 1px; color: #F8FBFF;">
+    <div style="display: none; max-height: 0px; overflow: hidden; opacity: 0; font-size: 1px; line-height: 1px; color: #EFF6FF;">
         @yield('preheader', 'A message from ParkDrop.')
         &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
     </div>
 
-    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="email-wrapper" style="background-color: #F8FBFF;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" class="email-wrapper" style="background-color: #EFF6FF;">
         <tr>
             <td align="center" valign="top">
-                
+
                 <!-- Main Card -->
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="email-container" style="max-width: 560px; background-color: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 16px;">
-                    <!-- Header / Logo -->
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="email-container" style="max-width: 560px; background-color: #FFFFFF; border-radius: 20px;">
+                    <!-- Blue banner / logo -->
                     <tr>
-                        <td align="left" class="email-header" style="padding: 40px 40px 20px 40px;">
+                        <td align="left" class="email-banner" style="padding: 28px 40px; background-color: #2563EB;">
                             <a href="{{ config('app.frontend_url', 'https://parkdrop.com.ng') }}" target="_blank" style="text-decoration: none;">
-                                <img src="{{ asset('images/parkdrop-logo.png') }}" alt="ParkDrop" border="0" class="email-logo" style="height: 32px; width: auto; display: block;">
+                                <table border="0" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td valign="middle" style="background-color: #FFFFFF; border-radius: 9px; width: 34px; height: 34px; text-align: center; line-height: 34px;">
+                                            <img src="{{ asset('images/parkdrop-icon-only.png') }}" alt="" border="0" width="22" height="22" style="width: 22px; height: 22px; display: inline-block; vertical-align: middle;">
+                                        </td>
+                                        <td valign="middle" style="padding-left: 11px; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; color: #FFFFFF;">
+                                            ParkDrop
+                                        </td>
+                                    </tr>
+                                </table>
                             </a>
                         </td>
                     </tr>
-                    
+
                     <!-- Content -->
                     <tr>
-                        <td align="left" class="email-body" style="padding: 0 40px 40px 40px;">
+                        <td align="left" class="email-body" style="padding: 40px;">
                             @yield('content')
                         </td>
                     </tr>
@@ -119,10 +124,11 @@
                 <!-- Footer -->
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px;">
                     <tr>
-                        <td align="center" class="email-footer" style="padding: 30px 20px; color: #64748B; font-size: 13px; line-height: 1.5;">
-                            ParkDrop<br>
-                            Simple parcel management for pickup points.<br>
-                            <a href="https://parkdrop.com.ng" style="color: #64748B; text-decoration: none;">parkdrop.com.ng</a>
+                        <td align="center" class="email-footer" style="padding: 28px 20px; color: #475569; font-size: 13px; font-weight: 600; line-height: 1.6;">
+                            ParkDrop &mdash; simple package pickup for local businesses.<br>
+                            <a href="https://parkdrop.com.ng" style="color: #2563EB; text-decoration: none; font-weight: 700;">parkdrop.com.ng</a>
+                            &nbsp;&middot;&nbsp;
+                            <a href="https://parkdrop.com.ng/privacy.html" style="color: #2563EB; text-decoration: none; font-weight: 700;">Privacy Notice</a>
                         </td>
                     </tr>
                 </table>
