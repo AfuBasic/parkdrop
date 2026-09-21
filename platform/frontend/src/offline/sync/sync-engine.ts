@@ -163,6 +163,26 @@ export class SyncEngine {
                 sync_status: 'SYNCED',
               });
             }
+
+            // Persist LocalConflict record for Attention Center
+            await db.conflicts.put({
+              conflict_id: crypto.randomUUID(),
+              mutation_id: result.mutation_id,
+              entity_type: 'package',
+              entity_id: packageId,
+              type: (result.metadata?.error as string) || 'LIFECYCLE_CONFLICT',
+              local_summary: {
+                operation: originalMutation.operation,
+                attempted_action: originalMutation.operation === 'RETURN_PACKAGE' ? 'RETURN' : 'CANCEL',
+              },
+              server_summary: {
+                current_status: canonicalStatus,
+                message: (result.metadata?.message as string) || `Package was already ${canonicalStatus.toLowerCase()} on another device.`,
+              },
+              created_at: new Date().toISOString(),
+              resolved_at: null,
+              status: 'UNRESOLVED',
+            });
           }
         }
 
