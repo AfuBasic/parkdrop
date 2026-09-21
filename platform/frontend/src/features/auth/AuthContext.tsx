@@ -228,10 +228,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+const DEFAULT_AUTH_CONTEXT: AuthContextValue = {
+  state: 'unknown',
+  user: null,
+  business: null,
+  role: null,
+  deviceMeta: null,
+  rememberedIdentity: null,
+  setAuthenticatedUser: async () => {},
+  unlock: () => {},
+  logout: async () => {},
+  forgetRememberedIdentity: async () => {},
+  refreshSession: async () => {},
+};
+
 export function useAuth() {
   const context = React.useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return context ?? DEFAULT_AUTH_CONTEXT;
 }
+
