@@ -76,9 +76,13 @@ export function AppShell({ children, currentPath = "/", onNavigate, bleed = fals
         className={cn(
           "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
           "flex items-stretch justify-around gap-2 px-2 pt-1.5",
-          "min-h-[var(--pd-nav-h)] pb-safe",
+          "min-h-[var(--pd-nav-h)]",
           "border-t border-[var(--pd-line-2)] bg-white"
         )}
+        // `pb-safe` was never a real utility in this project, so the bar sat
+        // under the gesture bar on phones that have one. Read the inset
+        // directly instead.
+        style={{ paddingBottom: "max(env(safe-area-inset-bottom), 6px)" }}
       >
         {navConfig.map((item) => (
           <NavItem
