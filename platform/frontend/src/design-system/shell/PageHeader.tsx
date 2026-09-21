@@ -1,6 +1,6 @@
 import * as React from "react"
 import { ChevronLeft } from "lucide-react"
-import { Button } from "../components/Button"
+import { Button } from "@/design-system/components/Button"
 import { cn } from "@/lib/utils"
 
 interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
