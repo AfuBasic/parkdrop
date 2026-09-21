@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Package, Search } from 'lucide-react';
+import { Logo } from '@/features/auth/components/Logo';
 import { PackageSearchInput } from '@/features/packages/search/components/PackageSearchInput';
 import { PackageSearchResults } from '@/features/packages/search/components/PackageSearchResults';
 import { usePackageSearch } from '@/features/packages/search/hooks/usePackageSearch';
@@ -78,6 +79,7 @@ export function PackageSearchScreen({
               Find package
             </h1>
           </div>
+          <Logo tone="light" markOnly />
         </div>
 
         {/* Operational Search Input */}
