@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../db/database';
-import { connectivityManager, type ConnectivityState } from '../sync/connectivity-manager';
+import { db } from '@/offline/db/database';
+import { connectivityManager, type ConnectivityState } from '@/offline/sync/connectivity-manager';
 
 export interface SyncUIState {
   connectivity: ConnectivityState;
