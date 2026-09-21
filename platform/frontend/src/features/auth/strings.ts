@@ -151,31 +151,4 @@ export const AuthStrings = {
   resetPinTitle: 'Reset your PIN',
   newPinTitle: 'Choose a new PIN',
   newPinSubtitle: '4 numbers you will remember.',
-
-  // Privacy sheet
-  // The wording follows privacy.html on the marketing site. Keep the two in
-  // step: this sheet is the same notice, said in the plain words this
-  // audience reads, so nobody has to leave setup to find out what we keep.
-  privacyTitle: 'What we keep.',
-  privacyIntro:
-    'ParkDrop helps a pickup point record packages and tell customers they have arrived. Here is what that means for your information.',
-  privacyRecordedTitle: 'What we record',
-  privacyRecordedIntro: 'When you add a package, we save:',
-  privacyRecordedItems: [
-    'The customer name and phone number',
-    'The amount and whether it is paid',
-    'When the package arrived and when it was collected',
-    'A photo of the package, if you take one',
-  ],
-  privacyUseTitle: 'What we use it for',
-  privacyUseIntro: 'Only to run the pickup:',
-  privacyUseItems: [
-    'To make the package ID and pickup code',
-    'To text the customer when their package arrives',
-    'To help you find the package again later',
-    'To keep a record of collected packages',
-  ],
-  privacyContactTitle: 'Questions',
-  privacyContactBody: 'Tap "Need help?" on any screen and a real person will answer.',
-  privacyClose: 'Close',
 } as const;
