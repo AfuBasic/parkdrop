@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap');
 @import "tailwindcss";
+@import "./styles/tokens.css";
 
 @theme {
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
@@ -328,6 +329,55 @@
     margin: 0;
     padding: 0;
   }
+}
+
+/* ── Auth flow shared motion ──────────────────────────────────────────────
+   Declared once here rather than in an inline <style> inside a component, so
+   the rules are not re-injected on every render. Every one of these is an
+   answer to a tap, and all of them stop under prefers-reduced-motion. */
+
+@keyframes pd-caret-blink {
+  50% { opacity: 0; }
+}
+
+@keyframes pd-shake {
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+@keyframes pd-check-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@utility pd-caret {
+  animation: pd-caret-blink 1s steps(1) infinite;
+}
+
+@utility pd-shake {
+  animation: pd-shake 320ms ease-in-out;
+}
+
+@utility pd-check-pop {
+  animation: pd-check-pop 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-caret,
+  .pd-shake,
+  .pd-check-pop {
+    animation: none !important;
+  }
+}
+
+/* Tabular figures for anything the user reads back digit by digit:
+   phone numbers, codes, PINs and countdowns. */
+@utility pd-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 @utility dot-grid {
