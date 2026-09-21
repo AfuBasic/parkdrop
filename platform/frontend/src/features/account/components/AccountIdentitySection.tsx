@@ -160,6 +160,12 @@ export const AccountIdentitySection: React.FC<AccountIdentitySectionProps> = ({
             </div>
           </div>
         )}
+
+        {/* App Version & Diagnostics Indicator */}
+        <div className="pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-400">
+          <span>ParkDrop Mobile</span>
+          <span className="font-mono">v{import.meta.env.VITE_APP_VERSION || '1.0.0'}</span>
+        </div>
       </div>
     </section>
   );
