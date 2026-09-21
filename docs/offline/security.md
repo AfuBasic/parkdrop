@@ -33,3 +33,12 @@ IndexedDB is not application-level encrypted. We rely on device-level and OS-lev
 - **No Provider Error Leaks:** Cloud storage, payment provider, or webhook internal errors are never exposed directly to attendants. Safe user-facing error messages are derived centrally.
 - **Role-Enforced Actions:** Actions such as `BUY_SMS_CREDITS` are strictly gated to `owner` and `manager` roles. Attendant roles receive read-only `VIEW_SMS_CREDITS` actions. Backend payment and purchase APIs strictly authorize the requesting user's role on submission.
 - **Offline Honesty & Gating:** Online-only actions (such as buying credits, checking payment status, or uploading photos to Cloudinary) are disabled when connectivity is unreachable, instructing the attendant to connect to the internet rather than falsely queueing unsupportable administrative actions.
+
+## Daily Operations & Reports Security (Build 21)
+- **Role Gating:** Reports access is strictly restricted to `owner` and `manager` roles via `ReportPolicy`. Attendants cannot access `/more/reports` and API endpoints return 403 Forbidden.
+- **Tenant & Scope Scoping:** Every query and export verifies that the requested business and pickup point belong to the authenticated user's active membership.
+- **CSV Formula Injection Defense:** Cell values in exported CSVs that begin with dangerous formula triggers (`=`, `+`, `-`, `@`, `\t`, `\r`) are automatically escaped with a leading single quote (`'`), neutralizing potential spreadsheet DDE injection attacks.
+- **PII Minimization in Exports:** Exported CSVs contain only public package IDs (`PD-8K42Q`) and customer display names. Customer phone numbers and package pickup codes are strictly omitted by default to avoid creating portable high-risk release credentials.
+- **Safe Historical Actor Retention:** Historical events preserve safe staff names for audit purposes even if the staff member is subsequently deactivated or removed from the business, preventing null-pointer crashes or broken audit records.
+- **Offline Truthfulness:** Older dates outside local retention clearly inform the user that historical data is unavailable offline and require an internet connection, never displaying false zero totals.
+
