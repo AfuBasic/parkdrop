@@ -158,7 +158,7 @@ class PickupPointController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:100'],
             'park_name' => ['nullable', 'string', 'max:100'],
-            'contact_phone' => ['nullable', 'string', 'regex:/^(?:\+?234|0)?[789][01]\d{8}$/'],
+            'contact_phone' => ['nullable', 'string', 'regex:/^(?:\+?234|0)?[\s\-\.]?[789][01][\d\s\-\.]{7,12}\d$/'],
         ]);
 
         // If phone is being changed, check rate limit: max 3 changes in 24 hours
