@@ -1,14 +1,15 @@
+import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, User, PackagePlus, Phone, PackageCheck, Clock, AlertCircle } from 'lucide-react';
-import { useCustomerDetail } from '../hooks/useCustomerDetail';
+import { useCustomerDetail } from '@/features/customers/hooks/useCustomerDetail';
 import { StatusBadge } from '@/design-system/components/StatusBadge';
 import { formatMoney, formatPhone } from '@/lib/formatters';
-import type { EnrichedCustomerPackage } from '../domain/customer-types';
+import type { EnrichedCustomerPackage } from '@/features/customers/domain/customer-types';
 
 interface CustomerDetailScreenProps {
   customerId: string;
   businessId: number;
-  onBack: () => void;
-  onSelectPackage: (packageId: string) => void;
+  onBack?: () => void;
+  onSelectPackage?: (packageId: string) => void;
   onAddPackageForCustomer?: (customerId: string) => void;
 }
 
@@ -19,6 +20,15 @@ export function CustomerDetailScreen({
   onSelectPackage,
   onAddPackageForCustomer,
 }: CustomerDetailScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/customers' }));
+  const handleSelectPackage = onSelectPackage ?? ((packageId: string) => {
+    routerNavigate({ to: '/packages/$packageId', params: { packageId } });
+  });
+  const handleAddPackage = onAddPackageForCustomer ?? ((cId: string) => {
+    routerNavigate({ to: '/packages/new', search: { customerId: cId } });
+  });
+
   const { data, isLoading, notFound } = useCustomerDetail(businessId, customerId);
 
   const getStatusVariant = (status: EnrichedCustomerPackage['status']) => {
@@ -83,7 +93,7 @@ export function CustomerDetailScreen({
         <header className="px-4 py-3 border-b border-border-subtle flex items-center gap-3">
           <button
             type="button"
-            onClick={onBack}
+            onClick={handleBack}
             className="p-2 -ml-2 text-text-secondary hover:text-text-primary rounded-full"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -100,7 +110,7 @@ export function CustomerDetailScreen({
           </p>
           <button
             type="button"
-            onClick={onBack}
+            onClick={handleBack}
             className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-action-primary hover:bg-action-primary/90 shadow-sm transition-all"
           >
             Back to customers
@@ -118,7 +128,7 @@ export function CustomerDetailScreen({
       <header className="sticky top-0 z-20 bg-surface-page/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center gap-3">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="p-2 -ml-2 text-text-secondary hover:text-text-primary rounded-full transition-colors cursor-pointer"
           aria-label="Back to customers"
         >
@@ -172,16 +182,14 @@ export function CustomerDetailScreen({
               <span className="font-semibold text-text-primary">{totalCount}</span> total
             </div>
 
-            {onAddPackageForCustomer && (
-              <button
-                type="button"
-                onClick={() => onAddPackageForCustomer(customer.id)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
-              >
-                <PackagePlus className="w-4 h-4" />
-                <span>Add package</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => handleAddPackage(customer.id)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
+            >
+              <PackagePlus className="w-4 h-4" />
+              <span>Add package</span>
+            </button>
           </div>
         </section>
 
@@ -207,7 +215,7 @@ export function CustomerDetailScreen({
                 <button
                   key={pkg.id}
                   type="button"
-                  onClick={() => onSelectPackage(pkg.id)}
+                  onClick={() => handleSelectPackage(pkg.id)}
                   className="w-full text-left bg-surface-default hover:bg-surface-subtle active:bg-surface-active/70 rounded-xl border border-border-subtle p-4 shadow-sm flex flex-col gap-2 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-action-primary"
                   aria-label={`Package ${pkg.publicPackageId}, pickup code ${pkg.pickupCode}, amount ${formatMoney(pkg.amountDueMinor)}`}
                 >
@@ -257,7 +265,7 @@ export function CustomerDetailScreen({
                 <button
                   key={pkg.id}
                   type="button"
-                  onClick={() => onSelectPackage(pkg.id)}
+                  onClick={() => handleSelectPackage(pkg.id)}
                   className="w-full text-left p-3.5 hover:bg-surface-subtle active:bg-surface-active/70 flex items-center justify-between gap-3 transition-colors cursor-pointer"
                   aria-label={`Package ${pkg.publicPackageId}, ${pkg.status.toLowerCase()}`}
                 >
