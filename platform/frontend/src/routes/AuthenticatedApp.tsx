@@ -52,15 +52,20 @@ export default function AuthenticatedApp() {
   });
 
   const isAddPackageRoute = currentPath.startsWith('/add') || currentPath.startsWith('/packages/new');
+  const isPackageDetailRoute = currentPath.startsWith('/packages/') && currentPath !== '/packages/search' && currentPath !== '/packages/new';
+
+  const activePoint = business?.pickup_points?.find((p) => p.status === 'active')
+    ?? business?.pickup_points?.[0];
+  const activePickupPointName = activePoint?.name ?? business?.name ?? null;
 
   return (
     <AppShell
-      currentPath={currentPath.startsWith('/more') ? '/more' : currentPath}
+      currentPath={currentPath.startsWith('/more') ? '/more' : currentPath.split('?')[0]}
       onNavigate={setCurrentPath}
       // Home paints its own blue header to the edges of the phone.
       bleed={currentPath === '/'}
-      // Add package is a dedicated full-screen task: no bottom nav.
-      fullScreenTask={isAddPackageRoute}
+      // Add package and Package Details are dedicated full-screen tasks: no bottom nav.
+      fullScreenTask={isAddPackageRoute || isPackageDetailRoute}
     >
       {currentPath === '/' && (
         <HomeScreen
@@ -85,13 +90,18 @@ export default function AuthenticatedApp() {
         />
       )}
       
-      {currentPath === '/packages' && (
+      {currentPath.startsWith('/packages') && currentPath.split('?')[0] === '/packages' && (
         <PackagesScreen
-          key={packagesStatus}
-          initialStatus={packagesStatus}
+          key={packagesStatus + currentPath}
+          initialStatus={
+            (new URLSearchParams(currentPath.split('?')[1] || '').get('status')?.toUpperCase() as any) ||
+            packagesStatus
+          }
+          initialPayFilter={new URLSearchParams(currentPath.split('?')[1] || '').get('pay') || undefined}
+          initialAgeFilter={new URLSearchParams(currentPath.split('?')[1] || '').get('age') || undefined}
           onNavigateToSearch={() => setCurrentPath('/packages/search')}
-          onNavigateToAdd={() => setCurrentPath('/packages/new')}
-          onSelectPackage={(pkg) => setCurrentPath(`/packages/${pkg.id}`)}
+          onNavigateToAdd={(phone) => setCurrentPath(phone ? `/packages/new?phone=${encodeURIComponent(phone)}` : '/packages/new')}
+          onSelectPackage={(pkgId) => setCurrentPath(`/packages/${pkgId}`)}
         />
       )}
       {isAddPackageRoute && (
@@ -132,10 +142,11 @@ export default function AuthenticatedApp() {
           onNavigateToAdd={(phone) => setCurrentPath(phone ? `/packages/new?phone=${encodeURIComponent(phone)}` : '/packages/new')}
         />
       )}
-      {currentPath.startsWith('/packages/') && currentPath !== '/packages/search' && (
+      {isPackageDetailRoute && (
         <PackageDetailScreen
-          packageId={currentPath.replace('/packages/', '')}
+          packageId={currentPath.replace('/packages/', '').split('?')[0]}
           businessId={business?.id || 0}
+          pickupPointName={activePickupPointName}
           onBack={() => setCurrentPath('/packages')}
         />
       )}
