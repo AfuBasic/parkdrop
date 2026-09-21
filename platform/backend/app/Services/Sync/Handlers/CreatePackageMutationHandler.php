@@ -3,17 +3,17 @@
 namespace App\Services\Sync\Handlers;
 
 use App\Actions\Packages\CreatePackageAction;
+use App\Contracts\Sync\MutationHandler;
 use App\Models\Business;
 use App\Models\Customer;
 use App\Models\Package;
 use App\Models\PickupPoint;
-use App\Services\Sync\MutationHandler;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class CreatePackageMutationHandler implements MutationHandler
 {
-    public function getOperationName(): string
+    public function operation(): string
     {
         return 'CREATE_PACKAGE';
     }
@@ -21,9 +21,9 @@ class CreatePackageMutationHandler implements MutationHandler
     public function handle(
         array $payload,
         int $businessId,
-        ?int $pickupPointId,
+        ?int $userId,
         string $deviceUuid,
-        ?string $userId = null
+        ?int $pickupPointId
     ): array {
         $validator = Validator::make($payload, [
             'package_id' => 'required|uuid',
