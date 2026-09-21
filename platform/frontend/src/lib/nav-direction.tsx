@@ -10,10 +10,20 @@ export function useNavDirection() {
 }
 
 export function NavDirectionProvider({ children }: { children: React.ReactNode }) {
-  const routerState = useRouterState();
-  const navigationType = routerState.navigationType; // 'push' | 'replace' | 'pop'
+  // TanStack Router does not expose a navigation type directly. Each history
+  // entry carries an incrementing __TSR_index, so comparing it against the
+  // last one we saw tells us whether this was a back (pop) navigation.
+  const historyIndex = useRouterState({
+    select: (state) => state.location.state.__TSR_index,
+  });
+  const lastIndexRef = React.useRef(historyIndex);
+  const [direction, setDirection] = React.useState<NavDirection>('forward');
 
-  const direction: NavDirection = navigationType === 'pop' ? 'back' : 'forward';
+  React.useEffect(() => {
+    const next: NavDirection = historyIndex < lastIndexRef.current ? 'back' : 'forward';
+    lastIndexRef.current = historyIndex;
+    setDirection(next);
+  }, [historyIndex]);
 
   React.useEffect(() => {
     if (typeof document !== 'undefined') {
