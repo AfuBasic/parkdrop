@@ -1,4 +1,4 @@
-import type { PackageStatusFilter, StatusCounts } from '../package-list-types';
+import type { PackageStatusFilter, StatusCounts } from '@/features/packages/list/package-list-types';
 import { cn } from '@/lib/utils';
 
 interface PackageStatusTabsProps {
