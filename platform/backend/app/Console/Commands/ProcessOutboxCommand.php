@@ -205,6 +205,7 @@ class ProcessOutboxCommand extends Command
             recipientPhone: $phone,
             message: $message,
             idempotencyKey: 'outbox-'.$event->id,
+            outboxEventId: $event->id,
         );
     }
 }
