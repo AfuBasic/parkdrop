@@ -6,6 +6,7 @@ import { PinSetupScreen } from '@/features/auth/screens/PinSetupScreen';
 import { PickupPointScreen } from '@/features/auth/screens/PickupPointScreen';
 import { ReadyScreen } from '@/features/auth/screens/ReadyScreen';
 import { HelpSheet } from './HelpSheet';
+import { PrivacySheet } from './PrivacySheet';
 import { InstallSheet, useInstallPrompt } from './InstallSheet';
 import { authApi } from '@/features/auth/api';
 import { ApiError } from '@/lib/api';
@@ -121,6 +122,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   const [error, setError] = React.useState('');
   const [helpOpen, setHelpOpen] = React.useState(false);
   const [installOpen, setInstallOpen] = React.useState(false);
+  const [privacyOpen, setPrivacyOpen] = React.useState(false);
   const { canInstall, install } = useInstallPrompt();
 
   /**
@@ -278,6 +280,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
           initialValue={identifier}
           onContinue={sendCode}
           onHelp={openHelp}
+          onPrivacy={() => setPrivacyOpen(true)}
           busy={request.busy}
           requestError={error}
           slowNetwork={request.showReassurance}
@@ -371,6 +374,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
 
       <HelpSheet open={helpOpen} onOpenChange={setHelpOpen} screenName={SCREEN_NAME[step]} />
       <InstallSheet open={installOpen} onOpenChange={setInstallOpen} />
+      <PrivacySheet open={privacyOpen} onOpenChange={setPrivacyOpen} />
     </>
   );
 }
