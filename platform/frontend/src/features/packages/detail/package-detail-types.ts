@@ -22,6 +22,7 @@ export interface PackageDetailActivityItem {
   description?: string;
   timestamp: string;
   actorName?: string;
+  actorPhone?: string;
 }
 
 export interface PackageDetailData {
