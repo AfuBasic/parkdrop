@@ -1,5 +1,5 @@
 import type { PackageSearchResult } from '@/features/packages/search/package-search-types';
-import { PackageSearchResultRow } from './PackageSearchResultRow';
+import { PackageSearchResultRow } from '@/features/packages/search/components/PackageSearchResultRow';
 
 interface PackageSearchResultsProps {
   results: PackageSearchResult[];
