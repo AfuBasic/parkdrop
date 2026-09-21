@@ -2,9 +2,10 @@ import * as React from "react"
 import { Home, Package, Users, Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HomeStrings } from "@/features/home/strings"
+import { Logo } from "@/features/auth/components/Logo"
 import { NavItem } from "./NavItem"
 
-interface AppShellProps {
+export interface AppShellProps {
   children: React.ReactNode
   currentPath?: string
   onNavigate?: (path: string) => void
@@ -16,6 +17,14 @@ interface AppShellProps {
    * Dedicated full-screen modal task (e.g. /packages/new): hides bottom nav.
    */
   fullScreenTask?: boolean
+  /**
+   * Variant of the shell: 'default' displays navigation bar, 'task' hides it.
+   */
+  variant?: "default" | "task"
+  /**
+   * Optional right header element for custom desktop header actions.
+   */
+  headerRight?: React.ReactNode
 }
 
 /**
@@ -35,15 +44,18 @@ const navConfig = [
 
 export function AppShell({
   children,
-  currentPath = "/",
+  currentPath,
   onNavigate,
   bleed = false,
   fullScreenTask = false,
+  variant = "default",
+  headerRight,
 }: AppShellProps) {
+  const isTask = fullScreenTask || variant === "task"
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
-    e.preventDefault()
     if (onNavigate) {
+      e.preventDefault()
       onNavigate(path)
     }
   }
@@ -51,22 +63,22 @@ export function AppShell({
   return (
     <div className="flex min-h-screen flex-col sm:flex-row bg-surface-page">
       {/* Desktop Sidebar */}
-      {!fullScreenTask && (
+      {!isTask && (
         <aside className="hidden w-64 flex-col border-r border-border-default bg-surface-default sm:flex">
-          <div className="flex h-16 items-center border-b border-border-default px-6">
-            <span className="text-xl font-bold tracking-tight text-action-primary">
-              {HomeStrings.brand}
-            </span>
+          <div className="flex h-16 items-center justify-between border-b border-border-default px-6">
+            <Logo tone="light" />
+            {headerRight}
           </div>
           <nav className="flex-1 space-y-1 p-4">
             {navConfig.map((item) => (
               <NavItem
                 key={item.path}
+                to={item.path}
                 href={item.path}
                 icon={item.icon}
                 label={item.label}
-                isActive={currentPath === item.path}
-                onClick={(e) => handleNav(e, item.path)}
+                isActive={currentPath !== undefined ? currentPath === item.path : undefined}
+                onClick={onNavigate ? (e) => handleNav(e, item.path) : undefined}
               />
             ))}
           </nav>
@@ -74,14 +86,14 @@ export function AppShell({
       )}
 
       {/* Main Content Area */}
-      <main className={cn("flex-1 overflow-y-auto", !fullScreenTask && "pb-24 sm:pb-0")}>
-        <div className={cn(!bleed && !fullScreenTask && "mx-auto max-w-5xl p-4 sm:p-6 lg:p-8")}>
+      <main className={cn("flex-1 overflow-y-auto", !isTask && "pb-24 sm:pb-0")}>
+        <div className={cn(!bleed && !isTask && "mx-auto max-w-5xl")}>
           {children}
         </div>
       </main>
 
       {/* Mobile Bottom Navigation */}
-      {!fullScreenTask && (
+      {!isTask && (
         <nav
           className={cn(
             "fixed bottom-0 left-0 right-0 z-50 sm:hidden",
@@ -94,11 +106,12 @@ export function AppShell({
           {navConfig.map((item) => (
             <NavItem
               key={item.path}
+              to={item.path}
               href={item.path}
               icon={item.icon}
               label={item.label}
-              isActive={currentPath === item.path}
-              onClick={(e) => handleNav(e, item.path)}
+              isActive={currentPath !== undefined ? currentPath === item.path : undefined}
+              onClick={onNavigate ? (e) => handleNav(e, item.path) : undefined}
             />
           ))}
         </nav>
@@ -106,3 +119,4 @@ export function AppShell({
     </div>
   )
 }
+
