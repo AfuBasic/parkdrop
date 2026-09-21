@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Clock, CheckCircle2, DollarSign, Camera, RotateCcw, Ban, PackageCheck, MessageSquare } from 'lucide-react';
+import { CheckCircle2, DollarSign, Camera, RotateCcw, Ban, PackageCheck } from 'lucide-react';
 import type { PackageDetailActivityItem } from '../package-detail-types';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '../../strings';
 
 export interface PackageActivitySectionProps {
   timeline: PackageDetailActivityItem[];
