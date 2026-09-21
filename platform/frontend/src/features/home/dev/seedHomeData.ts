@@ -66,13 +66,15 @@ const LAST_NAMES = [
 ];
 
 function makeCustomer(index: number, name?: string): LocalCustomer {
-  const digits = String(30000000 + index * 137).padStart(8, '0');
+  // A plausible Nigerian mobile number: 080 plus eight digits that differ
+  // between customers, so the rows do not all read 0803 000 0000.
+  const subscriber = String(31_240_517 + index * 91_733).slice(-8);
   return {
     id: `dev_cust_${index}`,
     business_id: BUSINESS_ID,
     name: name ?? `${FIRST_NAMES[index % FIRST_NAMES.length]} ${LAST_NAMES[index % LAST_NAMES.length]}`,
-    phone_display: `080${digits}`.slice(0, 11),
-    phone_normalized: `+234${digits}`,
+    phone_display: `080${subscriber}`,
+    phone_normalized: `+23480${subscriber}`,
     version: 1,
     sync_status: 'SYNCED',
   };
