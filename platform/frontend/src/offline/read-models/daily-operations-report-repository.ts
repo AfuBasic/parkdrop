@@ -1,5 +1,5 @@
 import { db } from '@/offline/db/database';
-import type { LocalPackage, LocalPayment } from '@/offline/db/schema';
+import type { LocalPackage } from '@/offline/db/schema';
 import type {
   DailyOperationsSummary,
   DailyOperationalEventItem,
@@ -158,7 +158,7 @@ export class DailyOperationsReportRepository {
     }
 
     // Check offline availability flag: if offline and not today/yesterday and no records, mark historical unavailable
-    let finalCompleteness = completeness;
+    let finalCompleteness: ReportCompletenessState = completeness;
     if (!isOnline && !isToday && !isYesterday && packages.length === 0 && payments.length === 0) {
       finalCompleteness = 'HISTORICAL_UNAVAILABLE_OFFLINE';
     }
