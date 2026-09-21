@@ -1,5 +1,5 @@
 import { User, ChevronRight, PackageCheck } from 'lucide-react';
-import type { CustomerDirectoryItem } from '../domain/customer-types';
+import type { CustomerDirectoryItem } from '@/features/customers/domain/customer-types';
 import { formatPhone } from '@/lib/formatters';
 
 interface CustomerListItemProps {
