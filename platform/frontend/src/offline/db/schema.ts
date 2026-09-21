@@ -143,3 +143,21 @@ export interface LocalPayment {
   sync_error?: string | null;
   version: number;
 }
+
+export interface LocalQuarantineRecord {
+  id: string; // uuid
+  business_id: number | null;
+  entity_type: string;
+  entity_id: string | null;
+  raw_payload: Record<string, unknown>;
+  reason: string;
+  quarantined_at: string;
+  resolved_at: string | null;
+}
+
+export interface LocalRecoveryMeta {
+  key: string;
+  value: unknown;
+  updated_at: string;
+}
+
