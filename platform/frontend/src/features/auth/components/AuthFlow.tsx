@@ -15,6 +15,7 @@ import { AUTH_IDENTIFIER } from '@/features/auth/config';
 import { useSlowRequest } from '@/features/auth/lib/useSlowRequest';
 import { useOnline } from '@/features/auth/lib/useOnline';
 import { AuthStrings } from '@/features/auth/strings';
+import type { AuthUser, AuthBusiness } from '@/features/auth/types';
 
 type Step = 'identifier' | 'code' | 'name' | 'pin' | 'pickup' | 'ready';
 
@@ -119,6 +120,19 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
   const [error, setError] = React.useState('');
   const [helpOpen, setHelpOpen] = React.useState(false);
 
+  /**
+   * Who we just created, held until the user taps through the Ready screen.
+   *
+   * Signing them in immediately would flip the app over to the dashboard and
+   * unmount this flow, so the Ready screen — the confirmation, the summary of
+   * the names their customers will see, and the add-to-home-screen prompt —
+   * would never be shown at all.
+   */
+  const [completed, setCompleted] = React.useState<{
+    user: AuthUser;
+    business: AuthBusiness;
+  } | null>(null);
+
   // Keep every typed value on disk, at every step, so Android back, a
   // rotation or the tab being killed never costs the user their typing.
   React.useEffect(() => {
@@ -222,7 +236,7 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
 
       request.finish();
       clearDraft();
-      await setAuthenticatedUser(result.user, result.business);
+      setCompleted({ user: result.user, business: result.business });
       setStep('ready');
     } catch (err) {
       request.finish();
@@ -335,8 +349,11 @@ export function AuthFlow({ initialIdentifier = '' }: AuthFlowProps) {
           firstName={firstName}
           pickupPointName={pickupPointName}
           parkName={parkName}
-          onStart={() => {
-            window.location.href = '/';
+          onStart={async () => {
+            // Entering the app is what signs them in, so the Ready screen got
+            // its moment first. No page reload: that would re-download
+            // everything on a connection they are paying for.
+            if (completed) await setAuthenticatedUser(completed.user, completed.business);
           }}
           onEditPickupPoint={() => setStep('pickup')}
           onHelp={openHelp}
