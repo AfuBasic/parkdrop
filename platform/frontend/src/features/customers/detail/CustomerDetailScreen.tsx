@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, User, PackagePlus, Phone, PackageCheck, Clock, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useCustomerDetail } from '@/features/customers/hooks/useCustomerDetail';
 import { StatusBadge } from '@/design-system/components/StatusBadge';
 import { formatMoney, formatPhone } from '@/lib/formatters';
@@ -7,7 +8,7 @@ import type { EnrichedCustomerPackage } from '@/features/customers/domain/custom
 
 interface CustomerDetailScreenProps {
   customerId: string;
-  businessId: number;
+  businessId?: number;
   onBack?: () => void;
   onSelectPackage?: (packageId: string) => void;
   onAddPackageForCustomer?: (customerId: string) => void;
@@ -15,12 +16,14 @@ interface CustomerDetailScreenProps {
 
 export function CustomerDetailScreen({
   customerId,
-  businessId,
+  businessId: propBusinessId,
   onBack,
   onSelectPackage,
   onAddPackageForCustomer,
 }: CustomerDetailScreenProps) {
   const routerNavigate = useNavigate();
+  const { business } = useAuth();
+  const businessId = propBusinessId ?? business?.id ?? 0;
   const handleBack = onBack ?? (() => routerNavigate({ to: '/customers' }));
   const handleSelectPackage = onSelectPackage ?? ((packageId: string) => {
     routerNavigate({ to: '/packages/$packageId', params: { packageId } });
