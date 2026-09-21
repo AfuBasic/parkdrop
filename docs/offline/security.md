@@ -26,3 +26,10 @@ IndexedDB is not application-level encrypted. We rely on device-level and OS-lev
 - **Offline Revocation Limitation:** An offline device cannot learn about a membership revocation until it reconnects or its 24-hour offline authorization lease expires. ParkDrop adheres to the offline authorization lease policy rather than making false claims of instantaneous remote offline revocation.
 - **Last-Owner Safeguard:** Concurrency-safe transactions with row locks ensure that a business can never be left with zero active Owners.
 - **Privacy & Secrets:** Raw invitation tokens and OTPs are never stored in localStorage, never logged, and never broadcast over WebSocket channels.
+
+## Operational Attention Center Security (Build 19)
+- **Active Business Isolation:** Attention queries (`AttentionRepository.getAttentionItems`) strictly filter all underlying Dexie stores (`packageMedia`, `payments`, `conflicts`, `smsWallets`) by the authenticated user's active `business_id`. Cross-tenant items never leak.
+- **PII Minimization:** Attention items reference packages by public package ID (`PD-8K42Q`) and customer name. Customer phone numbers and internal UUIDs are strictly omitted from list rows to prevent incidental PII exposure.
+- **No Provider Error Leaks:** Cloud storage, payment provider, or webhook internal errors are never exposed directly to attendants. Safe user-facing error messages are derived centrally.
+- **Role-Enforced Actions:** Actions such as `BUY_SMS_CREDITS` are strictly gated to `owner` and `manager` roles. Attendant roles receive read-only `VIEW_SMS_CREDITS` actions. Backend payment and purchase APIs strictly authorize the requesting user's role on submission.
+- **Offline Honesty & Gating:** Online-only actions (such as buying credits, checking payment status, or uploading photos to Cloudinary) are disabled when connectivity is unreachable, instructing the attendant to connect to the internet rather than falsely queueing unsupportable administrative actions.
