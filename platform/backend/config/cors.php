@@ -19,19 +19,23 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_filter([
+    'allowed_origins' => array_filter(array_unique([
         env('FRONTEND_URL', 'http://localhost:3000'),
+        'https://app.parkdrop.com.ng',
+        'https://parkdrop.com.ng',
+        'http://localhost:3000',
+        'http://localhost:5173',
         'http://localhost:5174',
         'http://localhost:5175',
         'http://127.0.0.1:5174',
         'http://127.0.0.1:5175',
-    ]),
+    ])),
 
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['X-Request-ID'],
 
     'max_age' => 0,
 
