@@ -86,8 +86,8 @@ export function HomeScreen({
   const handleSyncChip = () => {
     // When something is genuinely stuck, the chip is a route to the fix
     // rather than a reassurance about it.
-    if (sync.tone === 'attention' && onNavigateToAttention) {
-      onNavigateToAttention();
+    if (sync.tone === 'attention') {
+      handleNavigateToAttention();
       return;
     }
     setSyncSheetOpen(true);
