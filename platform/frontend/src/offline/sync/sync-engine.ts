@@ -168,6 +168,7 @@ export class SyncEngine {
             await db.conflicts.put({
               conflict_id: crypto.randomUUID(),
               mutation_id: result.mutation_id,
+              business_id: businessId,
               entity_type: 'package',
               entity_id: packageId,
               type: (result.metadata?.error as string) || 'LIFECYCLE_CONFLICT',
