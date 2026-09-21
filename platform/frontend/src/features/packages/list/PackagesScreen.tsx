@@ -5,7 +5,7 @@ import { db } from '@/offline/db/database';
 import { connectivityManager } from '@/offline/sync/connectivity-manager';
 import { useAuth } from '@/features/auth/AuthContext';
 import { PackageSearchRepository } from '@/offline/repositories/package-search-repository';
-import type { LocalPackage, LocalCustomer, LocalPayment } from '@/offline/db/schema';
+import type { LocalCustomer, LocalPayment } from '@/offline/db/schema';
 import { PackagesListHeader } from './components/PackagesListHeader';
 import { PackagesTabsAndChips } from './components/PackagesTabsAndChips';
 import { PackagesSortSheet } from './components/PackagesSortSheet';
