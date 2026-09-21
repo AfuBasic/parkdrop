@@ -3,15 +3,24 @@ import { MutationQueue } from '@/offline/mutations/mutation-queue';
 import { connectivityManager } from './connectivity-manager';
 import { getDeviceUuid } from '@/offline/device/device-identity';
 import type { LocalPackage } from '@/offline/db/schema';
+import { classifyHttpError } from '@/resilience/error-classification';
+import { createBackoffTracker, SYNC_RETRY_POLICY, type BackoffTracker } from '@/resilience/retry-policy';
 
 export class SyncEngine {
   private static isSyncing = false;
 
+  /**
+   * Backoff tracker for consecutive sync failures.
+   * Accumulates on RETRYABLE errors; resets on success.
+   * Callers should wait backoffTracker.nextDelayMs() before the next sync attempt.
+   */
+  static readonly backoffTracker: BackoffTracker = createBackoffTracker(SYNC_RETRY_POLICY);
+
   static async sync(businessId: number): Promise<void> {
     if (this.isSyncing) return;
-    
+
     // In a real multi-tab app, we'd use navigator.locks.request('parkdrop-sync', ...)
-    
+
     this.isSyncing = true;
     try {
       const isReachable = await connectivityManager.checkReachability();
@@ -19,9 +28,12 @@ export class SyncEngine {
 
       // 1. PUSH
       await this.pushMutations(businessId);
-      
+
       // 2. PULL
       await this.pullChanges(businessId);
+
+      // Successful sync — reset backoff tracker
+      this.backoffTracker.recordSuccess();
 
     } finally {
       this.isSyncing = false;
@@ -81,11 +93,21 @@ export class SyncEngine {
       });
 
       if (!response.ok) {
-        if (response.status === 401) {
-          // Handled by auth layer interceptors usually, but we should back off.
-          throw new Error('Unauthorized');
+        const errorClass = classifyHttpError(response);
+
+        if (errorClass === 'AUTH_REQUIRED') {
+          // Session expired — preserve mutations as PENDING, stop sync.
+          // Do NOT mark as RETRYABLE — the auth layer will handle re-auth.
+          for (const mId of mutationIds) {
+            await MutationQueue.resolveResult(mId, 'RETRYABLE', 'Session expired — reconnect to continue');
+          }
+          this.backoffTracker.recordFailure();
+          return;
         }
-        throw new Error('Push failed');
+
+        // All other non-OK responses — record backoff and throw to revert below
+        this.backoffTracker.recordFailure();
+        throw new Error(`Push failed with error class: ${errorClass} (HTTP ${response.status})`);
       }
 
       const data = await response.json();
@@ -192,10 +214,11 @@ export class SyncEngine {
       }
 
     } catch (e) {
-      // Revert SYNCING back to RETRYABLE
+      // Revert SYNCING back to RETRYABLE — data is preserved
       for (const mId of mutationIds) {
         await MutationQueue.resolveResult(mId, 'RETRYABLE', e instanceof Error ? e.message : 'Network error');
       }
+      this.backoffTracker.recordFailure();
     }
   }
 

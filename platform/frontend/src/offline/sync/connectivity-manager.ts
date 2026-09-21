@@ -3,11 +3,20 @@ export type ConnectivityState = 'UNKNOWN' | 'REACHABLE' | 'DEGRADED' | 'UNREACHA
 class ConnectivityManager {
   private state: ConnectivityState = 'UNKNOWN';
   private listeners: ((state: ConnectivityState) => void)[] = [];
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private consecutiveSuccesses = 0;
 
   constructor() {
     if (typeof window !== 'undefined') {
-      window.addEventListener('online', () => this.checkReachability());
-      window.addEventListener('offline', () => this.setState('UNREACHABLE'));
+      window.addEventListener('online', () => this.debouncedCheckReachability());
+      window.addEventListener('offline', () => {
+        if (this.debounceTimer) {
+          clearTimeout(this.debounceTimer);
+          this.debounceTimer = null;
+        }
+        this.consecutiveSuccesses = 0;
+        this.setState('UNREACHABLE');
+      });
       
       // Initial check
       if (navigator.onLine) {
@@ -18,26 +27,46 @@ class ConnectivityManager {
     }
   }
 
+  private debouncedCheckReachability(): void {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    this.debounceTimer = setTimeout(() => {
+      this.checkReachability();
+    }, 500);
+  }
+
+  /**
+   * Returns true only after at least 2 consecutive successful reachability checks.
+   * Helps guard against aggressive background sync on flapping network connections.
+   */
+  isStabilized(): boolean {
+    return this.state === 'REACHABLE' && this.consecutiveSuccesses >= 2;
+  }
+
   async checkReachability(): Promise<boolean> {
     if (typeof window === 'undefined' || !navigator.onLine) {
+      this.consecutiveSuccesses = 0;
       this.setState('UNREACHABLE');
       return false;
     }
 
     try {
       // Cheap ping to our API to confirm it's actually reachable
-      // We could use a dedicated /api/v1/connectivity endpoint, or just check session
       const response = await fetch('/api/v1/auth/session', { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
       
       // 401 is STILL REACHABLE! It's just an auth failure.
       if (response.ok || response.status === 401 || response.status === 403) {
+        this.consecutiveSuccesses++;
         this.setState('REACHABLE');
         return true;
       }
       
+      this.consecutiveSuccesses = 0;
       this.setState('DEGRADED');
       return false;
-    } catch (e) {
+    } catch {
+      this.consecutiveSuccesses = 0;
       this.setState('UNREACHABLE');
       return false;
     }
