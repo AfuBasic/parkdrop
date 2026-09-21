@@ -187,7 +187,8 @@ export class SyncEngine {
           }
         }
 
-        await MutationQueue.resolveResult(result.mutation_id, result.status, result.metadata?.error);
+        const errorMessage = result.error || result.metadata?.error;
+        await MutationQueue.resolveResult(result.mutation_id, result.status, errorMessage);
       }
 
     } catch (e) {
