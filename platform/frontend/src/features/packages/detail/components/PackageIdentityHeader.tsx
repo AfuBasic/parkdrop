@@ -7,7 +7,6 @@ import { PackagesStrings } from '@/features/packages/strings';
 export interface PackageIdentityHeaderProps {
   pkg: LocalPackage;
   onBack: () => void;
-  isOnline: boolean;
   onMarkReturned?: () => void;
   onCancelPackage?: () => void;
 }
@@ -75,7 +74,7 @@ export function PackageIdentityHeader({
             <button
               type="button"
               onClick={() => {
-                setIsMoreOpen(false);
+                setIsMoreSheetOpen(false);
                 onMarkReturned?.();
               }}
               className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-navy)] hover:bg-[var(--pd-page)] active:scale-98 transition-transform"
@@ -87,7 +86,7 @@ export function PackageIdentityHeader({
             <button
               type="button"
               onClick={() => {
-                setIsMoreOpen(false);
+                setIsMoreSheetOpen(false);
                 onCancelPackage?.();
               }}
               className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-bad)] hover:bg-[#FEF2F2] active:scale-98 transition-transform"
