@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { formatNationalDisplay } from '@/features/auth/lib/phone';
 import type { CustomerSuggestion } from '../hooks/useCustomerLookup';
