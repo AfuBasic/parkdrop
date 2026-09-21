@@ -17,6 +17,7 @@ class PullChangesRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'business_id' => ['nullable', 'integer', 'exists:businesses,id'],
             'cursor' => ['nullable', 'integer', 'min:0'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:500'],
         ];
