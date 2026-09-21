@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Business\BusinessDetailsController;
 use App\Http\Controllers\Api\V1\Business\BusinessStaffController;
 use App\Http\Controllers\Api\V1\Business\PickupPointController;
 use App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController;
+use App\Http\Controllers\Api\V1\Reports\DailyOperationsReportController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
@@ -77,6 +78,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('pickup-points/{pickupPoint}', [PickupPointController::class, 'update']);
         Route::post('pickup-points/{pickupPoint}/deactivate', [PickupPointController::class, 'deactivate']);
         Route::post('pickup-points/{pickupPoint}/reactivate', [PickupPointController::class, 'reactivate']);
+    });
+
+    // Daily Operations & Reports (Build 21)
+    Route::prefix('v1/reports/daily-operations')->group(function () {
+        Route::get('', [DailyOperationsReportController::class, 'summary']);
+        Route::get('events', [DailyOperationsReportController::class, 'events']);
+        Route::get('export', [DailyOperationsReportController::class, 'export']);
     });
 });
 
