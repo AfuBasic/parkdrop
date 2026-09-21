@@ -2,6 +2,7 @@
 
 namespace App\Actions\Auth;
 
+use App\Mail\WelcomeMail;
 use App\Models\AuthChallenge;
 use App\Models\Business;
 use App\Models\BusinessMembership;
@@ -9,7 +10,7 @@ use App\Models\PickupPoint;
 use App\Models\PrivacyAcknowledgement;
 use App\Models\SmsCreditTransaction;
 use App\Models\SmsWallet;
-use App\Mail\WelcomeMail;
+use App\Models\SyncChange;
 use App\Models\User;
 use App\Models\UserDevice;
 use Illuminate\Support\Facades\DB;
@@ -99,7 +100,7 @@ class CompleteOwnerOnboardingAction
                 'reference_type' => 'WELCOME_CREDIT',
             ]);
 
-            \App\Models\SyncChange::create([
+            SyncChange::create([
                 'business_id' => $business->id,
                 'entity_type' => 'sms_wallet',
                 'entity_id' => (string) $wallet->id,
@@ -107,7 +108,7 @@ class CompleteOwnerOnboardingAction
                 'entity_version' => 1,
             ]);
 
-            \App\Models\SyncChange::create([
+            SyncChange::create([
                 'business_id' => $business->id,
                 'entity_type' => 'sms_credit_transaction',
                 'entity_id' => (string) $initialTx->id,
