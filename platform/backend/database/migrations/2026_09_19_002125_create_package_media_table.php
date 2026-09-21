@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreign('package_id')->references('id')->on('packages')->cascadeOnDelete();
             $table->string('cloudinary_asset_id')->nullable()->unique();
             $table->string('public_id')->nullable()->unique();
+            $table->string('file_hash')->nullable()->index();
             $table->string('status')->default('PENDING');
             $table->string('resource_type')->default('image');
             $table->string('format')->nullable();
