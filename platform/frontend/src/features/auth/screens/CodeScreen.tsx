@@ -1,173 +1,302 @@
 import * as React from 'react';
-import { Button } from '@/design-system';
-import { AuthCodeField } from '@/features/auth/components/AuthCodeField';
-import { AlertCircle } from 'lucide-react';
+import { MessageCircle, Phone, RotateCw, Mail } from 'lucide-react';
+import { AuthShell } from '../components/AuthShell';
+import { CodeField } from '../components/CodeField';
+import { BigButton } from '../components/BigButton';
+import { Notice } from '../components/Notice';
+import { AuthStrings } from '../strings';
+import {
+  AUTH_IDENTIFIER,
+  AUTH_FALLBACK_CHANNELS,
+  RESEND_COOLDOWN_SECONDS,
+  type IdentifierMode,
+} from '../config';
+import { formatNationalDisplay } from '../lib/phone';
 import { cn } from '@/lib/utils';
 
-interface CodeScreenProps {
-  email: string;
+export interface CodeScreenProps {
+  /** The phone or email the code went to. */
+  identifier: string;
+  mode?: IdentifierMode;
   onVerify: (code: string) => void;
   onResend: () => void;
-  onProblemLoggingIn?: () => void;
-  isLoading?: boolean;
+  onChangeIdentifier: () => void;
+  onBack: () => void;
+  onHelp: () => void;
+  busy?: boolean;
   error?: string;
-  onChangeEmail?: () => void;
+  step?: number;
+  totalSteps?: number;
+  stepLabelOverride?: string;
+  slowNetwork?: boolean;
+  timedOut?: boolean;
+  onWhatsAppCode?: () => void;
+  onCallCode?: () => void;
 }
 
-export function CodeScreen({ 
-  email, 
-  onVerify, 
-  onResend, 
-  
-  isLoading, 
-  error, 
-  onChangeEmail 
+/**
+ * Screen 2. Where most sign-ups are lost, so most of the work here is about
+ * what happens when the code does not turn up.
+ */
+export function CodeScreen({
+  identifier,
+  mode = AUTH_IDENTIFIER,
+  onVerify,
+  onResend,
+  onChangeIdentifier,
+  onBack,
+  onHelp,
+  busy,
+  error,
+  step = 2,
+  totalSteps = 5,
+  stepLabelOverride,
+  slowNetwork,
+  timedOut,
+  onWhatsAppCode,
+  onCallCode,
 }: CodeScreenProps) {
   const [code, setCode] = React.useState('');
-  const [countdown, setCountdown] = React.useState(30);
+  const [localError, setLocalError] = React.useState('');
+  const [secondsLeft, setSecondsLeft] = React.useState(RESEND_COOLDOWN_SECONDS);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  const isPhone = mode === 'phone';
+  const shownError = error || localError;
+
+  // Clear the boxes when the server rejects the code, so the next attempt
+  // starts from empty rather than making them delete six digits by hand.
   React.useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  React.useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [countdown]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Keep only numbers, max 6 characters
-    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-    setCode(val);
-
-    // Auto-submit when exactly 6 digits entered
-    if (val.length === 6) {
-      onVerify(val);
-    }
-  };
-
-  const handleResend = () => {
-    if (countdown === 0 && !isLoading) {
-      setCountdown(30);
+    if (error) {
       setCode('');
+      navigator.vibrate?.(60);
       inputRef.current?.focus();
-      onResend();
     }
+  }, [error]);
+
+  React.useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const id = window.setTimeout(() => setSecondsLeft((value) => value - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [secondsLeft]);
+
+  const handleComplete = (value: string) => {
+    setLocalError('');
+    onVerify(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (code.length === 6 && !isLoading) {
-      onVerify(code);
+  const submit = () => {
+    if (busy) return;
+    if (code.length < 6) {
+      setLocalError(AuthStrings.codeShort(mode));
+      inputRef.current?.focus();
+      navigator.vibrate?.(30);
+      return;
     }
+    setLocalError('');
+    onVerify(code);
   };
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
+  const resend = () => {
+    if (secondsLeft > 0 || busy) return;
+    setCode('');
+    setLocalError('');
+    setSecondsLeft(RESEND_COOLDOWN_SECONDS);
+    onResend();
+    inputRef.current?.focus();
   };
 
-  const radius = 20;
+  const displayIdentifier = isPhone ? formatNationalDisplay(identifier) : identifier;
+
+  const canResend = secondsLeft <= 0;
+  const radius = 18;
   const circumference = 2 * Math.PI * radius;
-  const dashoffset = circumference - (countdown / 30) * circumference;
+  const progress = circumference - (secondsLeft / RESEND_COOLDOWN_SECONDS) * circumference;
+
+  const secondaryButton = cn(
+    'w-full min-h-[var(--pd-tap-min)] px-4 rounded-[var(--pd-field-radius)]',
+    'inline-flex items-center justify-center gap-2',
+    'border-2 border-[var(--pd-tint-2)] bg-[var(--pd-tint)]',
+    'text-[var(--pd-size-chip)] font-extrabold text-[var(--pd-blue-hover)]',
+    'hover:bg-[var(--pd-tint-2)] active:scale-[0.98]',
+    'transition-[transform,background-color] duration-[var(--pd-motion-fast)]',
+    'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/30'
+  );
+
+  const showWhatsApp = isPhone && AUTH_FALLBACK_CHANNELS.whatsapp && onWhatsAppCode;
+  const showCall = isPhone && AUTH_FALLBACK_CHANNELS.voiceCall && onCallCode;
 
   return (
-    <div className="flex flex-col h-full w-full animate-in fade-in slide-in-from-right-4 duration-200">
-      <div className="mb-5">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary mb-1">
-          Enter the code
-        </h1>
-        <p className="text-sm font-medium text-text-secondary m-0">
-          Sent to <span className="font-semibold text-text-primary">{email}</span>
-        </p>
+    <AuthShell
+      size="compact"
+      onBack={onBack}
+      onHelp={onHelp}
+      step={step}
+      totalSteps={totalSteps}
+      stepLabelOverride={stepLabelOverride}
+      foot={
+        <BigButton onClick={submit} busy={busy} busyLabel={AuthStrings.checking}>
+          {AuthStrings.continue}
+        </BigButton>
+      }
+    >
+      <h1 className="m-0 mb-2 text-[var(--pd-size-title)] font-extrabold leading-[1.15] tracking-[-0.025em] text-[var(--pd-navy)]">
+        {AuthStrings.codeTitle}
+      </h1>
+
+      <p className="m-0 text-[var(--pd-size-body)] font-semibold text-[var(--pd-muted)] leading-[1.45]">
+        {AuthStrings.codeSentTo(mode)}
+      </p>
+
+      {/* The identifier and the way to correct it sit on one row, so "Change"
+          cannot wrap into the middle of the sentence the way it used to. */}
+      <div className="flex items-center gap-2.5 flex-wrap mt-2">
+        <span
+          className={cn(
+            'font-extrabold text-[var(--pd-navy)] text-[var(--pd-size-body)] min-w-0 break-all',
+            isPhone && 'pd-nums'
+          )}
+        >
+          {displayIdentifier}
+        </span>
+        <button
+          type="button"
+          onClick={onChangeIdentifier}
+          className={cn(
+            'flex-none inline-flex items-center min-h-[var(--pd-tap-min)] px-4 rounded-full',
+            'border-2 border-[var(--pd-tint-2)] bg-[var(--pd-tint)]',
+            'text-[var(--pd-size-chip)] font-extrabold text-[var(--pd-blue-hover)]',
+            'hover:bg-[var(--pd-tint-2)] active:scale-[0.97]',
+            'transition-[transform,background-color] duration-[var(--pd-motion-fast)]',
+            'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/30'
+          )}
+        >
+          {AuthStrings.codeChange}
+        </button>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col flex-1">
-        <AuthCodeField
-          ref={inputRef}
+      <div className="mt-6">
+        <CodeField
           value={code}
-          onChange={handleChange}
-          disabled={isLoading}
-          error={!!error}
+          onChange={setCode}
+          onComplete={handleComplete}
+          error={!!shownError}
+          disabled={busy}
+          autoFocus
+          label={AuthStrings.codeLabel}
+          inputRef={inputRef}
         />
+      </div>
 
-        {error && (
-          <p className="flex items-start gap-2 mt-2.5 text-sm leading-snug font-semibold text-status-danger animate-in shake" role="alert">
-            <AlertCircle className="w-4 h-4 mt-0.5 flex-none" strokeWidth={2.5} />
-            <span>{error}</span>
-          </p>
+      {shownError && (
+        <Notice tone="error" plain className="mt-3">
+          {shownError}
+        </Notice>
+      )}
+
+      {slowNetwork && !timedOut && (
+        <Notice tone="info" className="mt-3">
+          {AuthStrings.slowNetwork}
+        </Notice>
+      )}
+
+      {timedOut && (
+        <Notice tone="error" className="mt-3">
+          {AuthStrings.tookTooLong}
+        </Notice>
+      )}
+
+      {/* Sets the expectation before they start worrying. */}
+      <p className="m-0 mt-3 text-[var(--pd-size-helper)] font-semibold text-[var(--pd-muted)] leading-[1.45]">
+        {AuthStrings.codeHint(mode)}
+      </p>
+
+      {!isPhone && (
+        <a
+          href="https://mail.google.com"
+          target="_blank"
+          rel="noreferrer"
+          className={cn(secondaryButton, 'mt-3 no-underline')}
+        >
+          <Mail className="w-[19px] h-[19px]" strokeWidth={2.5} aria-hidden="true" />
+          {AuthStrings.openGmail}
+        </a>
+      )}
+
+      {/* Resend card */}
+      <div
+        className={cn(
+          'flex items-center gap-3.5 mt-5 p-3.5 rounded-[var(--pd-field-radius)]',
+          'border-2 border-[var(--pd-line-2)] bg-[#F8FAFC]'
         )}
-
-        <div className="flex items-center gap-3 p-3 mt-4 rounded-xl bg-[var(--color-proto-page)]">
-          <svg className="w-9 h-9 -rotate-90 flex-none" viewBox="0 0 44 44">
-            <circle 
-              cx="22" 
-              cy="22" 
-              r="20" 
-              className="fill-none stroke-[var(--color-proto-line2)] stroke-[4px]" 
-            />
-            <circle 
-              cx="22" 
-              cy="22" 
-              r="20" 
-              className="fill-none stroke-[var(--color-proto-blue)] stroke-[4px] transition-[stroke-dashoffset] duration-1000 ease-linear" 
-              style={{
-                strokeDasharray: circumference,
-                strokeDashoffset: dashoffset
-              }}
+      >
+        {!canResend && (
+          <svg className="w-11 h-11 flex-none -rotate-90" viewBox="0 0 44 44" aria-hidden="true">
+            <circle cx="22" cy="22" r={radius} className="fill-none stroke-[var(--pd-line-2)] stroke-[4px]" />
+            <circle
+              cx="22"
+              cy="22"
+              r={radius}
+              className="fill-none stroke-[var(--pd-blue)] stroke-[4px] transition-[stroke-dashoffset] duration-1000 ease-linear"
+              style={{ strokeDasharray: circumference, strokeDashoffset: progress }}
             />
           </svg>
-          <div className="flex-1 min-w-0">
-            {countdown > 0 ? (
-              <p className="m-0 text-xs text-[var(--color-proto-muted)] font-medium">
-                Resend code in <b className="text-[var(--color-proto-ink)] font-bold tabular-nums">{formatTime(countdown)}</b>
-              </p>
-            ) : (
-              <p className="m-0 text-xs text-[var(--color-proto-muted)] font-medium">
-                Didn't get the code?
-              </p>
-            )}
-            <button
-              type="button"
-              onClick={handleResend}
-              disabled={countdown > 0 || isLoading}
-              className={cn(
-                "inline-block p-0 bg-transparent border-0 font-inherit text-xs font-bold text-[var(--color-proto-blue-d)] underline underline-offset-2 cursor-pointer mt-0.5",
-                (countdown > 0 || isLoading) && "text-[var(--color-proto-muted)] no-underline opacity-50 cursor-default"
-              )}
-            >
-              Resend it now
-            </button>
-          </div>
+        )}
+
+        <div className="flex-1 min-w-0">
+          <p className="m-0 text-[var(--pd-size-helper)] font-extrabold text-[var(--pd-navy)]">
+            {canResend ? AuthStrings.resendReadyTitle : AuthStrings.resendTitle}
+          </p>
+          {!canResend && (
+            <p className="m-0 mt-0.5 text-[var(--pd-size-min)] font-semibold text-[var(--pd-muted)]">
+              <span className="pd-nums">{AuthStrings.resendWait(secondsLeft)}</span>
+            </p>
+          )}
         </div>
 
-        <div className="mt-auto pt-6 flex flex-col gap-3 items-center">
-          <Button
-            type="submit"
-            size="lg"
-            disabled={code.length < 6 || isLoading}
-            loading={isLoading}
-            className="w-full h-12 text-base font-bold"
+        {canResend && (
+          <button
+            type="button"
+            onClick={resend}
+            className={cn(
+              'flex-none inline-flex items-center gap-1.5 min-h-[var(--pd-tap-min)] px-4 rounded-full',
+              'bg-[var(--pd-blue)] text-white text-[var(--pd-size-chip)] font-extrabold',
+              'hover:bg-[var(--pd-blue-hover)] active:scale-[0.97]',
+              'transition-[transform,background-color] duration-[var(--pd-motion-fast)]',
+              'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/35'
+            )}
           >
-            Continue
-          </Button>
-          
-          <p className="text-center text-xs font-medium text-text-muted">
-            Need to use a different email?{' '}
-            <button 
-              type="button" 
-              onClick={onChangeEmail}
-              className="text-[var(--color-proto-blue-d)] font-bold underline underline-offset-2 bg-transparent border-0 cursor-pointer"
-            >
-              Go back
-            </button>
+            <RotateCw className="w-[17px] h-[17px]" strokeWidth={3} aria-hidden="true" />
+            {AuthStrings.resendButton}
+          </button>
+        )}
+      </div>
+
+      {/* Other ways to get the code. Only channels that actually work are
+          shown — a dead button here is worse than no button. */}
+      {(showWhatsApp || showCall) && (
+        <div className="mt-5">
+          <p className="m-0 mb-2.5 text-[var(--pd-size-helper)] font-extrabold text-[var(--pd-navy)]">
+            {AuthStrings.stillNoCode}
           </p>
+          <div className="flex flex-col gap-2.5">
+            {showWhatsApp && (
+              <button type="button" onClick={onWhatsAppCode} className={secondaryButton}>
+                <MessageCircle className="w-[19px] h-[19px]" strokeWidth={2.5} aria-hidden="true" />
+                {AuthStrings.codeOnWhatsApp}
+              </button>
+            )}
+            {showCall && (
+              <button type="button" onClick={onCallCode} className={secondaryButton}>
+                <Phone className="w-[19px] h-[19px]" strokeWidth={2.5} aria-hidden="true" />
+                {AuthStrings.codeByCall}
+              </button>
+            )}
+          </div>
         </div>
-      </form>
-    </div>
+      )}
+
+      <div className="h-4" />
+    </AuthShell>
   );
 }
