@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { CustomerLookup } from './CustomerLookup';
-import { CustomerRepository } from '../../../offline/repositories/CustomerRepository';
+import { CustomerRepository } from '@/offline/repositories/CustomerRepository';
 
 const meta = {
   title: 'Features/Customers/CustomerLookup',
