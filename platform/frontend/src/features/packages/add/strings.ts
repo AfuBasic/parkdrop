@@ -50,6 +50,12 @@ export const AddPackageStrings = {
       ? `${name} already has 1 package waiting.`
       : `${name} already has ${count} packages waiting.`,
 
+  // Optional Photo
+  photoLabel: 'Package photo (optional)',
+  addPhotoFormAction: 'Add photo',
+  retakePhotoFormAction: 'Retake',
+  removePhotoFormAction: 'Remove',
+
   // Actions
   saveAction: 'Save package',
   savingAction: 'Saving…',
