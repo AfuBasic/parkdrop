@@ -1,6 +1,6 @@
 import { Calendar, MapPin, UserCheck } from 'lucide-react';
 import type { LocalPackage } from '@/offline/db/schema';
-import { PackagesStrings } from '../../strings';
+import { PackagesStrings } from '@/features/packages/strings';
 
 export interface PackageInfoCardProps {
   pkg: LocalPackage;
