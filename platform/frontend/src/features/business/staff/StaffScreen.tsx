@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { ChevronLeft, UserPlus, WifiOff, AlertCircle } from 'lucide-react';
-import { useAuth } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/auth/AuthContext';
-import { businessApi, type StaffMember, type PendingInvitation } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/api/business-api';
-import type { BusinessRole } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
-import { getBusinessPermissions } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
-import { StaffMemberRow } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/staff/components/StaffMemberRow';
-import { PendingInvitationRow } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/staff/components/PendingInvitationRow';
-import { StaffMemberActionsSheet } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/staff/components/StaffMemberActionsSheet';
-import { InviteStaffSheet } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/staff/components/InviteStaffSheet';
+import { useAuth } from '@/features/auth/AuthContext';
+import { businessApi, type StaffMember, type PendingInvitation } from '@/features/business/api/business-api';
+import type { BusinessRole } from '@/features/business/permissions/business-permissions';
+import { getBusinessPermissions } from '@/features/business/permissions/business-permissions';
+import { StaffMemberRow } from '@/features/business/staff/components/StaffMemberRow';
+import { PendingInvitationRow } from '@/features/business/staff/components/PendingInvitationRow';
+import { StaffMemberActionsSheet } from '@/features/business/staff/components/StaffMemberActionsSheet';
+import { InviteStaffSheet } from '@/features/business/staff/components/InviteStaffSheet';
 
 interface StaffScreenProps {
-  onBack: () => void;
+  onBack?: () => void;
   mockMembers?: StaffMember[];
   mockInvitations?: PendingInvitation[];
   mockRole?: BusinessRole;
@@ -24,6 +25,8 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
   mockRole,
   mockIsOnline,
 }) => {
+  const routerNavigate = useNavigate();
+  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
   const { user, role: contextRole } = useAuth();
   const effectiveRole = (mockRole || contextRole || 'attendant') as BusinessRole;
   const permissions = getBusinessPermissions(effectiveRole);
@@ -135,7 +138,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
       <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center justify-between shrink-0">
         <button
           type="button"
-          onClick={onBack}
+          onClick={handleBack}
           className="flex items-center text-slate-600 hover:text-slate-900 transition-colors py-2 pr-4 -ml-2 min-h-[44px] cursor-pointer"
           aria-label="Back to more menu"
         >
