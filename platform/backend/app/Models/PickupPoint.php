@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class PickupPoint extends Model
 {
@@ -20,7 +21,7 @@ class PickupPoint extends Model
 
         static::creating(function ($pickupPoint) {
             if (empty($pickupPoint->public_id)) {
-                $pickupPoint->public_id = (string) \Illuminate\Support\Str::uuid();
+                $pickupPoint->public_id = (string) Str::uuid();
             }
         });
     }
