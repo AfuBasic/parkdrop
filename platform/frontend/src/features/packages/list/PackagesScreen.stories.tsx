@@ -185,14 +185,16 @@ export const Collected: Story = {
 
 export const Returned: Story = {
   args: {
-    initialStatus: 'RETURNED',
+    initialStatus: 'OTHER',
+    initialPayFilter: 'returned',
   },
   loaders: [seedPackages],
 };
 
 export const Cancelled: Story = {
   args: {
-    initialStatus: 'CANCELLED',
+    initialStatus: 'OTHER',
+    initialPayFilter: 'cancelled',
   },
   loaders: [seedPackages],
 };
