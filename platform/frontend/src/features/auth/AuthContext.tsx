@@ -15,7 +15,7 @@ export type AuthState =
   | 'remembered_expired'   // Device has remembered email but session expired -> RememberedReauthScreen
   | 'unknown';             // Fresh unknown visitor -> Universal Email OTP Flow
 
-interface AuthContextValue {
+export interface AuthContextValue {
   state: AuthState;
   user: AuthUser | null;
   business: AuthBusiness | null;
