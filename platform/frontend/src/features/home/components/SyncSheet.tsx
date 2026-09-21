@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import { Sheet, SheetContent } from '@/design-system';
 import { cn } from '@/lib/utils';
 import { HomeStrings } from '../strings';
-import type { SyncSummary } from './SyncChip';
+import type { SyncSummary } from '../lib/syncSummary';
 
 export interface SyncSheetProps {
   open: boolean;
