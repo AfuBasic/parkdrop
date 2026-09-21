@@ -21,6 +21,7 @@ export interface PackageSavedScreenProps {
   onGoHome: () => void;
   onPackageVoided?: () => void;
   isOnline?: boolean;
+  initialPhotoPreview?: string | null;
 }
 
 /**
@@ -42,8 +43,9 @@ export function PackageSavedScreen({
   onGoHome,
   onPackageVoided,
   isOnline = true,
+  initialPhotoPreview = null,
 }: PackageSavedScreenProps) {
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoPreview);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
