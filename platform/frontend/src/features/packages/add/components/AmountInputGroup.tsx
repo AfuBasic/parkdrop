@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { AddPackageStrings } from '../strings';
+import { AddPackageStrings } from '@/features/packages/add/strings';
 
 export interface AmountInputGroupProps {
   value: string;
