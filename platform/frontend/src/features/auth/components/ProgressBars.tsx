@@ -23,7 +23,7 @@ export interface ProgressBarsProps {
  */
 export function ProgressBars({
   step,
-  total = 5,
+  total = 6,
   compact,
   labelOverride,
   className,
