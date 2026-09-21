@@ -1,22 +1,25 @@
 import { useState, useId } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Search, X, Users, PackagePlus } from 'lucide-react';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useCustomerDirectory } from '@/features/customers/hooks/useCustomerDirectory';
 import { CustomerListItem } from '@/features/customers/list/components/CustomerListItem';
 import type { CustomerDirectoryItem } from '@/features/customers/domain/customer-types';
 
 interface CustomersScreenProps {
-  businessId: number;
+  businessId?: number;
   onSelectCustomer?: (customerId: string) => void;
   onNavigateToAdd?: () => void;
 }
 
 export function CustomersScreen({
-  businessId,
+  businessId: propBusinessId,
   onSelectCustomer,
   onNavigateToAdd,
 }: CustomersScreenProps) {
   const routerNavigate = useNavigate();
+  const { business } = useAuth();
+  const businessId = propBusinessId ?? business?.id ?? 0;
   const handleSelectCustomer = onSelectCustomer ?? ((customerId: string) => {
     routerNavigate({ to: '/customers/$customerId', params: { customerId } });
   });
