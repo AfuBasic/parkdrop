@@ -1,6 +1,7 @@
 import { Logo } from '@/features/auth/components/Logo';
 import { cn } from '@/lib/utils';
-import { SyncChip, type SyncSummary } from './SyncChip';
+import { SyncChip } from './SyncChip';
+import type { SyncSummary } from '../lib/syncSummary';
 
 export interface HomeHeaderProps {
   greeting: string;
