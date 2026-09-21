@@ -98,22 +98,6 @@ function AppContent() {
     );
   }
 
-  // Helper to render the placeholder screens for features not built yet
-  const renderPlaceholder = (title: string, description: string) => (
-    <div className="flex flex-col items-center justify-center h-full min-h-[50vh] text-center p-6">
-      <h2 className="text-xl font-bold text-text-primary mb-2">{title}</h2>
-      <p className="text-text-secondary mb-6">{description}</p>
-      {currentPath !== '/' && (
-        <button 
-          onClick={() => setCurrentPath('/')}
-          className="text-action-primary font-medium hover:underline cursor-pointer"
-        >
-          Return to Home
-        </button>
-      )}
-    </div>
-  );
-
   // Authenticated state (active session)
   return (
     <AppShell currentPath={currentPath.startsWith('/more') ? '/more' : currentPath} onNavigate={setCurrentPath}>
