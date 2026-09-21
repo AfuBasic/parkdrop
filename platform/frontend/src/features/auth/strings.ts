@@ -69,7 +69,6 @@ export const AuthStrings = {
     mode === 'phone'
       ? 'The SMS can take up to a minute.'
       : 'It can take a minute. Check Spam too.',
-  openGmail: 'Open Gmail',
   checking: 'Checking…',
 
   resendTitle: 'Send the code again',
