@@ -1,6 +1,6 @@
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { Search, X } from 'lucide-react';
-import { PackagesStrings } from '../../strings';
+import { PackagesStrings } from '@/features/packages/strings';
 
 export interface PackagesListHeaderProps {
   searchQuery: string;
