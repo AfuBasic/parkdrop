@@ -12,9 +12,17 @@ use App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController;
 use App\Http\Controllers\Api\V1\Reports\DailyOperationsReportController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Health & Operational Readiness Probes
+Route::prefix('v1/health')->group(function () {
+    Route::get('/live', [HealthController::class, 'live']);
+    Route::get('/ready', [HealthController::class, 'ready']);
+    Route::get('/dependencies', [HealthController::class, 'dependencies'])->middleware('auth:sanctum');
+});
 
 Route::get('/user', function (Request $request) {
     return $request->user();
