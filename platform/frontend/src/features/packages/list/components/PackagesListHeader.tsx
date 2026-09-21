@@ -1,5 +1,6 @@
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { Search, X } from 'lucide-react';
+import { Logo } from '@/features/auth/components/Logo';
 import { PackagesStrings } from '@/features/packages/strings';
 
 export interface PackagesListHeaderProps {
@@ -25,6 +26,7 @@ export function PackagesListHeader({
         <h1 className="text-[28px] sm:text-[30px] font-extrabold text-white tracking-tight m-0">
           {PackagesStrings.title}
         </h1>
+        <Logo tone="blue" markOnly />
       </div>
 
       {/* 60px White Search Input Container */}
