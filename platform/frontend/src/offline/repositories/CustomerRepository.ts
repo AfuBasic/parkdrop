@@ -1,7 +1,7 @@
-import { db } from '../db/database';
-import type { LocalCustomer } from '../db/schema';
-import { MutationQueue } from '../mutations/mutation-queue';
-import { normalizePhone } from '../helpers/phoneNormalizer';
+import { db } from '@/offline/db/database';
+import type { LocalCustomer } from '@/offline/db/schema';
+import { MutationQueue } from '@/offline/mutations/mutation-queue';
+import { normalizePhone } from '@/offline/helpers/phoneNormalizer';
 
 export class CustomerRepository {
   /**
