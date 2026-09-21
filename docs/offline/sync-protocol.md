@@ -15,13 +15,30 @@
   - `RETURN_PACKAGE`: `{ event_id, package_id, reason, reason_note, client_event_at }`. Enforces `WAITING` row-lock constraint. Rejects with `CONFLICT` (`PACKAGE_ALREADY_COLLECTED`, `PACKAGE_ALREADY_RETURNED`, `PACKAGE_ALREADY_CANCELLED`) if package transitioned on another device.
   - `CANCEL_PACKAGE`: `{ event_id, package_id, reason, reason_note, client_event_at }`. Same terminal race locking. First valid terminal transition committed by the server wins.
 
-## Pull Protocol
-- **Endpoint**: `GET /api/v1/sync/pull`
-- **Query**: `?cursor={number}&limit={number}`
-- **Response**: `{ changes: Array<SyncChange>, cursor: number, has_more: boolean }`
-- **Sync Change Structure**:
-  - `id`: The incremental cursor value.
-  - `entity_type` (string): The type of entity modified.
-  - `entity_id` (string): The ID of the modified entity.
-  - `operation` (string): Action performed (e.g., `CREATED`, `UPDATED`, `DELETED`).
-  - `entity_version` (integer): The new version of the entity for conflict resolution.
+
+## Business Scoping (Build 20 / Build 23)
+- Both push and pull support explicit `business_id` scoping:
+  - `POST /api/v1/sync/push`: validates `business_id` membership and restricts mutation application.
+  - `GET /api/v1/sync/pull`: `?cursor={number}&limit={number}&business_id={number}` restricts sync logs strictly to entities belonging to the requested business.
+- Multi-business memberships are strictly isolated in sync cursors (`syncState` store keyed by `business_id`).
+
+## Recovery & Resilience Protocol (Build 23)
+
+### 1. Stale `SYNCING` Mutation Recovery
+- If the browser crashes, refreshes, or loses power mid-push while mutations are marked `SYNCING`:
+  - Startup health check (`LocalHealthCheck.checkStartupHealth()`) scans `mutations` where `status === 'SYNCING'`.
+  - Any mutation in `SYNCING` status older than 45 seconds is safely transitioned back to `PENDING`.
+  - Replay idempotency guarantees the server will recognize duplicate `mutation_id`s in `sync_mutation_receipts` and return previously recorded receipts without double-mutating.
+
+### 2. Cursor Reset & Rebootstrap Deduplication
+- When local state for a business requires repair, the business cursor in `syncState` can be reset to `0`.
+- During rebootstrap:
+  - The client pulls all canonical server changes from cursor 0.
+  - Server entities overwrite or merge into local stores (`packages`, `customers`, `payments`).
+  - **Local pending mutations are never deleted**: any package or payment with local `PENDING_CREATE` / `PENDING` mutations preserves its unsynced client mutations.
+  - Resetting the cursor for Business A strictly scopes to `business_id = A`, leaving Business B's local records and cursor untouched.
+
+### 3. Replay Idempotency & Conflict Guard
+- All push mutations are guaranteed idempotent by the backend receipt log (`sync_mutation_receipts`).
+- Re-pushing an already applied mutation returns `APPLIED` with the original entity IDs and alias mappings.
+- Re-pushing a terminal transition that lost a race returns `CONFLICT` without crashing client sync.
