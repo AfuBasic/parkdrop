@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { db } from '../db/database';
+import { db } from '@/offline/db/database';
 import { PackageRepository } from './PackageRepository';
 
 describe('PackageRepository', () => {
