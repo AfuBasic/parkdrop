@@ -20,7 +20,6 @@ export interface PackageSavedScreenProps {
   onNextPackage: () => void;
   onGoHome: () => void;
   onPackageVoided?: () => void;
-  isOnline?: boolean;
   initialPhotoPreview?: string | null;
 }
 
@@ -42,7 +41,6 @@ export function PackageSavedScreen({
   onNextPackage,
   onGoHome,
   onPackageVoided,
-  isOnline = true,
   initialPhotoPreview = null,
 }: PackageSavedScreenProps) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoPreview);
