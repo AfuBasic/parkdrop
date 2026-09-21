@@ -106,14 +106,17 @@ export function HomeScreen({
       <div
         className={cn(
           'relative flex-1 bg-[var(--pd-page-2)]',
-          'rounded-t-[var(--pd-sheet-radius)] -mt-[var(--pd-tile-overlap)]'
+          // The sheet's own top edge stays flush with the bottom of the blue
+          // band. Only the tiles cross it, which reads as two cards resting
+          // on the boundary rather than as a torn corner.
+          'rounded-t-[var(--pd-sheet-radius)]'
         )}
       >
         <div className="mx-auto w-full max-w-[520px] px-4 pb-8 flex flex-col gap-4">
           <ActionTiles
             onAddPackage={() => onNavigateToAdd?.()}
             onFindPackage={() => onNavigateToSearch?.()}
-            className="relative z-10 -mt-[var(--pd-tile-overlap)]"
+            className="relative z-10 -mt-[calc(var(--pd-tile-overlap)*2)]"
           />
 
           {identity.needsSetup && identity.missing && (
