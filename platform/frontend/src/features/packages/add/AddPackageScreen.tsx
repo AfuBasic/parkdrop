@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { Camera, Loader2 } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useKeyboardOpen } from '@/features/auth/lib/useKeyboardOpen';
@@ -42,6 +43,16 @@ export function AddPackageScreen({
   initialCustomerId,
   initialPhone,
 }: AddPackageScreenProps) {
+  const routerNavigate = useNavigate();
+  const handleNavigate = onNavigate ?? ((path: string) => routerNavigate({ to: path as any }));
+  const handleBack = onBack ?? (() => {
+    if (initialCustomerId) {
+      routerNavigate({ to: '/customers/$customerId', params: { customerId: initialCustomerId } });
+    } else {
+      routerNavigate({ to: '/' });
+    }
+  });
+
   const { business } = useAuth();
   const businessId = business?.id || 0;
   const activePoint = business?.pickup_points?.find((p) => p.status === 'active')
@@ -304,13 +315,13 @@ export function AddPackageScreen({
     if (hasTypedData && !savedPackage) {
       setShowDiscardConfirm(true);
     } else {
-      onBack?.() ?? onNavigate?.('/');
+      handleBack();
     }
   };
 
   const handleConfirmLeave = () => {
     setShowDiscardConfirm(false);
-    onBack?.() ?? onNavigate?.('/');
+    handleBack();
   };
 
   // If saved, render full Success screen
@@ -325,8 +336,8 @@ export function AddPackageScreen({
         businessId={businessId}
         pickupPointName={pickupPointName}
         onNextPackage={handleNextPackage}
-        onGoHome={() => onNavigate?.('/')}
-        onPackageVoided={() => onNavigate?.('/')}
+        onGoHome={() => handleNavigate('/')}
+        onPackageVoided={() => handleNavigate('/')}
         initialPhotoPreview={photoPreview}
       />
     );
