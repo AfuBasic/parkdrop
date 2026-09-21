@@ -2,7 +2,7 @@ import * as React from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatNationalDisplay, toNationalDigits, NATIONAL_LENGTH } from '@/features/auth/lib/phone';
-import { AddPackageStrings } from '../strings';
+import { AddPackageStrings } from '@/features/packages/add/strings';
 
 export interface PhoneInputGroupProps {
   value: string;
