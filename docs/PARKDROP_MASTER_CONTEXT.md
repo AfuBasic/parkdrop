@@ -14,8 +14,9 @@
 **Build 13 — Package Detail (Single Operational Package Record + Customer + Photo + SMS + Payment + Activity): COMPLETED**
 **Build 14 — Payments (Append-Only Payment Recording + Offline Support + Derived Payment State + Concurrency Safety): COMPLETED**
 **Build 16 — Return & Cancel Package Lifecycle (Deliberate Terminal Actions + Reasons + Offline Support + Concurrency Safety): COMPLETED**
+**Build 17 — Customers Directory & Customer Detail (Local-First Customer Browse + Package History + Active Package Visibility): COMPLETED**
 
-Next build: Build 17.
+Next build: Build 18.
 
 ## Core Architecture Decisions
 
