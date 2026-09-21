@@ -37,7 +37,7 @@ function Column({ label, hint, onClick, children, sub, tone = 'default' }: Colum
       aria-label={hint}
       className={cn(
         'flex-1 min-w-0 min-h-[var(--pd-tap-min)]',
-        'flex flex-col items-start justify-start gap-1 px-3 py-3 text-left',
+        'flex flex-col items-start justify-start gap-1 px-2.5 py-3 text-left',
         'rounded-[var(--pd-chip-radius)]',
         'transition-[background-color,transform] duration-[var(--pd-motion-fast)]',
         'hover:bg-[var(--pd-tint)] active:scale-[0.98]',
@@ -49,15 +49,18 @@ function Column({ label, hint, onClick, children, sub, tone = 'default' }: Colum
       </span>
       <span
         className={cn(
-          'flex items-center gap-1 text-[22px] font-extrabold leading-tight tabular-nums',
-          'tracking-[-0.02em] max-w-full truncate',
+          // The naira figure is the widest thing in the strip and the one
+          // that must never be cut: "N21,25(" is worse than no figure at
+          // all. It shrinks with the viewport instead.
+          'flex items-center gap-1 font-extrabold leading-tight tabular-nums',
+          'text-[clamp(17px,5.2vw,22px)] tracking-[-0.02em] max-w-full',
           TONE_TEXT[tone]
         )}
       >
         {children}
       </span>
       {sub && (
-        <span className="text-[var(--pd-size-small)] font-semibold leading-none text-[var(--pd-muted)] tabular-nums truncate max-w-full">
+        <span className="text-[var(--pd-size-small)] font-semibold leading-none text-[var(--pd-muted)] tabular-nums max-w-full">
           {sub}
         </span>
       )}
