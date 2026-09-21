@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, DollarSign, Camera, RotateCcw, Ban, PackageCheck } from 'lucide-react';
+import { CheckCircle2, DollarSign, Camera, RotateCcw, Ban, PackageCheck, Send, Clock, XCircle, HelpCircle } from 'lucide-react';
 import type { PackageDetailActivityItem } from '@/features/packages/detail/package-detail-types';
 import { PackagesStrings } from '@/features/packages/strings';
 
@@ -26,6 +26,18 @@ export function PackageActivitySection({ timeline }: PackageActivitySectionProps
         return <RotateCcw className="w-4 h-4 text-[#D97706]" />;
       case 'PACKAGE_CANCELLED':
         return <Ban className="w-4 h-4 text-[var(--pd-bad)]" />;
+      // SMS delivery states — distinct icon + colour per state
+      case 'ARRIVAL_SMS_DELIVERED':
+        return <CheckCircle2 className="w-4 h-4 text-[#15803D]" />;
+      case 'ARRIVAL_SMS_SENT':
+        return <Send className="w-4 h-4 text-[var(--pd-blue)]" />;
+      case 'ARRIVAL_SMS_QUEUED':
+        return <Clock className="w-4 h-4 text-[var(--pd-blue)]" />;
+      case 'ARRIVAL_SMS_FAILED':
+      case 'ARRIVAL_SMS_UNDELIVERED':
+        return <XCircle className="w-4 h-4 text-[var(--pd-bad)]" />;
+      case 'ARRIVAL_SMS_NEEDS_RECONCILIATION':
+        return <HelpCircle className="w-4 h-4 text-[#D97706]" />;
       case 'SYNCED':
       case 'PACKAGE_RECORDED':
       default:
