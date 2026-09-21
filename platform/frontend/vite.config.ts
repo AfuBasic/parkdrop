@@ -36,9 +36,28 @@ export default defineConfig({
       manifest: {
         name: 'ParkDrop',
         short_name: 'ParkDrop',
+        description: 'Offline-first parcel holding and pickup point management system',
         theme_color: '#2563EB', // pd-blue-600
-        background_color: '#F8FAFC',
+        background_color: '#F8FBFF',
         display: 'standalone',
+        start_url: '/',
+        icons: [
+          {
+            src: '/favicon.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/apple-touch-icon.png',
+            sizes: '180x180',
+            type: 'image/png'
+          },
+          {
+            src: '/parkdrop-icon-only.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
       }
     }),
   ],
