@@ -114,7 +114,7 @@ export function IdentifierScreen({
               href="/privacy.html"
               // Padded out to a 48px touch target with the margin pulled back,
               // so the hit area grows without moving the sentence around it.
-              className="inline-block py-3 -my-3 text-[var(--pd-blue-hover)] font-extrabold underline underline-offset-2"
+              className="inline-block py-[13px] -my-[13px] text-[var(--pd-blue-hover)] font-extrabold underline underline-offset-2"
             >
               {AuthStrings.privacyNoticeLink}
             </a>
