@@ -5,19 +5,18 @@ import { Dialog, DialogContent } from '@/design-system';
 import { db } from '@/offline/db/database';
 import type { LocalPackageMedia } from '@/offline/db/schema';
 import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
-import { PackagesStrings } from '../strings';
+import { PackagesStrings } from '../../strings';
 
 export interface PackagePhotoCardProps {
   packageId: string;
   businessId: number;
-  media: LocalPackageMedia | null;
+  media?: LocalPackageMedia | null;
   mediaPreviewUrl: string | null;
 }
 
 export function PackagePhotoCard({
   packageId,
   businessId,
-  media,
   mediaPreviewUrl,
 }: PackagePhotoCardProps) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(mediaPreviewUrl);
