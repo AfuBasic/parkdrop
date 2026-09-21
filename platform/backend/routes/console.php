@@ -9,3 +9,8 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('parkdrop:scheduler-heartbeat')->everyMinute();
+
+// Process the transactional outbox every minute.
+// onOneServer() prevents double-dispatch when multiple scheduler instances are active.
+// withoutOverlapping() prevents a slow batch from stacking with the next scheduled run.
+Schedule::command('outbox:process')->everyMinute()->onOneServer()->withoutOverlapping(2);
