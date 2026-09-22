@@ -65,15 +65,28 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
 
         {/* Optional Line: Collected Date & Time */}
         {collectedDateStr && (
-          <div className="py-2.5 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-[#15803D] font-bold">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{PackagesStrings.collectedAtLabel}</span>
+          <>
+            <div className="py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[#15803D] font-bold">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{PackagesStrings.collectedAtLabel}</span>
+              </div>
+              <span className="font-extrabold text-[#15803D] tabular-nums">
+                {collectedDateStr}
+              </span>
             </div>
-            <span className="font-extrabold text-[#15803D] tabular-nums">
-              {collectedDateStr}
-            </span>
-          </div>
+            
+            {/* Optional Line: Released By */}
+            <div className="py-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[#15803D] font-bold">
+                <UserCheck className="w-4 h-4" />
+                <span>{PackagesStrings.releasedByLabel}</span>
+              </div>
+              <span className="font-extrabold text-[#15803D]">
+                {pkg.terminal_actor_name || pkg.terminal_actor_phone || 'Staff'}
+              </span>
+            </div>
+          </>
         )}
 
         {/* Line 2: Received by */}
