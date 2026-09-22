@@ -18,7 +18,7 @@ export function PackageSearchResults({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2 text-xs font-medium text-text-muted">
+      <div className="flex items-center justify-between px-3 py-2 text-[15px] font-medium text-text-muted">
         <span>
           {results.length} {results.length === 1 ? 'package found' : 'packages found'}
         </span>
