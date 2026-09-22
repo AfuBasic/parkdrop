@@ -11,6 +11,7 @@ export const HOME_ROW_LIMIT = 5;
 export interface WaitingListProps {
   rows: HomePackageRow[];
   filter: HomeFilter;
+  unpaidCount?: number;
   onFilterChange: (filter: HomeFilter) => void;
   onSelectPackage: (packageId: string) => void;
   onSeeAll: () => void;
@@ -28,6 +29,7 @@ export interface WaitingListProps {
 export function WaitingList({
   rows,
   filter,
+  unpaidCount,
   onFilterChange,
   onSelectPackage,
   onSeeAll,
@@ -44,7 +46,7 @@ export function WaitingList({
         >
           {HomeStrings.listTitle}
         </h2>
-        <FilterChips value={filter} onChange={onFilterChange} />
+        <FilterChips value={filter} onChange={onFilterChange} unpaidCount={unpaidCount} />
       </div>
 
       {visible.length === 0 ? (
