@@ -21,7 +21,7 @@ class TermiiSmsProvider implements SmsProvider
     public function __construct()
     {
         $this->apiKey = (string) config('services.termii.api_key');
-        $this->senderId = (string) config('services.termii.sender_id', 'Kontrol');
+        $this->senderId = (string) config('services.termii.sender_id', 'OE Alert');
         $this->baseUrl = rtrim((string) config('services.termii.base_url', 'https://api.ng.termii.com/api'), '/');
     }
 
