@@ -3,7 +3,7 @@ import { PackagesStrings } from '@/features/packages/strings';
 
 export interface PackageListEmptyStateProps {
   isPositiveFilterEmpty?: boolean;
-  filterType?: 'unpaid' | '7d';
+  filterType?: 'unpaid' | '7d' | '24h';
   onClearFilters?: () => void;
   onAddPackage?: () => void;
 }
@@ -16,7 +16,9 @@ export function PackageListEmptyState({
 }: PackageListEmptyStateProps) {
   if (isPositiveFilterEmpty) {
     const text =
-      filterType === 'unpaid'
+      filterType === '24h'
+        ? PackagesStrings.emptyNo24hOverdue
+        : filterType === 'unpaid'
         ? PackagesStrings.emptyNoUnpaid
         : PackagesStrings.emptyNo7Days;
 
