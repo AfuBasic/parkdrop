@@ -23,7 +23,6 @@ import { CancelPackageSheet } from '@/features/packages/lifecycle/components/Can
 import { PaymentRepository } from '@/offline/repositories/PaymentRepository';
 import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecycleRepository';
 import { db } from '@/offline/db/database';
-import type { PaymentMethod } from '@/offline/db/schema';
 import type { ReturnReason, CancelReason } from '@/features/packages/lifecycle/domain/lifecycle-reasons';
 import { PackagesStrings } from '@/features/packages/strings';
 
@@ -105,18 +104,7 @@ export function PackageDetailScreen({
 
   const { package: pkg, customer, media, mediaPreviewUrl, payments, paymentSummary, activityTimeline } = data;
 
-  // 1. Payment Recording Handler
-  const handleRecordPayment = async (amountMinor: number, method: PaymentMethod) => {
-    await PaymentRepository.recordPayment({
-      businessId,
-      pickupPointId: pkg.pickup_point_id,
-      packageId: pkg.id,
-      amountMinor,
-      method,
-    });
-  };
-
-  // 2. Release with Payment Collection Handler
+  // 1. Release with Payment Collection Handler
   const handleConfirmCollectAndRelease = async (pickupCode: string) => {
     if (paymentSummary.balanceMinor > 0) {
       await PaymentRepository.recordPayment({
@@ -140,21 +128,21 @@ export function PackageDetailScreen({
     handleBack();
   };
 
-  // 3. Release Without Payment Handler
+  // 2. Release Without Payment Handler
   const handleConfirmReleaseWithoutPayment = async (pickupCode: string) => {
     await PackageLifecycleRepository.collectPackageLocally({
       businessId,
       pickupPointId: pkg.pickup_point_id,
       packageId: pkg.id,
       pickupCode,
-      notes: 'Released without payment',
+      notes: null,
       actorName: staffName,
     });
 
     handleBack();
   };
 
-  // 4. Release Already Paid Handler
+  // 3. Release Paid / ₦0 Handler
   const handleConfirmReleasePaid = async (pickupCode: string) => {
     await PackageLifecycleRepository.collectPackageLocally({
       businessId,
@@ -168,30 +156,40 @@ export function PackageDetailScreen({
     handleBack();
   };
 
-  // 5. Lifecycle Action Handlers (Return & Cancel)
-  const handleConfirmReturn = async (reason: ReturnReason, note?: string | null) => {
+  // 4. Undo Release Handler
+  const handleUndoRelease = async () => {
+    await PackageLifecycleRepository.undoCollectionLocally({
+      businessId,
+      packageId: pkg.id,
+    });
+  };
+
+  // 5. Lifecycle Sheets Completion Handlers
+  const handleCompleteReturn = async (reason: ReturnReason, note?: string | null) => {
     await PackageLifecycleRepository.returnPackageLocally({
       businessId,
       pickupPointId: pkg.pickup_point_id,
       packageId: pkg.id,
       reason,
-      reasonNote: note,
+      notes: note,
+      actorName: staffName,
     });
-    setIsReturnSheetOpen(false);
+    handleBack();
   };
 
-  const handleConfirmCancel = async (reason: CancelReason, note?: string | null) => {
+  const handleCompleteCancel = async (reason: CancelReason, note?: string | null) => {
     await PackageLifecycleRepository.cancelPackageLocally({
       businessId,
       pickupPointId: pkg.pickup_point_id,
       packageId: pkg.id,
       reason,
-      reasonNote: note,
+      notes: note,
+      actorName: staffName,
     });
-    setIsCancelSheetOpen(false);
+    handleBack();
   };
 
-  // 6. Resend Arrival SMS — server-authoritative, needs connectivity
+  // 6. Resend SMS Handler
   const handleResendSms = async () => {
     try {
       await packagesApi.resendArrivalSms(pkg.id);
@@ -239,13 +237,11 @@ export function PackageDetailScreen({
         {/* Large Grouped Monospace Pickup Code Card */}
         <PackagePickupCodeCard pkg={pkg} />
 
-        {/* Payment Card with Quick Modal */}
+        {/* Payment Card */}
         <PackagePaymentCard
           paymentSummary={paymentSummary}
           payments={payments}
           packageStatus={pkg.status}
-          canRecordPayment={pkg.status === 'WAITING'}
-          onRecordPayment={handleRecordPayment}
         />
 
         {/* Photo Card with Direct Camera Capture */}
@@ -271,14 +267,10 @@ export function PackageDetailScreen({
         pkg={pkg}
         customer={customer}
         paymentSummary={paymentSummary}
-        onOpenRecordPaymentOnly={() => {
-          // Trigger payment sheet by proxy
-          const btn = document.querySelector('button[aria-label="Record payment"]') as HTMLButtonElement | null;
-          btn?.click();
-        }}
         onConfirmCollectAndRelease={handleConfirmCollectAndRelease}
         onConfirmReleaseWithoutPayment={handleConfirmReleaseWithoutPayment}
         onConfirmReleasePaid={handleConfirmReleasePaid}
+        onUndoRelease={handleUndoRelease}
       />
 
       {/* Lifecycle Action Sheets */}
