@@ -117,6 +117,7 @@ export function MoreScreen() {
             icon={<BarChart3 className={ICON} strokeWidth={STROKE} />}
             label={MoreStrings.yourDay}
             subtitle={MoreStrings.yourDaySub}
+            needsInternet={!isOnline}
           />
         )}
       </SettingsGroup>
