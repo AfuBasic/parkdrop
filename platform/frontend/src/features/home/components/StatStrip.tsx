@@ -105,11 +105,10 @@ export function StatStrip({
       </Column>
 
       <Column
-        label={HomeStrings.statUnpaid}
-        hint={HomeStrings.statUnpaidHint}
+        label={HomeStrings.statOwed}
+        hint={HomeStrings.statOwedHint}
         onClick={onOpenUnpaid}
         tone={stats.unpaidBalanceMinor > 0 ? 'warn' : 'default'}
-        sub={HomeStrings.statUnpaidCount(stats.unpaidCount)}
       >
         {formatMoney(stats.unpaidBalanceMinor)}
       </Column>
