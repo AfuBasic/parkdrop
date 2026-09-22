@@ -19,6 +19,7 @@ import { ReturnPackageSheet } from '@/features/packages/lifecycle/components/Ret
 import { CancelPackageSheet } from '@/features/packages/lifecycle/components/CancelPackageSheet';
 import { PaymentRepository } from '@/offline/repositories/PaymentRepository';
 import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecycleRepository';
+import { db } from '@/offline/db/database';
 import type { PaymentMethod } from '@/offline/db/schema';
 import type { ReturnReason, CancelReason } from '@/features/packages/lifecycle/domain/lifecycle-reasons';
 import { PackagesStrings } from '@/features/packages/strings';
@@ -188,6 +189,13 @@ export function PackageDetailScreen({
   const handleResendSms = async () => {
     try {
       await packagesApi.resendArrivalSms(pkg.id);
+      
+      // Update local db to reflect resend in timeline immediately
+      await db.packages.update(pkg.id, {
+        arrival_sms_status: 'PENDING',
+        arrival_sms_sent_at: new Date().toISOString(),
+      });
+      
       toast.success(PackagesStrings.smsResentToast);
     } catch {
       toast.error(PackagesStrings.smsResendFailedToast);
