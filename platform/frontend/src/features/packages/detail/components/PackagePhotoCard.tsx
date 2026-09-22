@@ -70,7 +70,7 @@ export function PackagePhotoCard({
   };
 
   const photoChip = photoPreview ? (
-    <span className="text-[13px] font-extrabold text-[#15803D] bg-[#DCFCE7] px-2.5 py-0.5 rounded-full border border-[#86EFAC]">
+    <span className="text-[15px] font-extrabold text-[#15803D] bg-[#DCFCE7] px-2.5 py-0.5 rounded-full border border-[#86EFAC]">
       {PackagesStrings.photoAddedStatus}
     </span>
   ) : undefined;
