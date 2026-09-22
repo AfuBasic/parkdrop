@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { RouterProvider } from '@tanstack/react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { router } from '@/router';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { Toaster } from '@/components/ui/sonner';
@@ -147,6 +148,15 @@ const ScreenPreview = import.meta.env.DEV
   ? React.lazy(() => import('@/routes/screen-preview'))
   : null;
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
 function App() {
   if (
     HomePreview &&
@@ -183,10 +193,12 @@ function App() {
   }
 
   return (
-    <AuthProvider>
-      <AppContent />
-      <Toaster />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppContent />
+        <Toaster />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
