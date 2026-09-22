@@ -122,10 +122,15 @@ export const PackagesStrings = {
   releasePackagePrimary: 'Release package',
   recordPaymentOnlyAction: 'Record payment only',
   collectedBanner: (date: string, time: string, actor: string) => `Collected on ${date}, ${time} by ${actor}`,
+  // The exact time is not always known (a package collected on another
+  // device, or before this app tracked the time). Never guess a time.
+  collectedBannerNoTime: (actor: string) => `Collected by ${actor}`,
   owingBanner: (amountStr: string) => `Owing ${amountStr}`,
   undoReleaseAction: 'Undo release',
   returnedBanner: (date: string) => `Returned on ${date}`,
+  returnedBannerNoDate: 'Returned',
   cancelledBanner: (date: string) => `Cancelled on ${date}`,
+  cancelledBannerNoDate: 'Cancelled',
 
   // Release Sheet
   releaseTitle: (nameOrPhone: string) => `Release to ${nameOrPhone}?`,
