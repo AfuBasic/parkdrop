@@ -28,9 +28,8 @@ export const AuthStrings = {
 
   // Help sheet
   helpTitle: 'Talk to a real person.',
-  helpBody: 'We can see which screen you are on.',
-  helpWhatsApp: 'Chat on WhatsApp',
-  helpCall: 'Call us',
+  helpBody: 'Email us and tell us what screen you are on.',
+  helpEmail: 'Email us',
   helpClose: 'Close',
 
   // ── 1. Identifier ──────────────────────────────────────────────────────
