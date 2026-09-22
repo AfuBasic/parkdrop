@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { Camera, X } from 'lucide-react';
 import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
 
@@ -24,7 +25,7 @@ export function PackagePhotoField({ onPhotoSelected }: PackagePhotoFieldProps) {
       onPhotoSelected(processedBlob);
     } catch (error) {
       console.error('Failed to process photo', error);
-      alert('Failed to process photo. Please try again.');
+      toast.error('Could not use that photo. Try again.');
     } finally {
       setIsProcessing(false);
       // Reset input so the same file can be selected again if removed
