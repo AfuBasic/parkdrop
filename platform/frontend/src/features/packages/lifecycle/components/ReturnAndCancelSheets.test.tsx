@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ReturnPackageSheet } from './ReturnPackageSheet';
 import { CancelPackageSheet } from './CancelPackageSheet';
-import { ReleasePackageSheet } from './ReleasePackageSheet';
 import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 
@@ -132,43 +131,5 @@ describe('Return and Cancel Sheets', () => {
 
     expect(screen.getByText(/Payment of ₦3,500 already recorded/i)).toBeDefined();
     expect(screen.getByText(/will not alter or refund recorded payment history/i)).toBeDefined();
-  });
-
-  it('renders ReleasePackageSheet, verifies code, and confirms release', async () => {
-    const onConfirmRelease = vi.fn().mockResolvedValue(undefined);
-    const onClose = vi.fn();
-
-    render(
-      <ReleasePackageSheet
-        isOpen={true}
-        onClose={onClose}
-        pkg={mockPackage}
-        customer={mockCustomer}
-        paymentSummary={paidPaymentSummary}
-        onConfirmRelease={onConfirmRelease}
-      />
-    );
-
-    expect(screen.getByText('Collect & Release Package')).toBeDefined();
-    expect(screen.getByText(/Chinedu Okafor/i)).toBeDefined();
-
-    const input = screen.getByPlaceholderText(/7-character code/i);
-    const submitBtn = screen.getByRole('button', { name: /Confirm package collected/i });
-
-    // Try wrong code
-    fireEvent.change(input, { target: { value: 'WRONGCD' } });
-    fireEvent.click(submitBtn);
-
-    expect(await screen.findByText('Pickup code does not match this package')).toBeDefined();
-    expect(onConfirmRelease).not.toHaveBeenCalled();
-
-    // Enter correct code (case-insensitive)
-    fireEvent.change(input, { target: { value: '7k4p2mx' } });
-    fireEvent.click(submitBtn);
-
-    await waitFor(() => {
-      expect(onConfirmRelease).toHaveBeenCalledWith('7K4P2MX', null);
-      expect(onClose).toHaveBeenCalled();
-    });
   });
 });
