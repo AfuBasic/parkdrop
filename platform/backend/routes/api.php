@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\Business\BusinessDetailsController;
 use App\Http\Controllers\Api\V1\Business\BusinessStaffController;
 use App\Http\Controllers\Api\V1\Business\PickupPointController;
 use App\Http\Controllers\Api\V1\PackageMedia\PackageMediaController;
+use App\Http\Controllers\Api\V1\Packages\ResendArrivalSmsController;
 use App\Http\Controllers\Api\V1\Reports\DailyOperationsReportController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
@@ -61,6 +62,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('complete', [PackageMediaController::class, 'completeUpload']);
         Route::get('{media}/view', [PackageMediaController::class, 'view']);
     });
+
+    Route::post('v1/packages/{package}/resend-sms', ResendArrivalSmsController::class);
 
     // SMS Credit Purchases
     Route::prefix('v1/sms-credit-purchases')->group(function () {
