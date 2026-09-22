@@ -9,6 +9,8 @@ import {
 } from '@tanstack/react-router';
 import { AppShell } from '@/design-system/shell/AppShell';
 import { NavDirectionProvider } from '@/lib/nav-direction';
+import { useAuth } from '@/features/auth/AuthContext';
+import { useBackgroundSync } from '@/offline/sync/useBackgroundSync';
 import { HomeScreen } from '@/features/home/HomeScreen';
 import { PackagesScreen } from '@/features/packages/list/PackagesScreen';
 import { AddPackageScreen } from '@/features/packages/add/AddPackageScreen';
@@ -34,10 +36,23 @@ const HomePreview = import.meta.env.DEV
   ? React.lazy(() => import('@/routes/home-preview'))
   : null;
 
+/**
+ * Keeps this device's local changes moving to the server for as long as
+ * anyone is signed in, regardless of which screen they are looking at. See
+ * useBackgroundSync for why this exists — without it, sync only happened as
+ * a side effect of two unrelated screens.
+ */
+function BackgroundSync() {
+  const { business } = useAuth();
+  useBackgroundSync(business?.id);
+  return null;
+}
+
 // 1. Root Layout Route
 const rootRoute = createRootRoute({
   component: () => (
     <NavDirectionProvider>
+      <BackgroundSync />
       <Outlet />
     </NavDirectionProvider>
   ),
