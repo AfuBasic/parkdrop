@@ -70,7 +70,7 @@ export function PackagesTabsAndChips({
               <span className="text-[16px] leading-none">{tab.label}</span>
               <span
                 className={cn(
-                  'text-[13px] px-2 py-0.5 rounded-full font-bold tabular-nums',
+                  'text-[15px] px-2 py-0.5 rounded-full font-bold tabular-nums',
                   isActive
                     ? 'bg-[var(--pd-blue)] text-white'
                     : 'bg-[var(--pd-page)] text-[var(--pd-muted)] border border-[var(--pd-line)]'
