@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Download, WifiOff } from 'lucide-react';
+import { Download, WifiOff } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { ReportDateNavigator } from '@/features/reports/components/ReportDateNavigator';
 import { ReportScopeSelector } from '@/features/reports/components/ReportScopeSelector';
@@ -10,6 +10,8 @@ import { DailyActivityList } from '@/features/reports/components/DailyActivityLi
 import { useDailyOperationsReport } from '@/features/reports/hooks/useDailyOperationsReport';
 import { downloadDailyReportCsv } from '@/features/reports/api/reports-api';
 import { DailyOperationsReportRepository } from '@/offline/read-models/daily-operations-report-repository';
+import { TaskHeader } from '@/design-system/shell/TaskHeader';
+import { ReportsStrings } from '@/features/reports/strings';
 
 interface DailyOperationsScreenProps {
   onBack?: () => void;
@@ -52,115 +54,86 @@ export function DailyOperationsScreen({ onBack }: DailyOperationsScreenProps) {
     }
   };
 
-  // If user is attendant, show unauthorized message
   if (role === 'attendant') {
     return (
-      <div className="flex flex-col h-full max-w-lg mx-auto p-4">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center gap-2 text-text-secondary hover:text-text-primary text-sm font-semibold mb-4 min-h-[44px]"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to Settings</span>
-        </button>
-        <div className="p-8 text-center bg-surface-default border border-border-subtle rounded-[var(--radius-xl)] mt-4">
-          <p className="text-text-secondary text-sm font-medium">
-            Operational reports are restricted to Business Owners and Managers.
-          </p>
+      <div className="flex flex-col min-h-screen bg-[var(--pd-page-2)] w-full max-w-lg mx-auto">
+        <TaskHeader title={ReportsStrings.title} onBack={handleBack} screenName="Daily operations" />
+        <div className="p-8 text-center bg-white border border-[var(--pd-line-2)] rounded-[var(--pd-card-radius)] m-4">
+          <p className="text-[16px] font-semibold text-[var(--pd-muted)] m-0">{ReportsStrings.restrictedBody}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full max-w-lg mx-auto pb-8 pt-2 px-4 gap-4">
-      {/* Screen Header */}
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center gap-2 text-text-secondary hover:text-text-primary text-sm font-semibold min-h-[44px] cursor-pointer"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Settings</span>
-        </button>
+    <div className="flex flex-col min-h-screen bg-[var(--pd-page-2)] w-full max-w-lg mx-auto pb-8">
+      <TaskHeader
+        title={ReportsStrings.title}
+        onBack={handleBack}
+        screenName="Daily operations"
+        subtitle={business?.name}
+      />
 
+      <main className="flex-1 p-4 flex flex-col gap-4">
         {isOnline && (
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={isExporting}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-default hover:bg-surface-subtle text-xs font-semibold text-text-primary transition-colors cursor-pointer min-h-[44px]"
-            aria-label="Export daily report as CSV"
-          >
-            <Download className="w-3.5 h-3.5 text-action-primary" />
-            <span>{isExporting ? 'Exporting...' : 'Export CSV'}</span>
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={isExporting}
+              className="min-h-[48px] px-3 inline-flex items-center gap-1.5 rounded-[var(--pd-field-radius)] border border-[var(--pd-line-2)] bg-white text-[15px] font-bold text-[var(--pd-navy)] cursor-pointer"
+              aria-label={ReportsStrings.exportCsv}
+            >
+              <Download className="w-4 h-4 text-[var(--pd-blue)]" strokeWidth={2.25} aria-hidden="true" />
+              <span>{isExporting ? ReportsStrings.exporting : ReportsStrings.exportCsv}</span>
+            </button>
+          </div>
         )}
-      </div>
 
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary tracking-tight">Daily operations</h1>
-        <p className="text-xs text-text-secondary mt-0.5">
-          {business?.name || 'Business'} · Africa/Lagos (WAT)
-        </p>
-      </div>
+        <ReportDateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
-      {/* Date Navigator */}
-      <ReportDateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <ReportScopeSelector pickupPoints={pickupPoints} currentScope={scope} onScopeChange={setScope} />
 
-      {/* Location Scope Selector */}
-      <div className="flex items-center justify-between">
-        <ReportScopeSelector
-          pickupPoints={pickupPoints}
-          currentScope={scope}
-          onScopeChange={setScope}
-        />
+          {!isOnline && (
+            <span className="flex items-center gap-1.5 text-[15px] font-bold text-[var(--pd-warn)] bg-[var(--pd-warn-bg)] px-2.5 py-1 rounded-full border border-[var(--pd-warn)]/25">
+              <WifiOff className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+              <span>{ReportsStrings.showingLocalData}</span>
+            </span>
+          )}
+        </div>
 
-        {/* Offline Truthfulness Badge */}
-        {!isOnline && (
-          <span className="flex items-center gap-1 text-[11px] font-medium text-status-warning-text bg-status-warning-bg px-2 py-0.5 rounded-full border border-status-warning-border">
-            <WifiOff className="w-3 h-3" />
-            <span>Showing local data</span>
-          </span>
+        {isLoading && (
+          <div className="p-8 text-center bg-white border border-[var(--pd-line-2)] rounded-[var(--pd-card-radius)]">
+            <div className="w-6 h-6 border-2 border-[var(--pd-blue)] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <p className="text-[15px] font-semibold text-[var(--pd-muted)] m-0">{ReportsStrings.loading}</p>
+          </div>
         )}
-      </div>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="p-8 text-center bg-surface-default border border-border-subtle rounded-[var(--radius-xl)]">
-          <div className="w-6 h-6 border-2 border-action-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-          <p className="text-xs text-text-muted">Loading daily report...</p>
-        </div>
-      )}
+        {!isLoading && summary?.completeness === 'HISTORICAL_UNAVAILABLE_OFFLINE' && (
+          <div className="p-6 text-center bg-white border border-[var(--pd-line-2)] rounded-[var(--pd-card-radius)] flex flex-col items-center gap-2">
+            <WifiOff className="w-6 h-6 text-[var(--pd-muted)]" strokeWidth={2.25} aria-hidden="true" />
+            <p className="text-[16px] font-bold text-[var(--pd-navy)] m-0">{ReportsStrings.historicalUnavailableTitle}</p>
+            <p className="text-[15px] font-semibold text-[var(--pd-muted)] max-w-xs m-0">
+              {ReportsStrings.historicalUnavailableBody}
+            </p>
+          </div>
+        )}
 
-      {/* Offline Historical Unavailable State */}
-      {!isLoading && summary?.completeness === 'HISTORICAL_UNAVAILABLE_OFFLINE' && (
-        <div className="p-6 text-center bg-surface-default border border-border-subtle rounded-[var(--radius-xl)] flex flex-col items-center gap-2">
-          <WifiOff className="w-6 h-6 text-text-muted" />
-          <p className="text-sm font-semibold text-text-primary">Historical report unavailable offline</p>
-          <p className="text-xs text-text-secondary max-w-xs">
-            This date is not saved on this device. Connect to the internet to view this report.
-          </p>
-        </div>
-      )}
+        {serverError && !isLoading && (
+          <div className="p-4 bg-[var(--pd-bad-bg)] border border-[var(--pd-bad)]/25 rounded-[var(--pd-field-radius)] text-[15px] font-semibold text-[var(--pd-bad)]">
+            {serverError}
+          </div>
+        )}
 
-      {/* Server Error State */}
-      {serverError && !isLoading && (
-        <div className="p-4 bg-status-danger-bg border border-status-danger-border rounded-[var(--radius-lg)] text-xs text-status-danger-text">
-          {serverError}
-        </div>
-      )}
-
-      {/* Operational Metrics Summaries */}
-      {!isLoading && summary && summary.completeness !== 'HISTORICAL_UNAVAILABLE_OFFLINE' && (
-        <>
-          <DailyPackageSummary metrics={summary.packages} isToday={isToday} />
-          <DailyPaymentSummary metrics={summary.payments} />
-          <DailyActivityList events={events} showPickupPoint={isBusinessWide} />
-        </>
-      )}
+        {!isLoading && summary && summary.completeness !== 'HISTORICAL_UNAVAILABLE_OFFLINE' && (
+          <>
+            <DailyPackageSummary metrics={summary.packages} isToday={isToday} />
+            <DailyPaymentSummary metrics={summary.payments} />
+            <DailyActivityList events={events} showPickupPoint={isBusinessWide} />
+          </>
+        )}
+      </main>
     </div>
   );
 }
