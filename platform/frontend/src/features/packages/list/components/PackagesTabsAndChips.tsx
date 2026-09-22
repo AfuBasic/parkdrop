@@ -11,7 +11,7 @@ import type {
 export interface PackagesTabsAndChipsProps {
   activeTab: StatusTab;
   onSelectTab: (tab: StatusTab) => void;
-  waitingCounts: { total: number; unpaid: number; age3d: number; age7d: number };
+  waitingCounts: { total: number; age3d: number; age7d: number };
   collectedCounts: { total: number; today: number; week: number; owing: number };
   otherCounts: { total: number; returned: number; cancelled: number };
   waitingChips: Set<WaitingFilterChip>;
@@ -91,11 +91,6 @@ export function PackagesTabsAndChips({
         {/* Waiting Tab Chips */}
         {activeTab === 'WAITING' && (
           <>
-            <FilterChipButton
-              label={`${PackagesStrings.chipUnpaid} ${waitingCounts.unpaid}`}
-              active={waitingChips.has('unpaid')}
-              onClick={() => onToggleWaitingChip('unpaid')}
-            />
             <FilterChipButton
               label={`${PackagesStrings.chipAge3d} ${waitingCounts.age3d}`}
               active={waitingChips.has('3d')}
