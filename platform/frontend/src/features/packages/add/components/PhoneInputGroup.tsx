@@ -127,7 +127,7 @@ export function PhoneInputGroup({
       </div>
 
       {error && (
-        <p id={errorId} role="alert" className="mt-2 text-[14px] font-bold text-[var(--pd-bad)]">
+        <p id={errorId} role="alert" className="mt-2 text-[15px] font-bold text-[var(--pd-bad)]">
           {error}
         </p>
       )}
