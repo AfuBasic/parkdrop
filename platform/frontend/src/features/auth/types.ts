@@ -24,6 +24,8 @@ export interface AuthBusiness {
   id: number;
   public_id: string;
   name: string;
+  /** In kobo. Added to a package's initial fee per extra day it sits uncollected. */
+  daily_storage_fee_minor?: number | null;
   pickup_points?: Array<{
     id: number;
     public_id: string;
