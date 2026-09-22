@@ -12,6 +12,7 @@ export interface PackagePaymentCardProps {
   payments: LocalPayment[];
   canRecordPayment: boolean;
   onRecordPayment: (amountMinor: number, method: PaymentMethod) => Promise<void>;
+  packageStatus?: string;
 }
 
 export function PackagePaymentCard({
@@ -19,6 +20,7 @@ export function PackagePaymentCard({
   payments,
   canRecordPayment,
   onRecordPayment,
+  packageStatus,
 }: PackagePaymentCardProps) {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isPartPayment, setIsPartPayment] = useState(false);
@@ -71,6 +73,13 @@ export function PackagePaymentCard({
     }
   };
 
+  // Heading chip and label framing:
+  // While package is Waiting and nothing paid yet, payment happens at collection point.
+  // Neutral "Amount due" framing with no status chip claiming an unpaid exception.
+  const isWaitingAndUnpaid = (packageStatus === 'WAITING' || !packageStatus) && paymentSummary.paidMinor === 0 && !paymentSummary.isFullyPaid;
+
+  const cardTitle = isWaitingAndUnpaid ? 'Amount due' : PackagesStrings.paymentCardTitle;
+
   const statusChip = paymentSummary.isFullyPaid ? (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[15px] font-extrabold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
       <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -81,10 +90,18 @@ export function PackagePaymentCard({
       <Minus className="w-3.5 h-3.5" />
       <span>{PackagesStrings.paymentNothingToPay}</span>
     </span>
+  ) : paymentSummary.paidMinor > 0 ? (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
+      <span>₦</span>
+      <span>{PackagesStrings.paymentPartPaid}</span>
+    </span>
+  ) : packageStatus === 'WAITING' || !packageStatus ? (
+    // Neutral framing when nothing has been paid yet for a waiting package: no status chip
+    null
   ) : (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
       <span>₦</span>
-      <span>{paymentSummary.paidMinor > 0 ? PackagesStrings.paymentPartPaid : PackagesStrings.paymentUnpaid}</span>
+      <span>{PackagesStrings.paymentUnpaid}</span>
     </span>
   );
 
@@ -92,7 +109,7 @@ export function PackagePaymentCard({
     <>
       <Section
         icon={<CreditCard className="w-5 h-5 text-[var(--pd-blue)]" />}
-        label={PackagesStrings.paymentCardTitle}
+        label={cardTitle}
         chip={statusChip}
       >
         <div className="flex flex-col gap-3">
