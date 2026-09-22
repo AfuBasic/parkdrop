@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { PackageX, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
+import { usePickupIdentity } from '@/features/home/hooks/usePickupIdentity';
 import { usePackageDetail } from '@/features/packages/detail/hooks/usePackageDetail';
 import { DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import { PackageIdentityHeader } from '@/features/packages/detail/components/PackageIdentityHeader';
@@ -30,13 +31,20 @@ export interface PackageDetailScreenProps {
 export function PackageDetailScreen({
   packageId,
   businessId: propBusinessId,
-  pickupPointName,
+  pickupPointName: propPickupPointName,
   onBack,
 }: PackageDetailScreenProps) {
   const routerNavigate = useNavigate();
   const handleBack = onBack ?? (() => routerNavigate({ to: '/packages' }));
   const { user, business } = useAuth();
   const businessId = propBusinessId ?? business?.id ?? 0;
+  // The package's own pickup_point_name is a snapshot written at creation
+  // time and only ever arrives once the package has round-tripped through a
+  // sync — a package added moments ago genuinely has none yet, even though
+  // the pickup point itself is fully set up. The live business record (same
+  // source Home uses) is the one that is actually current.
+  const { pointName: livePickupPointName } = usePickupIdentity();
+  const pickupPointName = propPickupPointName ?? livePickupPointName;
   const staffName = user?.first_name ? user.first_name : user?.email || 'Staff';
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
