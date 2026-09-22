@@ -11,6 +11,11 @@ class Business extends Model
         'public_id',
         'name',
         'status',
+        'daily_storage_fee_minor',
+    ];
+
+    protected $casts = [
+        'daily_storage_fee_minor' => 'integer',
     ];
 
     protected static function boot()
