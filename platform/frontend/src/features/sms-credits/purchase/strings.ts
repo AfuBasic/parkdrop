@@ -43,9 +43,12 @@ export const BuySmsCreditsStrings = {
   successTitle: (balance: number) => `Done. You now have ${balance} SMS.`,
   goBack: 'Go back',
 
-  // ── Failure ────────────────────────────────────────────────────────────
+  // ── Failure / Cancelled ────────────────────────────────────────────────
   failedToStartTitle: 'Could not start the payment.',
   tryAgain: 'Try again',
+  paymentCancelledTitle: 'Payment was cancelled',
+  paymentCancelledBody: 'No money left your account and no SMS credits were added.',
+  backToSmsCredits: 'Back to SMS credits',
 
   // ── Paid but not yet confirmed ────────────────────────────────────────
   paidUnconfirmedTitle: 'Your payment went through. We are still adding your SMS.',
