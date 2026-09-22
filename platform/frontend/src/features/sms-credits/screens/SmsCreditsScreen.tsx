@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { RefreshCw, WifiOff } from 'lucide-react';
@@ -39,6 +40,12 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
   const { business, role } = useAuth();
   const businessId = business?.id;
   const syncState = useSyncState(businessId);
+
+  useEffect(() => {
+    if (businessId) {
+      SyncEngine.sync(businessId);
+    }
+  }, [businessId]);
 
   const wallet = useLiveQuery(
     () => (businessId ? db.smsWallets.where('business_id').equals(businessId).first() : undefined),
