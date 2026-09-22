@@ -100,13 +100,13 @@ export function AmountInputGroup({
       </div>
 
       {!error && (
-        <p id={hintId} className="mt-2 text-[14px] font-semibold text-[var(--pd-muted)]">
+        <p id={hintId} className="mt-2 text-[15px] font-semibold text-[var(--pd-muted)]">
           {AddPackageStrings.amountHelper}
         </p>
       )}
 
       {error && (
-        <p id={errorId} role="alert" className="mt-2 text-[14px] font-bold text-[var(--pd-bad)]">
+        <p id={errorId} role="alert" className="mt-2 text-[15px] font-bold text-[var(--pd-bad)]">
           {error}
         </p>
       )}
