@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
 import { PackageX, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { usePickupIdentity } from '@/features/home/hooks/usePickupIdentity';
 import { usePackageDetail } from '@/features/packages/detail/hooks/usePackageDetail';
 import { DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
+import { packagesApi } from '@/features/packages/api/packages-api';
 import { PackageIdentityHeader } from '@/features/packages/detail/components/PackageIdentityHeader';
 import { PackageCustomerCard } from '@/features/packages/detail/components/PackageCustomerCard';
 import { PackagePickupCodeCard } from '@/features/packages/detail/components/PackagePickupCodeCard';
@@ -46,6 +48,7 @@ export function PackageDetailScreen({
   const { pointName: livePickupPointName } = usePickupIdentity();
   const pickupPointName = propPickupPointName ?? livePickupPointName;
   const staffName = user?.first_name ? user.first_name : user?.email || 'Staff';
+  const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false);
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
 
@@ -181,14 +184,33 @@ export function PackageDetailScreen({
     setIsCancelSheetOpen(false);
   };
 
+  // 6. Resend Arrival SMS — server-authoritative, needs connectivity
+  const handleResendSms = async () => {
+    try {
+      await packagesApi.resendArrivalSms(pkg.id);
+      toast.success(PackagesStrings.smsResentToast);
+    } catch {
+      toast.error(PackagesStrings.smsResendFailedToast);
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[var(--pd-page)] max-w-lg mx-auto pb-28">
       {/* 1. Compact Blue Header with More Sheet */}
       <PackageIdentityHeader
         pkg={pkg}
         onBack={handleBack}
-        onMarkReturned={() => setIsReturnSheetOpen(true)}
-        onCancelPackage={() => setIsCancelSheetOpen(true)}
+        isMoreSheetOpen={isMoreSheetOpen}
+        onOpenMoreChange={setIsMoreSheetOpen}
+        onResendSms={handleResendSms}
+        onMarkReturned={() => {
+          setIsMoreSheetOpen(false);
+          setIsReturnSheetOpen(true);
+        }}
+        onCancelPackage={() => {
+          setIsMoreSheetOpen(false);
+          setIsCancelSheetOpen(true);
+        }}
       />
 
       {/* 2. Scrollable Body Content */}
