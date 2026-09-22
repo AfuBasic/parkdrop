@@ -78,7 +78,7 @@ class BuildRangeReportAction
             $receivedQuery->where('pickup_point_id', $pickupPoint->id);
         }
 
-        $receivedPackages = $receivedQuery->get(['id', 'client_created_at', 'created_at', 'terminal_actor_name', 'creator_name', 'created_by_user_id']);
+        $receivedPackages = $receivedQuery->with('creator:id,first_name')->get(['id', 'client_created_at', 'created_at', 'terminal_actor_name', 'created_by_user_id']);
         $receivedCount = $receivedPackages->count();
 
         // 2. Packages Collected (status = COLLECTED within range)
@@ -201,7 +201,7 @@ class BuildRangeReportAction
         if ($usersCount > 1) {
             $staffMap = [];
             foreach ($receivedPackages as $pkg) {
-                $name = $pkg->creator_name ?: 'Owner/Admin';
+                $name = $pkg->creator ? $pkg->creator->first_name : 'Owner/Admin';
                 if (!isset($staffMap[$name])) $staffMap[$name] = ['name' => $name, 'received' => 0, 'released' => 0];
                 $staffMap[$name]['received']++;
             }
