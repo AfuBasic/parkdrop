@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Check } from 'lucide-react';
+import { toast } from 'sonner';
+import { Check, AlertTriangle } from 'lucide-react';
 import { accountApi } from '@/features/account/api/account-api';
 import type { UserProfile, BusinessMembershipSummary, RegisteredDevice } from '@/features/account/account-types';
 import { AccountIdentitySection } from '@/features/account/components/AccountIdentitySection';
@@ -32,6 +33,7 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
   const [isSavingName, setIsSavingName] = useState(false);
   const [revokingDeviceId, setRevokingDeviceId] = useState<number | null>(null);
   const [isRevokingOthers, setIsRevokingOthers] = useState(false);
+  const [isRevokeAllConfirmOpen, setIsRevokeAllConfirmOpen] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
   // Sign out confirmation dialog state
@@ -99,16 +101,14 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
         prev.map((d) => (d.id === deviceId ? { ...d, is_revoked: true, revoked_at: new Date().toISOString() } : d))
       );
     } catch (err: any) {
-      alert(err?.message || AccountStrings.couldNotRevoke);
+      toast.error(err?.message || AccountStrings.couldNotRevoke);
     } finally {
       setRevokingDeviceId(null);
     }
   };
 
   const handleRevokeAllOthers = async () => {
-    if (!confirm(AccountStrings.revokeAllOthers + '?')) {
-      return;
-    }
+    setIsRevokeAllConfirmOpen(false);
     setIsRevokingOthers(true);
     try {
       await accountApi.revokeOtherDevices();
@@ -116,7 +116,7 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
         prev.map((d) => (!d.is_current ? { ...d, is_revoked: true, revoked_at: new Date().toISOString() } : d))
       );
     } catch (err: any) {
-      alert(err?.message || AccountStrings.couldNotRevokeOthers);
+      toast.error(err?.message || AccountStrings.couldNotRevokeOthers);
     } finally {
       setIsRevokingOthers(false);
     }
@@ -221,7 +221,7 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
             <DeviceList
               devices={devices}
               onRevokeDevice={handleRevokeDevice}
-              onRevokeAllOthers={handleRevokeAllOthers}
+              onRevokeAllOthers={async () => setIsRevokeAllConfirmOpen(true)}
               revokingDeviceId={revokingDeviceId}
               isRevokingOthers={isRevokingOthers}
             />
@@ -254,6 +254,47 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
         pendingBusinesses={pendingBusinesses}
         isSyncing={isSyncingSignOut}
       />
+
+      {isRevokeAllConfirmOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="revoke-all-dialog-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+        >
+          <div className="bg-white rounded-[var(--pd-sheet-radius)] max-w-sm w-full p-5 shadow-xl border border-[var(--pd-line-2)]">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-11 h-11 rounded-full bg-[var(--pd-warn-bg)] border border-[var(--pd-warn)]/25 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6 text-[var(--pd-warn)]" strokeWidth={2.25} aria-hidden="true" />
+              </div>
+              <h3 id="revoke-all-dialog-title" className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">
+                {AccountStrings.revokeAllOthersConfirmTitle}
+              </h3>
+            </div>
+
+            <p className="text-[16px] font-semibold text-[var(--pd-muted)] leading-relaxed mb-5 m-0">
+              {AccountStrings.revokeAllOthersConfirmBody}
+            </p>
+
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={handleRevokeAllOthers}
+                className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-warn)] text-[18px] font-extrabold text-[var(--pd-warn)] cursor-pointer"
+              >
+                {AccountStrings.revokeAllOthersConfirmAction}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsRevokeAllConfirmOpen(false)}
+                className="w-full min-h-[48px] text-[17px] font-extrabold text-[var(--pd-blue)] cursor-pointer"
+              >
+                {AccountStrings.revokeAllOthersCancelAction}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
