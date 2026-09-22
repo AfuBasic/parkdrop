@@ -60,6 +60,14 @@ class SendArrivalSmsJobChargesWalletTest extends TestCase
         $smsRecord = SmsMessage::where('outbox_event_id', 999)->first();
         $this->assertNotNull($smsRecord);
         $this->assertSame(SmsMessage::STATUS_SENT, $smsRecord->status);
+
+        // A successful send must still write a sync_changes row — otherwise the
+        // frontend's next pull never learns the SMS went out at all.
+        $this->assertDatabaseHas('sync_changes', [
+            'business_id' => $business->id,
+            'entity_type' => 'package',
+            'operation' => 'SMS_SENT',
+        ]);
     }
 
     public function test_sending_with_zero_credits_still_sends_and_does_not_fail_the_job(): void
