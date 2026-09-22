@@ -52,6 +52,10 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}): Pro
       // Only use server message if it is not a 500 internal server error or stack trace
       if (response.status >= 500) {
         message = 'Something went wrong on our end. Please try again shortly.';
+      } else if (response.status === 401) {
+        // Laravel's default body here is the single word "Unauthenticated.",
+        // which is accurate but not something to show a person mid-shift.
+        message = 'Your session ended. Sign in again to continue.';
       } else if (data.message && typeof data.message === 'string') {
         // Guard against any accidental raw exception messages leaking in non-500s
         const raw = data.message.toLowerCase();
