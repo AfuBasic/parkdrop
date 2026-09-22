@@ -36,7 +36,7 @@ export function PackageStatusTabs({
               aria-selected={isActive}
               onClick={() => onSelectStatus(tab.id)}
               className={cn(
-                'flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-3.5 px-2 sm:px-4 text-sm font-semibold border-b-2 transition-all cursor-pointer min-h-[44px]',
+                'flex-1 sm:flex-initial flex items-center justify-center gap-1.5 py-3.5 px-2 sm:px-4 text-[15px] font-semibold border-b-2 transition-all cursor-pointer min-h-[48px]',
                 isActive
                   ? 'border-action-primary text-action-primary bg-action-primary/5'
                   : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-surface-subtle'
@@ -45,7 +45,7 @@ export function PackageStatusTabs({
               <span>{tab.label}</span>
               <span
                 className={cn(
-                  'text-xs px-1.5 py-0.5 rounded-full font-medium',
+                  'text-[15px] px-1.5 py-0.5 rounded-full font-medium',
                   isActive
                     ? 'bg-action-primary text-text-inverse'
                     : 'bg-surface-subtle text-text-secondary border border-border-subtle'
