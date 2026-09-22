@@ -43,6 +43,8 @@ export const PackagesStrings = {
   sortNewestFirst: 'Newest first',
   sortHighestAmount: 'Highest amount',
   sortTitle: 'Sort packages',
+  overdue24hSummary: (count: number) =>
+    `Overdue 24+ hours, oldest first · ${count} ${count === 1 ? 'package' : 'packages'}`,
 
   // ── Age Group Headers ────────────────────────────────────────────────────
   group7DaysOrMore: '7 days or more',
@@ -64,6 +66,7 @@ export const PackagesStrings = {
   // ── Empty States ─────────────────────────────────────────────────────────
   emptyNoUnpaid: 'No unpaid packages. Everyone has paid.',
   emptyNo7Days: 'Nothing has waited 7 days or more.',
+  emptyNo24hOverdue: 'Nothing has waited 24 hours or more.',
   emptyNoPackagesYet: 'No packages here yet.',
   loadError: 'Could not load your packages. Tap Try again.',
   retryAction: 'Try again',
