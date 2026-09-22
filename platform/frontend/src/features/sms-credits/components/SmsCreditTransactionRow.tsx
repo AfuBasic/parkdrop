@@ -1,14 +1,30 @@
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import type { LocalSmsCreditTransaction } from '@/offline/db/schema';
+import { SmsCreditsStrings } from '@/features/sms-credits/strings';
 
 interface SmsCreditTransactionRowProps {
   transaction: LocalSmsCreditTransaction;
 }
 
+/** What the transaction was for, in the reader's own words. */
+function describeTransaction(transaction: LocalSmsCreditTransaction): string {
+  switch (transaction.reference_type) {
+    case 'WELCOME_CREDIT':
+      return SmsCreditsStrings.welcomeCredits;
+    case 'PURCHASE':
+      return SmsCreditsStrings.boughtCredits;
+    case 'ARRIVAL_SMS':
+      return SmsCreditsStrings.packageSms;
+    case 'SMS_REFUND':
+      return SmsCreditsStrings.refundCredits;
+    default:
+      return SmsCreditsStrings.packageSms;
+  }
+}
+
 export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRowProps) {
   const isCredit = transaction.type === 'CREDIT';
 
-  // Format timestamp nicely
   const date = new Date(transaction.created_at);
   const formattedDate = !isNaN(date.getTime())
     ? date.toLocaleDateString(undefined, {
@@ -19,66 +35,39 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
       })
     : transaction.created_at;
 
-  // Human friendly description
-  let title = 'SMS Notification';
-  let subtitle = transaction.reference_id ? `Ref: ${transaction.reference_id}` : undefined;
-
-  if (transaction.reference_type === 'WELCOME_CREDIT') {
-    title = 'Welcome Credits';
-    subtitle = 'Account setup bonus';
-  } else if (transaction.reference_type === 'PURCHASE') {
-    title = 'SMS Credits Purchased';
-    subtitle = transaction.reference_id ? `Ref: ${transaction.reference_id}` : 'Direct purchase';
-  } else if (transaction.reference_type === 'ARRIVAL_SMS') {
-    title = 'Arrival Notification SMS';
-    subtitle = transaction.reference_id ? `Package ${transaction.reference_id}` : 'Package notification';
-  } else if (transaction.reference_type === 'SMS_REFUND') {
-    title = 'SMS Credit Refund';
-    subtitle = 'Undelivered SMS returned';
-  } else if (transaction.reference_type) {
-    title = transaction.reference_type.replace(/_/g, ' ');
-  }
+  const title = describeTransaction(transaction);
+  const amountText = isCredit
+    ? SmsCreditsStrings.smsAdded(transaction.amount)
+    : SmsCreditsStrings.smsCount(transaction.amount);
 
   return (
-    <div className="flex items-center justify-between py-3.5 px-4 border-b border-border-subtle last:border-b-0 hover:bg-surface-subtle/50 transition-colors">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between gap-3 py-3.5 px-4 border-b border-[var(--pd-line-2)] last:border-b-0">
+      <div className="flex items-center gap-3 min-w-0">
         <div
-          className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-            isCredit ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'
+          className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+            isCredit
+              ? 'bg-[var(--pd-ok-bg)] text-[var(--pd-ok)]'
+              : 'bg-[var(--pd-page-2)] text-[var(--pd-muted)]'
           }`}
+          aria-hidden="true"
         >
-          {isCredit ? (
-            <ArrowDownLeft className="w-4 h-4" />
-          ) : (
-            <ArrowUpRight className="w-4 h-4" />
-          )}
+          {isCredit ? <ArrowDownLeft className="w-5 h-5" strokeWidth={2.25} /> : <ArrowUpRight className="w-5 h-5" strokeWidth={2.25} />}
         </div>
-        <div className="text-left">
-          <p className="text-sm font-semibold text-text-primary leading-snug">{title}</p>
-          <div className="flex items-center gap-1.5 text-xs text-text-muted mt-0.5">
-            <span>{formattedDate}</span>
-            {subtitle && (
-              <>
-                <span>·</span>
-                <span className="truncate max-w-[140px] sm:max-w-[200px]">{subtitle}</span>
-              </>
-            )}
-          </div>
+        <div className="text-left min-w-0">
+          <p className="text-[16px] font-semibold text-[var(--pd-navy)] leading-snug m-0 truncate">
+            {title}
+          </p>
+          <p className="text-[15px] text-[var(--pd-muted)] m-0 mt-0.5">{formattedDate}</p>
         </div>
       </div>
 
-      <div className="text-right flex-shrink-0">
-        <span
-          className={`text-sm font-bold ${
-            isCredit ? 'text-emerald-600' : 'text-text-primary'
-          }`}
-        >
-          {isCredit ? '+' : '-'}{transaction.amount}
-        </span>
-        <span className="text-xs text-text-muted ml-1">
-          {transaction.amount === 1 ? 'credit' : 'credits'}
-        </span>
-      </div>
+      <span
+        className={`text-[16px] font-extrabold shrink-0 ${
+          isCredit ? 'text-[var(--pd-ok)]' : 'text-[var(--pd-navy)]'
+        }`}
+      >
+        {amountText}
+      </span>
     </div>
   );
 }
