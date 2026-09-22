@@ -99,6 +99,46 @@ test('it scopes push and pull to explicitly requested business_id when authorize
     $pullRes->assertOk();
 });
 
+test('a second distinct mutation reusing a device_sequence does not crash-loop the push', function () {
+    // This is the real failure mode: the client's local sequence counter
+    // can legitimately regress (e.g. its mutation queue fully drains) and
+    // generate a new mutation_id under a device_sequence the server has
+    // already recorded a receipt for under the same device_uuid.
+    // mutation_id is the real idempotency key — device_sequence must never
+    // be allowed to crash the request.
+    $user = User::factory()->create();
+    $business = Business::create(['public_id' => (string) Str::uuid(), 'name' => 'Push Test Business']);
+    $user->memberships()->create(['business_id' => $business->id, 'role' => 'owner']);
+
+    $deviceUuid = (string) Str::uuid();
+
+    $first = $this->actingAs($user)->postJson('/api/v1/sync/push', [
+        'device_uuid' => $deviceUuid,
+        'mutations' => [[
+            'mutation_id' => (string) Str::uuid(),
+            'operation' => 'TEST_OPERATION',
+            'payload' => [],
+            'device_sequence' => 1,
+        ]],
+    ]);
+    $first->assertOk();
+    $first->assertJsonPath('results.0.status', 'APPLIED');
+
+    $second = $this->actingAs($user)->postJson('/api/v1/sync/push', [
+        'device_uuid' => $deviceUuid,
+        'mutations' => [[
+            'mutation_id' => (string) Str::uuid(),
+            'operation' => 'TEST_OPERATION',
+            'payload' => [],
+            'device_sequence' => 1,
+        ]],
+    ]);
+
+    $second->assertOk();
+    $second->assertJsonPath('results.0.status', 'APPLIED');
+    $this->assertDatabaseCount('sync_mutation_receipts', 2);
+});
+
 test('it rejects push to a business where user has no active membership', function () {
     $user = User::factory()->create();
     $foreignBusiness = Business::create(['public_id' => (string) Str::uuid(), 'name' => 'Foreign Business']);
