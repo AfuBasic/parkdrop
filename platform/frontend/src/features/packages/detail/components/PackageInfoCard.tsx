@@ -73,7 +73,7 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
             <span>{PackagesStrings.pickupPointLabel}</span>
           </div>
           {isPlaceholder ? (
-            <span className="text-[14px] font-bold text-[#92400E] text-right">
+            <span className="text-[15px] font-bold text-[#92400E] text-right">
               {PackagesStrings.setupRequiredNotice}
             </span>
           ) : (
