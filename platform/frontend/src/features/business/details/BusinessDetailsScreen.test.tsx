@@ -29,6 +29,7 @@ describe('BusinessDetailsScreen', () => {
       public_id: 'biz-uuid-1',
       name: 'ParkDrop Express Hub',
       status: 'active',
+      daily_storage_fee_minor: 50_000,
       created_at: '2026-09-01T00:00:00Z',
     },
     current_pickup_point: {
