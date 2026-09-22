@@ -53,7 +53,12 @@ class ConnectivityManager {
 
     try {
       // Cheap ping to our API to confirm it's actually reachable
-      const response = await fetch('/api/v1/auth/session', { method: 'GET', headers: { 'Cache-Control': 'no-cache' } });
+      const url = `${import.meta.env.VITE_API_URL || ''}/api/v1/auth/session`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Cache-Control': 'no-cache' },
+        credentials: 'include',
+      });
       
       // 401 is STILL REACHABLE! It's just an auth failure.
       if (response.ok || response.status === 401 || response.status === 403) {
