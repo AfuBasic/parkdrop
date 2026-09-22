@@ -1,4 +1,4 @@
-import { MessageCircle, Phone, X } from 'lucide-react';
+import { Mail, X } from 'lucide-react';
 import { Sheet, SheetContent } from '@/design-system';
 import { cn } from '@/lib/utils';
 import { AuthStrings } from '../strings';
@@ -16,15 +16,15 @@ export interface HelpSheetProps {
  *
  * The promise is a person, not a help centre. Someone stuck on step 2 with no
  * code has already read the screen; another page of tips wastes the data they
- * are paying for. WhatsApp leads because it is the cheapest way for this
- * audience to reach anyone, and the message is pre-filled with the screen name
- * so they do not have to explain where they are.
+ * are paying for. Email is the one channel we can promise actually works
+ * today — the subject and body are pre-filled with the screen name so they
+ * do not have to explain where they are.
  */
 export function HelpSheet({ open, onOpenChange, screenName }: HelpSheetProps) {
   const context = screenName ? ` I am on the "${screenName}" screen.` : '';
-  const whatsappUrl = `https://wa.me/${SUPPORT.whatsappNumber}?text=${encodeURIComponent(
-    `Hello ParkDrop, I need help signing in.${context}`
-  )}`;
+  const mailtoUrl = `mailto:${SUPPORT.email}?subject=${encodeURIComponent(
+    'I need help signing in to ParkDrop'
+  )}&body=${encodeURIComponent(`Hello ParkDrop, I need help signing in.${context}`)}`;
 
   const actionClass = cn(
     'w-full min-h-[var(--pd-button-h)] px-5 rounded-[var(--pd-field-radius)]',
@@ -51,24 +51,11 @@ export function HelpSheet({ open, onOpenChange, screenName }: HelpSheetProps) {
 
         <div className="flex flex-col gap-3">
           <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noreferrer"
+            href={mailtoUrl}
             className={cn(actionClass, 'bg-[var(--pd-blue)] text-white hover:bg-[var(--pd-blue-hover)]')}
           >
-            <MessageCircle className="w-[22px] h-[22px]" strokeWidth={2.5} aria-hidden="true" />
-            {AuthStrings.helpWhatsApp}
-          </a>
-
-          <a
-            href={`tel:${SUPPORT.phoneNumber}`}
-            className={cn(
-              actionClass,
-              'bg-[var(--pd-tint)] text-[var(--pd-blue-hover)] border-2 border-[var(--pd-tint-2)] hover:bg-[var(--pd-tint-2)]'
-            )}
-          >
-            <Phone className="w-[22px] h-[22px]" strokeWidth={2.5} aria-hidden="true" />
-            {AuthStrings.helpCall}
+            <Mail className="w-[22px] h-[22px]" strokeWidth={2.5} aria-hidden="true" />
+            {AuthStrings.helpEmail}
           </a>
 
           <button
