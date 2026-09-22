@@ -1,8 +1,9 @@
 import React from 'react';
-import type { StaffMember } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/api/business-api';
-import type { BusinessRole } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
-import { canManageTargetMember } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
+import type { StaffMember } from '@/features/business/api/business-api';
+import type { BusinessRole } from '@/features/business/permissions/business-permissions';
+import { canManageTargetMember } from '@/features/business/permissions/business-permissions';
 import { ChevronRight } from 'lucide-react';
+import { StaffStrings } from '@/features/business/staff/strings';
 
 interface StaffMemberRowProps {
   member: StaffMember;
@@ -31,19 +32,7 @@ export const StaffMemberRow: React.FC<StaffMemberRowProps> = ({
     return email.slice(0, 2).toUpperCase();
   };
 
-  const getRoleBadgeClasses = (role: BusinessRole) => {
-    switch (role) {
-      case 'owner':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'manager':
-        return 'bg-slate-100 text-slate-700 border-slate-200';
-      case 'attendant':
-      default:
-        return 'bg-slate-50 text-slate-600 border-slate-200';
-    }
-  };
-
-  const roleDisplay = member.role.charAt(0).toUpperCase() + member.role.slice(1);
+  const roleSentence = StaffStrings.roleSentence[member.role] ?? StaffStrings.roleSentence.attendant;
   const displayName = member.name || member.email.split('@')[0];
 
   const handleClick = () => {
@@ -63,47 +52,39 @@ export const StaffMemberRow: React.FC<StaffMemberRowProps> = ({
           handleClick();
         }
       }}
-      className={`w-full flex items-center justify-between p-4 bg-white border-b border-border-subtle transition-colors min-h-[64px] ${
-        isManageable ? 'cursor-pointer hover:bg-slate-50 active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''
+      className={`w-full flex items-center justify-between gap-3 p-4 min-h-[72px] bg-white border-b border-[var(--pd-line-2)] last:border-b-0 transition-colors ${
+        isManageable ? 'cursor-pointer hover:bg-[var(--pd-page-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-blue)]' : ''
       }`}
-      aria-label={`${displayName}, ${member.email}, ${roleDisplay}${isSelf ? ', You' : ''}`}
+      aria-label={`${displayName}, ${member.email}, ${roleSentence}${isSelf ? `, ${StaffStrings.you}` : ''}`}
     >
       <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-2">
-        {/* Avatar with initials */}
-        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 font-semibold text-sm flex items-center justify-center shrink-0 border border-blue-100">
+        <div className="w-11 h-11 rounded-full bg-[var(--pd-tint)] text-[var(--pd-blue)] font-extrabold text-[15px] flex items-center justify-center shrink-0">
           {getInitials(member.name, member.email)}
         </div>
 
-        {/* Member info */}
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-slate-900 text-sm sm:text-base truncate">
+            <span className="font-bold text-[var(--pd-navy)] text-[18px] truncate">
               {displayName}
             </span>
             {isSelf && (
-              <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                You
+              <span className="text-[15px] font-semibold text-[var(--pd-muted)]">
+                ({StaffStrings.you})
               </span>
             )}
           </div>
-          <span className="text-xs text-slate-500 truncate mt-0.5">
+          <span className="text-[16px] font-semibold text-[var(--pd-muted)] truncate mt-0.5">
             {member.email}
+          </span>
+          <span className="text-[16px] font-semibold text-[var(--pd-muted)] mt-0.5">
+            {roleSentence}
           </span>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <span
-          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getRoleBadgeClasses(
-            member.role
-          )}`}
-        >
-          {roleDisplay}
-        </span>
-        {isManageable && (
-          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" aria-hidden="true" />
-        )}
-      </div>
+      {isManageable && (
+        <ChevronRight className="w-5 h-5 text-[var(--pd-muted)] shrink-0" aria-hidden="true" strokeWidth={2.25} />
+      )}
     </div>
   );
 };
