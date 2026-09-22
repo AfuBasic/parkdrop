@@ -47,6 +47,12 @@ export function PackageListRow({
 
   // Payment Chip
   const renderPaymentChip = () => {
+    // When waiting, almost every package is unpaid by definition.
+    // Show only the amount due, no chip, unless a partial payment has actually been recorded.
+    if (isWaiting && paymentState === 'UNPAID') {
+      return null;
+    }
+
     switch (paymentState) {
       case 'UNPAID':
         return (
