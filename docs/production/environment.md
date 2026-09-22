@@ -99,7 +99,7 @@ This document specifies all configuration keys required to run ParkDrop safely i
 | `CLOUDINARY_API_SECRET` | `[SECRET]` | Secret key used only on backend for cryptographic signatures. |
 | `SMS_PROVIDER` | `termii` | Operational SMS provider (`termii`). |
 | `TERMII_API_KEY` | `[SECRET]` | Termii production API Key. |
-| `TERMII_SENDER_ID` | `Kontrol` | Registered Sender ID. |
+| `TERMII_SENDER_ID` | `OE Alert` | Registered Sender ID. |
 | `PAYMENT_PROVIDER` | `flutterwave` | SMS-credit purchase payment provider. |
 | `FLW_PUBLIC_KEY` | `[SECRET]` | Flutterwave public key. |
 | `FLW_SECRET_KEY` | `[SECRET]` | Flutterwave secret key. |
