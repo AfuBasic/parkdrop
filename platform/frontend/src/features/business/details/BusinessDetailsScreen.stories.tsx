@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { BusinessDetailsScreen } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/details/BusinessDetailsScreen';
-import type { BusinessDetailsResponse } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/api/business-api';
+import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetailsScreen';
+import type { BusinessDetailsResponse } from '@/features/business/api/business-api';
 
 const mockData: BusinessDetailsResponse = {
   business: {
@@ -8,6 +8,7 @@ const mockData: BusinessDetailsResponse = {
     public_id: 'biz-uuid-1',
     name: 'ParkDrop Express Hub',
     status: 'active',
+    daily_storage_fee_minor: 50_000,
     created_at: '2026-09-01T00:00:00Z',
   },
   current_pickup_point: {
