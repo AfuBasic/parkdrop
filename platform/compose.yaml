@@ -101,6 +101,30 @@ services:
         depends_on:
             - redis
             - mysql
+    scheduler:
+        # Drives every Schedule::command(...) entry in routes/console.php —
+        # outbox:process (turns a package's outbox event into the actual
+        # SendArrivalSmsJob dispatch), sms:reconcile, and the scheduler
+        # heartbeat health probes in production. `schedule:work` is Laravel's
+        # own loop that fires the scheduler every minute; it exists
+        # specifically so a container doesn't need host cron.
+        build:
+            context: './backend/vendor/laravel/sail/runtimes/8.5'
+            dockerfile: Dockerfile
+            args:
+                WWWGROUP: '${WWWGROUP:-1000}'
+        image: 'sail-8.5/app'
+        command: ['php', 'artisan', 'schedule:work']
+        environment:
+            WWWUSER: '${WWWUSER:-1000}'
+            LARAVEL_SAIL: 1
+        volumes:
+            - './backend:/var/www/html'
+        networks:
+            - sail
+        depends_on:
+            - redis
+            - mysql
 networks:
     sail:
         driver: bridge
