@@ -73,4 +73,21 @@ export const MoreStrings = {
   signOut: 'Sign out',
   /** Replaces "Reset Device Identity", which explained nothing. */
   forgetMe: 'Sign out and forget me on this phone',
+
+  // ── Leaving confirmations ──────────────────────────────────────────────
+  /**
+   * The safe choice is the primary button and the destructive one is the
+   * secondary, following the pattern the plan sets for "Not you?" on Unlock
+   * (§3.3.9). Both bodies lead with the reassurance, because the fear here is
+   * losing the packages.
+   */
+  signOutTitle: 'Sign out of ParkDrop?',
+  signOutBody:
+    'Your packages stay safe. You will need a new code to sign in again.',
+
+  forgetTitle: 'Sign out and forget you on this phone?',
+  forgetBody:
+    'Your packages stay safe. This phone will forget your name and email. You will need your email and a new code to sign in again.',
+
+  stay: 'Stay signed in',
 } as const;
