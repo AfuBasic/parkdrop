@@ -123,7 +123,7 @@ export const PackagesStrings = {
   unsyncedNotice: 'Saved on this phone. It sends when you are online.',
 
   // Sticky action bar
-  collectAndReleasePrimary: (balanceStr: string) => `Collect ${balanceStr} and release`,
+  collectAndReleasePrimary: (balanceStr: string) => `Mark as paid and release...`,
   releasePackagePrimary: 'Release package',
   recordPaymentOnlyAction: 'Record payment only',
   collectedBanner: (date: string, time: string, actor: string) => `Released on ${date}, ${time} by ${actor}`,
