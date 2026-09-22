@@ -21,7 +21,6 @@ import { WaitingList } from './components/WaitingList';
 import { FirstPackageCard } from './components/FirstPackageCard';
 import { HomeSkeleton } from './components/HomeSkeleton';
 import { HomeError } from './components/HomeError';
-import type { HomeFilter } from './components/FilterChips';
 import { isOverdue24h, formatOverdueAgeSubline } from '@/features/packages/domain/package-filters';
 
 export type HomePackageFilter = 'WAITING' | 'COLLECTED';
@@ -79,7 +78,6 @@ export function HomeScreen({
   const data = useHomeData(business?.id, business?.daily_storage_fee_minor ?? DEFAULT_DAILY_STORAGE_FEE_MINOR);
   const keyboardOpen = useKeyboardOpen();
 
-  const [filter, setFilter] = React.useState<HomeFilter>('all');
   const [syncSheetOpen, setSyncSheetOpen] = React.useState(false);
   // Bumped to make the live query re-run after a failed read.
   const [retryKey, setRetryKey] = React.useState(0);
@@ -87,10 +85,7 @@ export function HomeScreen({
   const sync = summariseSync(syncState);
   const greeting = currentGreeting();
 
-  const rows = React.useMemo(
-    () => (filter === 'unpaid' ? data.waiting.filter((r) => r.balanceMinor > 0) : data.waiting),
-    [data.waiting, filter]
-  );
+  const rows = data.waiting;
 
   // 24-hour overdue packages calculation using the exact same shared utility
   const overdueInfo = React.useMemo(() => {
@@ -119,13 +114,6 @@ export function HomeScreen({
   // No rows of zeros on day one: the stat strip only earns its space once
   // this pickup point has actually held a package.
   const showStats = data.status === 'ready' && !data.isFirstDay;
-
-  // When there are no unpaid packages, auto-reset filter to 'all' so no empty ghost filter is stuck
-  React.useEffect(() => {
-    if (data.status === 'ready' && data.stats.unpaidCount === 0 && filter !== 'all') {
-      setFilter('all');
-    }
-  }, [data.status, data.stats.unpaidCount, filter]);
 
   return (
     <div
@@ -180,7 +168,7 @@ export function HomeScreen({
               <StatStrip
                 stats={data.stats}
                 onOpenWaiting={() => handleNavigateToPackages('WAITING')}
-                onOpenUnpaid={() => setFilter('unpaid')}
+                onOpenUnpaid={() => handleNavigateToPackages('WAITING')}
                 onOpenCollected={() => handleNavigateToPackages('COLLECTED')}
               />
 
@@ -198,9 +186,6 @@ export function HomeScreen({
             ) : (
               <WaitingList
                 rows={rows}
-                filter={filter}
-                unpaidCount={data.stats.unpaidCount}
-                onFilterChange={setFilter}
                 onSelectPackage={(id) => handleSelectPackage(id)}
                 onSeeAll={() => handleNavigateToPackages('WAITING')}
               />
