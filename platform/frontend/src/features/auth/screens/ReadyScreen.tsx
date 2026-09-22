@@ -1,7 +1,7 @@
-import { Store, Smartphone } from 'lucide-react';
-import { AuthShell } from '../components/AuthShell';
-import { BigButton } from '../components/BigButton';
-import { AuthStrings } from '../strings';
+import { Store, Smartphone, Phone } from 'lucide-react';
+import { AuthShell } from '@/features/auth/components/AuthShell';
+import { BigButton } from '@/features/auth/components/BigButton';
+import { AuthStrings } from '@/features/auth/strings';
 import { cn } from '@/lib/utils';
 
 export interface ReadyScreenProps {
@@ -90,8 +90,15 @@ export function ReadyScreen({
         </div>
 
         {phone && (
-          <div className="p-4 flex items-center justify-between gap-3.5">
-            <div className="min-w-0">
+          <div className="p-4 flex items-center gap-3.5">
+            <span
+              className="flex-none grid place-items-center w-11 h-11 rounded-[13px] bg-[var(--pd-tint)] text-[var(--pd-blue-hover)]"
+              aria-hidden="true"
+            >
+              <Phone className="w-[22px] h-[22px]" strokeWidth={2.5} />
+            </span>
+
+            <div className="flex-1 min-w-0">
               <p className="m-0 text-[var(--pd-size-min)] font-bold text-[var(--pd-muted)]">
                 {AuthStrings.readyPhoneLabel}
               </p>
