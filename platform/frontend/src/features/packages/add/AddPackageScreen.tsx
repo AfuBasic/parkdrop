@@ -468,20 +468,20 @@ export function AddPackageScreen({
                         alt="Package preview"
                         className="w-12 h-12 rounded-lg object-cover border border-[var(--pd-line)]"
                       />
-                      <span className="text-[14px] font-bold text-[var(--pd-ok)]">Photo added</span>
+                      <span className="text-[15px] font-bold text-[var(--pd-ok)]">Photo added</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="min-h-[48px] px-2 text-[14px] font-extrabold text-[var(--pd-blue-hover)] hover:underline"
+                        className="min-h-[48px] px-2 text-[15px] font-extrabold text-[var(--pd-blue-hover)] hover:underline"
                       >
                         {AddPackageStrings.retakePhotoFormAction}
                       </button>
                       <button
                         type="button"
                         onClick={handleRemovePhoto}
-                        className="min-h-[48px] px-2 text-[14px] font-extrabold text-[var(--pd-bad)] hover:underline"
+                        className="min-h-[48px] px-2 text-[15px] font-extrabold text-[var(--pd-bad)] hover:underline"
                       >
                         {AddPackageStrings.removePhotoFormAction}
                       </button>
