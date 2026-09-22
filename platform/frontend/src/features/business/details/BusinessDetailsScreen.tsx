@@ -5,7 +5,14 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { businessApi, type BusinessDetailsResponse } from '@/features/business/api/business-api';
 import type { BusinessRole } from '@/features/business/permissions/business-permissions';
 import { getBusinessPermissions } from '@/features/business/permissions/business-permissions';
-import { validateNigerianMobile, toCanonicalPhone, formatPhoneDisplay } from '@/features/auth/lib/phone';
+import {
+  validateNigerianMobile,
+  toCanonicalPhone,
+  formatPhoneDisplay,
+  formatNationalDisplay,
+  toNationalDigits,
+  NATIONAL_LENGTH,
+} from '@/features/auth/lib/phone';
 import { renderCustomerSms, SMS_MAX_CHARS } from '@/lib/smsTemplate';
 import { SmsPreview } from '@/features/auth/components/SmsPreview';
 import { verifyPin } from '@/lib/pin';
@@ -133,6 +140,28 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
     );
     setPhoneError(null);
     setIsEditingPhone(true);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawDigits = toNationalDigits(e.target.value);
+    const formatted = formatNationalDisplay(rawDigits);
+    setPhoneInput(formatted);
+
+    if (rawDigits.length === NATIONAL_LENGTH) {
+      const validation = validateNigerianMobile(formatted);
+      if (!validation.valid) {
+        setPhoneError(validation.error || BusinessDetailsStrings.phoneInputHelp);
+      } else {
+        setPhoneError(null);
+      }
+    } else if (phoneError) {
+      setPhoneError(null);
+    }
+  };
+
+  const handleClearPhone = () => {
+    setPhoneInput('');
+    setPhoneError(null);
   };
 
   const handleCancelEditPhone = () => {
@@ -314,7 +343,12 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                   <span>{BusinessDetailsStrings.businessName}</span>
                 </div>
                 {permissions.canEditBusinessDetails && !isEditingName && (
-                  <button type="button" onClick={handleStartEditName} className={editLinkClass}>
+                  <button
+                    type="button"
+                    onClick={handleStartEditName}
+                    aria-label="Edit business name"
+                    className={editLinkClass}
+                  >
                     <Pencil className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
                     <span>{BusinessDetailsStrings.edit}</span>
                   </button>
@@ -405,7 +439,12 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                     <span>{BusinessDetailsStrings.contactPhone}</span>
                   </div>
                   {permissions.canEditBusinessDetails && !isEditingPhone && (
-                    <button type="button" onClick={handleStartEditPhone} className={editLinkClass}>
+                    <button
+                      type="button"
+                      onClick={handleStartEditPhone}
+                      aria-label="Edit contact phone"
+                      className={editLinkClass}
+                    >
                       <Pencil className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
                       <span>
                         {details.current_pickup_point.contact_phone
@@ -434,25 +473,53 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                 ) : (
                   <form onSubmit={handleProceedToPin} className="flex flex-col gap-4">
                     {phoneError && (
-                      <div className="text-[15px] font-semibold text-[var(--pd-bad)] bg-[var(--pd-bad-bg)] p-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/25">
-                        {phoneError}
+                      <div
+                        id="phone-error-msg"
+                        role="alert"
+                        className="text-[15px] font-semibold text-[var(--pd-bad)] bg-[var(--pd-bad-bg)] p-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/25 flex items-center gap-2"
+                      >
+                        <AlertCircle className="w-5 h-5 shrink-0" strokeWidth={2.25} aria-hidden="true" />
+                        <span>{phoneError}</span>
                       </div>
                     )}
                     <div>
-                      <label className="block text-[16px] font-semibold text-[var(--pd-navy)] mb-1.5">
+                      <label htmlFor="pickup-point-phone" className="block text-[16px] font-semibold text-[var(--pd-navy)] mb-1.5">
                         {BusinessDetailsStrings.phoneLabel}
                       </label>
-                      <input
-                        type="tel"
-                        inputMode="numeric"
-                        value={phoneInput}
-                        onChange={(e) => setPhoneInput(e.target.value)}
-                        placeholder="0803 123 4567"
-                        required
-                        autoFocus
-                        className="w-full min-h-[var(--pd-field-h)] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-blue)] text-[var(--pd-navy)] text-[18px] font-semibold focus:outline-none"
-                      />
-                      <p className="text-[15px] text-[var(--pd-muted)] mt-1.5 m-0">
+                      <div className="relative flex items-center">
+                        <input
+                          id="pickup-point-phone"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          value={phoneInput}
+                          onChange={handlePhoneChange}
+                          placeholder="0803 123 4567"
+                          maxLength={13}
+                          required
+                          autoFocus
+                          aria-invalid={!!phoneError}
+                          aria-describedby={phoneError ? 'phone-error-msg' : 'phone-help-msg'}
+                          className={`w-full min-h-[var(--pd-field-h)] px-4 ${
+                            phoneInput ? 'pr-12' : ''
+                          } rounded-[var(--pd-field-radius)] border-2 ${
+                            phoneError
+                              ? 'border-[var(--pd-bad)] bg-[var(--pd-bad-bg)]/20'
+                              : 'border-[var(--pd-blue)]'
+                          } text-[var(--pd-navy)] text-[18px] font-semibold focus:outline-none`}
+                        />
+                        {phoneInput && (
+                          <button
+                            type="button"
+                            onClick={handleClearPhone}
+                            aria-label="Clear phone number"
+                            className="absolute right-2 min-w-[40px] min-h-[40px] flex items-center justify-center text-[var(--pd-muted)] hover:text-[var(--pd-navy)] cursor-pointer"
+                          >
+                            <X className="w-5 h-5" strokeWidth={2.25} aria-hidden="true" />
+                          </button>
+                        )}
+                      </div>
+                      <p id="phone-help-msg" className="text-[15px] text-[var(--pd-muted)] mt-1.5 m-0">
                         {BusinessDetailsStrings.phoneInputHelp}
                       </p>
                     </div>
@@ -551,6 +618,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                   </button>
                   <button
                     type="submit"
+                    aria-label="Confirm & save"
                     disabled={isSavingPhone || pinInput.length !== 4}
                     className="flex-1 min-h-[56px] text-[16px] font-extrabold text-white bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] rounded-[var(--pd-field-radius)] disabled:opacity-50 cursor-pointer"
                   >
