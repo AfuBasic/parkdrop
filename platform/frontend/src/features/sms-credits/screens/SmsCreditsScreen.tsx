@@ -32,6 +32,7 @@ function describeAge(iso: string | null | undefined): string | null {
   return `${days} ${days === 1 ? 'day' : 'days'} ago`;
 }
 
+console.log("SmsCreditsScreen render");
 export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenProps) {
   const routerNavigate = useNavigate();
   const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
@@ -41,11 +42,7 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
   const businessId = business?.id;
   const syncState = useSyncState(businessId);
 
-  useEffect(() => {
-    if (businessId) {
-      SyncEngine.sync(businessId);
-    }
-  }, [businessId]);
+
 
   const wallet = useLiveQuery(
     () => (businessId ? db.smsWallets.where('business_id').equals(businessId).first() : undefined),
