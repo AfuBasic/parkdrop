@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { ChevronLeft, UserPlus, WifiOff, AlertCircle } from 'lucide-react';
+import { UserPlus, WifiOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { businessApi, type StaffMember, type PendingInvitation } from '@/features/business/api/business-api';
 import type { BusinessRole } from '@/features/business/permissions/business-permissions';
@@ -9,6 +9,8 @@ import { StaffMemberRow } from '@/features/business/staff/components/StaffMember
 import { PendingInvitationRow } from '@/features/business/staff/components/PendingInvitationRow';
 import { StaffMemberActionsSheet } from '@/features/business/staff/components/StaffMemberActionsSheet';
 import { InviteStaffSheet } from '@/features/business/staff/components/InviteStaffSheet';
+import { TaskHeader } from '@/design-system/shell/TaskHeader';
+import { StaffStrings } from '@/features/business/staff/strings';
 
 interface StaffScreenProps {
   onBack?: () => void;
@@ -74,7 +76,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
       setMembers(res.members);
       setInvitations(res.invitations);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Could not load staff list. Check your connection and try again.');
+      setErrorMessage(err.message || StaffStrings.couldNotLoad);
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +104,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
       setResendingInviteId(invitationId);
       await businessApi.resendInvitation(invitationId);
     } catch (err: any) {
-      alert(err.message || 'Could not resend invitation.');
+      alert(err.message || StaffStrings.couldNotResend);
     } finally {
       setResendingInviteId(null);
     }
@@ -114,7 +116,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
       await businessApi.revokeInvitation(invitationId);
       setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
     } catch (err: any) {
-      alert(err.message || 'Could not cancel invitation.');
+      alert(err.message || StaffStrings.couldNotCancel);
     } finally {
       setRevokingInviteId(null);
     }
@@ -133,131 +135,100 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 w-full max-w-lg mx-auto pb-12">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center justify-between shrink-0">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center text-slate-600 hover:text-slate-900 transition-colors py-2 pr-4 -ml-2 min-h-[44px] cursor-pointer"
-          aria-label="Back to more menu"
-        >
-          <ChevronLeft className="h-6 w-6" />
-          <span className="text-[17px] font-medium ml-0.5">Back</span>
-        </button>
-        <h1 className="text-[17px] font-bold text-slate-900 tracking-tight">
-          Staff
-        </h1>
-        <div className="w-12" />
-      </header>
+    <div className="flex flex-col min-h-screen bg-[var(--pd-page-2)] w-full max-w-lg mx-auto pb-12">
+      <TaskHeader
+        title={StaffStrings.title}
+        onBack={handleBack}
+        screenName="Your team"
+        subtitle={!isLoading ? StaffStrings.count(members.length) : undefined}
+      />
 
-      {/* Offline Warning Banner */}
+      {/* Offline: read-only, said plainly rather than letting a tap fail. */}
       {!isOnline && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3 flex items-center gap-2.5 text-xs text-amber-800">
-          <WifiOff className="w-4 h-4 shrink-0 text-amber-600" />
-          <span>Connect to the internet to manage staff or send invitations.</span>
+        <div
+          role="status"
+          className="bg-[var(--pd-warn-bg)] border-b border-[var(--pd-warn)]/25 px-4 py-3 flex items-start gap-2.5 text-[var(--pd-warn)]"
+        >
+          <WifiOff className="w-5 h-5 shrink-0 mt-0.5" strokeWidth={2.25} aria-hidden="true" />
+          <div>
+            <p className="text-[16px] font-semibold m-0">{StaffStrings.offlineTitle}</p>
+            <p className="text-[15px] font-semibold m-0 mt-0.5">{StaffStrings.offlineBody}</p>
+          </div>
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 space-y-6">
-        {/* Intro description & Invite CTA */}
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-900">
-              Staff &amp; Members
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              People with access to this Business on ParkDrop.
-            </p>
-          </div>
+      <main className="flex-1 p-4 flex flex-col gap-5">
+        {permissions.canInviteStaff && (
+          <button
+            type="button"
+            onClick={() => setIsInviteSheetOpen(true)}
+            disabled={!isOnline}
+            className="w-full min-h-[60px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] active:scale-[0.99] text-white text-[20px] font-extrabold transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <UserPlus className="w-5 h-5" strokeWidth={2.25} aria-hidden="true" />
+            <span>{StaffStrings.invite}</span>
+          </button>
+        )}
 
-          {permissions.canInviteStaff && (
-            <button
-              type="button"
-              onClick={() => setIsInviteSheetOpen(true)}
-              disabled={!isOnline}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[40px] cursor-pointer"
-              aria-label="Invite staff"
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>Invite staff</span>
-            </button>
-          )}
-        </div>
-
-        {/* Error message */}
         {errorMessage && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3 text-xs text-red-700">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-              <span>{errorMessage}</span>
+          <div className="p-4 bg-[var(--pd-bad-bg)] border border-[var(--pd-bad)]/25 rounded-[var(--pd-card-radius)] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 shrink-0 text-[var(--pd-bad)]" strokeWidth={2.25} aria-hidden="true" />
+              <span className="text-[15px] font-semibold text-[var(--pd-bad)]">{errorMessage}</span>
             </div>
             <button
               type="button"
               onClick={loadStaff}
-              className="px-2.5 py-1 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 rounded-lg shrink-0 cursor-pointer"
+              className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-bad)] shrink-0 cursor-pointer"
             >
-              Try again
+              {StaffStrings.tryAgain}
             </button>
           </div>
         )}
 
-        {/* Loading Skeleton */}
         {isLoading && (
-          <div className="bg-white rounded-2xl border border-border-subtle divide-y divide-border-subtle overflow-hidden">
+          <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] divide-y divide-[var(--pd-line-2)] overflow-hidden">
             {[1, 2, 3].map((i) => (
               <div key={i} className="p-4 flex items-center gap-3.5 animate-pulse">
-                <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
+                <div className="w-10 h-10 rounded-full bg-[var(--pd-line-2)] shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-slate-200 rounded w-1/3" />
-                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+                  <div className="h-4 bg-[var(--pd-line-2)] rounded w-1/3" />
+                  <div className="h-3 bg-[var(--pd-line-2)] rounded w-1/2" />
                 </div>
-                <div className="h-5 bg-slate-100 rounded-full w-16" />
               </div>
             ))}
           </div>
         )}
 
-        {/* Active Members Section */}
-        {!isLoading && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Active Staff ({members.length})
-              </span>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-border-subtle overflow-hidden shadow-sm">
-              {members.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-500">
-                  No staff members found.
-                </div>
-              ) : (
-                members.map((member) => (
-                  <StaffMemberRow
-                    key={member.id}
-                    member={member}
-                    currentUserRole={effectiveRole}
-                    currentUserId={user?.id}
-                    onSelectMember={handleSelectMember}
-                  />
-                ))
-              )}
-            </div>
+        {!isLoading && members.length === 0 && invitations.length === 0 && (
+          <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-8 flex flex-col items-center text-center gap-1">
+            <h2 className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">{StaffStrings.empty}</h2>
+            <p className="text-[15px] font-semibold text-[var(--pd-muted)] m-0 mt-1">
+              {StaffStrings.emptyBody}
+            </p>
           </div>
         )}
 
-        {/* Pending Invitations Section */}
-        {!isLoading && invitations.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Pending Invitations ({invitations.length})
-              </span>
-            </div>
+        {!isLoading && members.length > 0 && (
+          <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] overflow-hidden shadow-sm">
+            {members.map((member) => (
+              <StaffMemberRow
+                key={member.id}
+                member={member}
+                currentUserRole={effectiveRole}
+                currentUserId={user?.id}
+                onSelectMember={handleSelectMember}
+              />
+            ))}
+          </div>
+        )}
 
-            <div className="bg-white rounded-2xl border border-border-subtle overflow-hidden shadow-sm">
+        {!isLoading && invitations.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <span className="px-1 text-[16px] font-extrabold text-[var(--pd-navy)]">
+              {StaffStrings.waitingToJoin}
+            </span>
+            <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] overflow-hidden shadow-sm">
               {invitations.map((inv) => (
                 <PendingInvitationRow
                   key={inv.id}
@@ -275,7 +246,6 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
         )}
       </main>
 
-      {/* Member Action Sheet */}
       <StaffMemberActionsSheet
         member={selectedMember}
         currentUserRole={effectiveRole}
@@ -288,7 +258,6 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
         onRemoveAccess={handleRemoveAccess}
       />
 
-      {/* Invite Staff Sheet */}
       <InviteStaffSheet
         currentUserRole={effectiveRole}
         isOpen={isInviteSheetOpen}
