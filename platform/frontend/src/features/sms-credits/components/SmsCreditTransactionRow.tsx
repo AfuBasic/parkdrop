@@ -1,6 +1,10 @@
-import { ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
 import type { LocalSmsCreditTransaction } from '@/offline/db/schema';
 import { SmsCreditsStrings } from '@/features/sms-credits/strings';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/offline/db/database';
+import { formatPhone } from '@/lib/formatters';
+import { Link } from '@tanstack/react-router';
 
 interface SmsCreditTransactionRowProps {
   transaction: LocalSmsCreditTransaction;
@@ -24,6 +28,39 @@ function describeTransaction(transaction: LocalSmsCreditTransaction): string {
 
 export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRowProps) {
   const isCredit = transaction.type === 'CREDIT';
+  const isArrivalSms = transaction.reference_type === 'ARRIVAL_SMS' && transaction.reference_id != null;
+
+  // We only fetch the package if it's an arrival SMS and we have a reference ID.
+  // Note: Since dexie-react-hooks sometimes returns undefined while loading,
+  // we could have a flash of "Package no longer available".
+  // But dexie is local and practically instantaneous, so we accept this for now.
+  const packageData = useLiveQuery(
+    async () => {
+      if (!isArrivalSms || !transaction.reference_id) return undefined;
+      return await db.packages.get(transaction.reference_id);
+    },
+    [isArrivalSms, transaction.reference_id]
+  );
+
+  // Determine title text
+  let title = describeTransaction(transaction);
+  let isDeletedPackage = false;
+
+  if (isArrivalSms) {
+    if (packageData) {
+      if (packageData.customer_name) {
+        title = packageData.customer_name;
+      } else if (packageData.customer_phone) {
+        title = formatPhone(packageData.customer_phone);
+      } else {
+        title = SmsCreditsStrings.packageSms;
+      }
+    } else {
+      // If we don't have packageData, assume it's deleted or not synced down.
+      title = SmsCreditsStrings.packageDeleted;
+      isDeletedPackage = true;
+    }
+  }
 
   const date = new Date(transaction.created_at);
   const formattedDate = !isNaN(date.getTime())
@@ -35,13 +72,14 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
       })
     : transaction.created_at;
 
-  const title = describeTransaction(transaction);
   const amountText = isCredit
     ? SmsCreditsStrings.smsAdded(transaction.amount)
     : SmsCreditsStrings.smsCount(transaction.amount);
 
-  return (
-    <div className="flex items-center justify-between gap-3 py-3.5 px-4 border-b border-[var(--pd-line-2)] last:border-b-0">
+  const isTappable = isArrivalSms && !isDeletedPackage && packageData != null;
+
+  const innerContent = (
+    <>
       <div className="flex items-center gap-3 min-w-0">
         <div
           className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
@@ -61,13 +99,38 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
         </div>
       </div>
 
-      <span
-        className={`text-[16px] font-extrabold shrink-0 ${
-          isCredit ? 'text-[var(--pd-ok)]' : 'text-[var(--pd-navy)]'
-        }`}
+      <div className="flex items-center gap-3 shrink-0">
+        <span
+          className={`text-[16px] font-extrabold ${
+            isCredit ? 'text-[var(--pd-ok)]' : 'text-[var(--pd-navy)]'
+          }`}
+        >
+          {amountText}
+        </span>
+        {isTappable && (
+          <ChevronRight className="w-5 h-5 text-[var(--pd-muted)]" aria-hidden="true" />
+        )}
+      </div>
+    </>
+  );
+
+  const containerClasses = "flex items-center justify-between gap-3 py-3.5 px-4 border-b border-[var(--pd-line-2)] last:border-b-0 w-full text-left";
+
+  if (isTappable && transaction.reference_id) {
+    return (
+      <Link
+        to="/packages/$packageId"
+        params={{ packageId: transaction.reference_id }}
+        className={`${containerClasses} active:bg-[var(--pd-page-2)] transition-colors`}
       >
-        {amountText}
-      </span>
+        {innerContent}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={containerClasses}>
+      {innerContent}
     </div>
   );
 }
