@@ -155,6 +155,7 @@ class AuthChallengeController extends Controller
                     'id' => $business->id,
                     'public_id' => $business->public_id,
                     'name' => $business->name,
+                    'daily_storage_fee_minor' => $business->daily_storage_fee_minor,
                     'pickup_points' => $business->pickupPoints,
                 ],
                 'role' => $membership?->role ?? 'owner',
