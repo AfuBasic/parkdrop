@@ -5,6 +5,7 @@ import {
   calculatePaymentSummary,
   type PaymentState,
 } from '@/features/payments/domain/payment-summary';
+import { accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import { DailyOperationsReportRepository } from '@/offline/read-models/daily-operations-report-repository';
 import { describeAge, type PackageAge } from '../lib/packageAge';
 
@@ -86,7 +87,8 @@ function buildSnapshot(
   packages: LocalPackage[],
   customers: Map<string, { name: string; phone: string }>,
   payments: LocalPayment[],
-  now: Date
+  now: Date,
+  dailyStorageFeeMinor: number
 ): HomeSnapshot {
   const paymentsByPackage = groupPaymentsByPackage(payments);
   const today = DailyOperationsReportRepository.getTodayLocalString();
@@ -102,7 +104,7 @@ function buildSnapshot(
     if (pkg.status !== 'WAITING') continue;
 
     const summary = calculatePaymentSummary(
-      pkg.amount_due_minor,
+      accruedAmountDueMinor(pkg, dailyStorageFeeMinor, now),
       paymentsByPackage.get(pkg.id) ?? []
     );
 
@@ -153,7 +155,10 @@ function buildSnapshot(
  * naira figure in the stat strip can never disagree with the one on the
  * package itself.
  */
-export function useHomeData(businessId: number | undefined): HomeData {
+export function useHomeData(
+  businessId: number | undefined,
+  dailyStorageFeeMinor: number = DEFAULT_DAILY_STORAGE_FEE_MINOR
+): HomeData {
   const snapshot = useLiveQuery(
     async (): Promise<HomeSnapshot | 'error'> => {
       if (!businessId) return { waiting: [], stats: EMPTY_STATS, isFirstDay: true };
@@ -169,7 +174,7 @@ export function useHomeData(businessId: number | undefined): HomeData {
           customerRows.map((c) => [c.id, { name: c.name, phone: c.phone_display }])
         );
 
-        return buildSnapshot(packages, customers, payments, new Date());
+        return buildSnapshot(packages, customers, payments, new Date(), dailyStorageFeeMinor);
       } catch (err) {
         // A corrupt or blocked IndexedDB is the one case where the screen has
         // nothing to show. Surface it as an error the user can retry rather
@@ -178,7 +183,7 @@ export function useHomeData(businessId: number | undefined): HomeData {
         return 'error';
       }
     },
-    [businessId]
+    [businessId, dailyStorageFeeMinor]
   );
 
   if (snapshot === undefined) {
