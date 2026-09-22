@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { PackageX, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { usePackageDetail } from '@/features/packages/detail/hooks/usePackageDetail';
+import { DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import { PackageIdentityHeader } from '@/features/packages/detail/components/PackageIdentityHeader';
 import { PackageCustomerCard } from '@/features/packages/detail/components/PackageCustomerCard';
 import { PackagePickupCodeCard } from '@/features/packages/detail/components/PackagePickupCodeCard';
@@ -40,7 +41,8 @@ export function PackageDetailScreen({
   const [isReturnSheetOpen, setIsReturnSheetOpen] = useState(false);
   const [isCancelSheetOpen, setIsCancelSheetOpen] = useState(false);
 
-  const { data, isLoading, notFound } = usePackageDetail(packageId, businessId);
+  const dailyStorageFeeMinor = business?.daily_storage_fee_minor ?? DEFAULT_DAILY_STORAGE_FEE_MINOR;
+  const { data, isLoading, notFound } = usePackageDetail(packageId, businessId, dailyStorageFeeMinor);
 
   // Loading Skeleton State
   if (isLoading) {
