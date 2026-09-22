@@ -1,4 +1,3 @@
-import { describe, it, expect } from 'vitest';
 import {
   calculateAgeDays,
   getAgeBand,
@@ -7,12 +6,34 @@ import {
   formatNaira,
   matchesFilters,
   sortPackages,
+  isOverdue24h,
+  formatOverdueAgeSubline,
   type PackageCardData,
 } from './package-filters';
 import type { LocalPackage, LocalPayment } from '@/offline/db/schema';
 
 describe('package-filters', () => {
   const baseNow = new Date('2026-09-21T12:00:00.000Z');
+
+  describe('isOverdue24h & formatOverdueAgeSubline', () => {
+    it('accurately identifies 24h overdue threshold', () => {
+      const under24h = '2026-09-20T13:00:00.000Z'; // 23h ago
+      const exact24h = '2026-09-20T12:00:00.000Z'; // 24h ago
+      const over24h = '2026-09-19T12:00:00.000Z'; // 48h ago
+
+      expect(isOverdue24h(under24h, baseNow)).toBe(false);
+      expect(isOverdue24h(exact24h, baseNow)).toBe(true);
+      expect(isOverdue24h(over24h, baseNow)).toBe(true);
+    });
+
+    it('formats worst-case age subline in hours and days', () => {
+      const hoursAgo28 = '2026-09-20T08:00:00.000Z'; // 28 hours ago
+      const daysAgo3 = '2026-09-18T12:00:00.000Z'; // 3 days ago
+
+      expect(formatOverdueAgeSubline(hoursAgo28, baseNow)).toBe('Oldest waiting 28 hours');
+      expect(formatOverdueAgeSubline(daysAgo3, baseNow)).toBe('Oldest waiting 3 days');
+    });
+  });
 
   describe('calculateAgeDays & getAgeBand', () => {
     it('calculates 0 days for today', () => {
@@ -118,11 +139,11 @@ describe('package-filters', () => {
       ageDisplay: '8 days',
     };
 
-    it('matches WAITING with unpaid and 7d filter', () => {
+    it('matches WAITING with 7d filter', () => {
       const matched = matchesFilters(
         cardData,
         'WAITING',
-        new Set(['unpaid', '7d']),
+        new Set(['7d']),
         new Set(),
         new Set(),
         baseNow
