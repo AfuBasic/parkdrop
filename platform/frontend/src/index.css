@@ -61,6 +61,7 @@
   /* Semantic Text */
   --color-text-primary: var(--color-proto-ink);
   --color-text-secondary: var(--color-proto-muted);
+  --color-text-tertiary: var(--color-pd-neutral-400);
   --color-text-muted: var(--color-proto-muted);
   --color-text-disabled: var(--color-pd-neutral-400);
   --color-text-inverse: var(--color-pd-neutral-0);
@@ -72,10 +73,12 @@
   --color-surface-subtle: var(--color-proto-tint);
   --color-surface-raised: var(--color-pd-neutral-0);
   --color-surface-selected: var(--color-proto-tint);
+  --color-surface-active: var(--color-proto-tint2);
   --color-surface-disabled: var(--color-pd-neutral-100);
 
   /* Semantic Borders */
   --color-border-default: var(--color-proto-line2);
+  --color-border-subtle: var(--color-pd-neutral-100);
   --color-border-strong: var(--color-proto-line);
   --color-border-focus: var(--color-proto-blue);
   --color-border-disabled: var(--color-proto-line2);
@@ -132,6 +135,7 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
+  --radius-2xl: 24px;
   --radius-full: 999px;
 
   /* Shadows */
