@@ -1,5 +1,5 @@
 import { db } from '@/offline/db/database';
-import { getDeviceUuid } from '@/offline/device/device-identity';
+import { getDeviceUuid, getNextDeviceSequence } from '@/offline/device/device-identity';
 import type { LocalMutation } from '@/offline/db/schema';
 
 export class MutationQueue {
@@ -12,20 +12,7 @@ export class MutationQueue {
     baseVersion: number | null = null
   ): Promise<LocalMutation> {
     const deviceUuid = getDeviceUuid();
-    
-    // Determine next device sequence for this device
-    // Since IndexedDB doesn't have aggregate functions easily without scanning,
-    // we can get the max sequence by ordering by id desc for this device.
-    // In a real robust scenario, device_sequence might need a dedicated counter table.
-    let nextSequence = 1;
-    const lastMutation = await db.mutations
-      .filter(m => m.device_uuid === deviceUuid)
-      .reverse()
-      .first();
-      
-    if (lastMutation && lastMutation.device_sequence) {
-      nextSequence = lastMutation.device_sequence + 1;
-    }
+    const nextSequence = getNextDeviceSequence();
 
     const mutation: LocalMutation = {
       mutation_id: crypto.randomUUID(),
