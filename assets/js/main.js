@@ -95,4 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     observer.observe(searchDemo);
   }
+
+  // 4. Scroll reveal
+  // Adds .is-visible the first time each .reveal element crosses into view.
+  // Under reduced motion the CSS itself shows everything already, so the
+  // observer is skipped entirely rather than doing pointless work.
+  const revealEls = document.querySelectorAll('.reveal');
+
+  if (revealEls.length && !prefersReducedMotion) {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    revealEls.forEach(el => revealObserver.observe(el));
+  }
 });
