@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { Check } from 'lucide-react';
 import { accountApi } from '@/features/account/api/account-api';
 import type { UserProfile, BusinessMembershipSummary, RegisteredDevice } from '@/features/account/account-types';
 import { AccountIdentitySection } from '@/features/account/components/AccountIdentitySection';
@@ -11,6 +12,8 @@ import type { LocalAuthorization } from '@/offline/db/schema';
 import { db } from '@/offline/db/database';
 import { SyncEngine } from '@/offline/sync/sync-engine';
 import { useAuth } from '@/features/auth/AuthContext';
+import { TaskHeader } from '@/design-system/shell/TaskHeader';
+import { AccountStrings } from '@/features/account/strings';
 
 interface AccountSecurityScreenProps {
   onBack?: () => void;
@@ -73,7 +76,6 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
     loadData();
   }, [loadData]);
 
-  // Handle Display Name Update
   const handleUpdateName = async (newName: string) => {
     setIsSavingName(true);
     try {
@@ -82,14 +84,13 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
         ...prev,
         user: { ...prev.user, first_name: res.user.first_name },
       } : null);
-      setFeedbackMessage('Display name updated successfully.');
+      setFeedbackMessage(AccountStrings.nameUpdated);
       setTimeout(() => setFeedbackMessage(null), 3000);
     } finally {
       setIsSavingName(false);
     }
   };
 
-  // Handle Revoke Single Device
   const handleRevokeDevice = async (deviceId: number) => {
     setRevokingDeviceId(deviceId);
     try {
@@ -97,18 +98,15 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
       setDevices((prev) =>
         prev.map((d) => (d.id === deviceId ? { ...d, is_revoked: true, revoked_at: new Date().toISOString() } : d))
       );
-      setFeedbackMessage('Device access revoked.');
-      setTimeout(() => setFeedbackMessage(null), 3000);
     } catch (err: any) {
-      alert(err?.message || 'Failed to revoke device access.');
+      alert(err?.message || AccountStrings.couldNotRevoke);
     } finally {
       setRevokingDeviceId(null);
     }
   };
 
-  // Handle Revoke All Other Devices
   const handleRevokeAllOthers = async () => {
-    if (!confirm('Are you sure you want to revoke access from all other registered devices?')) {
+    if (!confirm(AccountStrings.revokeAllOthers + '?')) {
       return;
     }
     setIsRevokingOthers(true);
@@ -117,10 +115,8 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
       setDevices((prev) =>
         prev.map((d) => (!d.is_current ? { ...d, is_revoked: true, revoked_at: new Date().toISOString() } : d))
       );
-      setFeedbackMessage('All other devices revoked.');
-      setTimeout(() => setFeedbackMessage(null), 3000);
     } catch (err: any) {
-      alert(err?.message || 'Failed to revoke other devices.');
+      alert(err?.message || AccountStrings.couldNotRevokeOthers);
     } finally {
       setIsRevokingOthers(false);
     }
@@ -135,7 +131,6 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
         .toArray();
 
       if (allPending.length > 0) {
-        // Group by business_id
         const businessCounts = new Map<number, number>();
         for (const m of allPending) {
           businessCounts.set(m.business_id, (businessCounts.get(m.business_id) || 0) + 1);
@@ -152,7 +147,6 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
         return;
       }
 
-      // No pending mutations -> sign out directly
       await logout();
     } catch (e) {
       console.warn('Error checking pending mutations before logout:', e);
@@ -160,11 +154,9 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
     }
   };
 
-  // Sync pending changes then sign out
   const handleSyncAndSignOut = async () => {
     setIsSyncingSignOut(true);
     try {
-      // Attempt sync for all businesses that have pending changes
       for (const b of pendingBusinesses) {
         try {
           await SyncEngine.sync(b.businessId);
@@ -179,7 +171,6 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
     }
   };
 
-  // Confirm sign out anyway (preserves IndexedDB queue safely)
   const handleConfirmSignOutAnyway = async () => {
     setIsSignOutModalOpen(false);
     await logout();
@@ -187,7 +178,7 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
 
   const currentDevice = devices.find((d) => d.is_current) || {
     id: 0,
-    device_name: 'This browser device',
+    device_name: AccountStrings.thisPhoneLabel,
     is_current: true,
     authorized_at: offlineAuth?.authorized_at || null,
     last_seen_at: new Date().toISOString(),
@@ -196,46 +187,26 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 pb-16">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-neutral-200/80 px-4 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleBack}
-            className="p-1.5 -ml-1.5 rounded-xl text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 transition-colors cursor-pointer"
-            aria-label="Go back"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="text-lg font-bold text-neutral-900 leading-tight">Account & Security</h1>
-            <p className="text-xs text-neutral-500">Manage identity, active devices, and sessions</p>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen bg-[var(--pd-page-2)] w-full max-w-lg mx-auto pb-16">
+      <TaskHeader title={AccountStrings.title} onBack={handleBack} screenName="This phone" />
 
-      {/* Main Content */}
-      <main className="max-w-2xl mx-auto p-4 space-y-4">
+      <main className="flex-1 p-4 flex flex-col gap-4">
         {feedbackMessage && (
           <div
             role="status"
-            className="p-3 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-medium flex items-center gap-2 animate-in fade-in"
+            className="p-3.5 rounded-[var(--pd-card-radius)] bg-[var(--pd-ok-bg)] border border-[var(--pd-ok)]/25 flex items-center gap-2.5"
           >
-            <svg className="w-4 h-4 shrink-0 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <span>{feedbackMessage}</span>
+            <Check className="w-5 h-5 shrink-0 text-[var(--pd-ok)]" strokeWidth={2.25} aria-hidden="true" />
+            <span className="text-[16px] font-semibold text-[var(--pd-ok)]">{feedbackMessage}</span>
           </div>
         )}
 
         {loading && !profile ? (
-          <div className="p-8 text-center text-xs text-neutral-400">Loading security details...</div>
+          <div className="p-8 text-center text-[16px] font-semibold text-[var(--pd-muted)]">
+            {AccountStrings.loading}
+          </div>
         ) : (
           <>
-            {/* 1. Passwordless Identity Section */}
             {profile && (
               <AccountIdentitySection
                 user={profile.user}
@@ -245,13 +216,8 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
               />
             )}
 
-            {/* 2. Current Device & Offline Lease */}
-            <CurrentDeviceSection
-              device={currentDevice}
-              authorization={offlineAuth}
-            />
+            <CurrentDeviceSection device={currentDevice} authorization={offlineAuth} />
 
-            {/* 3. Remote Devices List */}
             <DeviceList
               devices={devices}
               onRevokeDevice={handleRevokeDevice}
@@ -260,27 +226,25 @@ export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ on
               isRevokingOthers={isRevokingOthers}
             />
 
-            {/* 4. Sign Out Card */}
-            <div className="bg-white rounded-2xl border border-neutral-200/80 p-5 shadow-xs">
-              <h2 className="text-sm font-semibold text-neutral-900 mb-1">
-                Active Session
+            <div className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-5 shadow-sm">
+              <h2 className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0 mb-1.5">
+                {AccountStrings.activeSessionHeading}
               </h2>
-              <p className="text-xs text-neutral-500 mb-3.5">
-                Signing out clears authorization on this browser while safely preserving any unsynced offline records.
+              <p className="text-[15px] font-semibold text-[var(--pd-muted)] mb-4 m-0 mt-1.5">
+                {AccountStrings.signOutBody}
               </p>
               <button
                 type="button"
                 onClick={handleInitiateSignOut}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-neutral-700 bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 border border-neutral-200 transition-colors"
+                className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-line)] text-[18px] font-extrabold text-[var(--pd-navy)] cursor-pointer"
               >
-                Sign Out
+                {AccountStrings.signOut}
               </button>
             </div>
           </>
         )}
       </main>
 
-      {/* Sign Out With Pending Changes Dialog */}
       <SignOutConfirmDialog
         isOpen={isSignOutModalOpen}
         onClose={() => setIsSignOutModalOpen(false)}
