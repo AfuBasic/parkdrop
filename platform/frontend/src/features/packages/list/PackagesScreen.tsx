@@ -40,7 +40,7 @@ export interface PackagesScreenProps {
 
 export function PackagesScreen({
   initialStatus = 'WAITING',
-  initialPayFilter,
+  initialPayFilter: _initialPayFilter,
   initialAgeFilter,
   onNavigateToAdd,
   onSelectPackage,
