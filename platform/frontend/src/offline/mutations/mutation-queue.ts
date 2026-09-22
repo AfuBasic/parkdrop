@@ -33,6 +33,14 @@ export class MutationQueue {
     };
 
     await db.mutations.add(mutation);
+
+    // Fire event so background sync loop can pick it up immediately
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('parkdrop:mutation-queued', { 
+        detail: { businessId } 
+      }));
+    }
+
     return mutation;
   }
 
