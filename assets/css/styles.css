@@ -1513,96 +1513,6 @@ html[data-reduced-motion="true"] .demo-result {
 }
 
 /* Footer */
-/* Compliance / Operated-by Section */
-.compliance-section {
-  background-color: var(--c-page);
-  border-top: 1px solid var(--c-border);
-  border-bottom: 1px solid var(--c-border);
-  padding-block: 40px;
-}
-
-.compliance-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 28px;
-}
-
-@media (min-width: 768px) {
-  .compliance-inner {
-    flex-direction: row;
-    align-items: center;
-    gap: 40px;
-  }
-}
-
-.compliance-brand {
-  flex-shrink: 0;
-}
-
-.compliance-logo-img {
-  width: 160px;
-  height: auto;
-  display: block;
-  /* Logo has white background — clip it cleanly */
-  mix-blend-mode: multiply;
-  opacity: 0.9;
-}
-
-.compliance-divider {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .compliance-divider {
-    display: block;
-    width: 1px;
-    height: 64px;
-    background-color: var(--c-border);
-    flex-shrink: 0;
-  }
-}
-
-.compliance-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.compliance-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--c-blue-primary);
-  margin: 0;
-  max-width: none;
-}
-
-.compliance-statement {
-  font-size: 0.9375rem;
-  line-height: 1.6;
-  color: var(--c-text-secondary);
-  margin: 0;
-  max-width: 70ch;
-}
-
-.compliance-statement strong {
-  color: var(--c-text-main);
-  font-weight: 700;
-}
-
-.compliance-address {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  font-size: 0.8125rem;
-  font-style: normal;
-  color: var(--c-text-secondary);
-  margin-top: 4px;
-}
-
-/* Footer */
 .site-footer {
   padding-block: 48px;
   border-top: 1px solid var(--c-border);
@@ -1668,8 +1578,20 @@ html[data-reduced-motion="true"] .demo-result {
   .footer-bottom {
     flex-direction: row;
     justify-content: space-between;
+    align-items: flex-start;
   }
 }
+
+.footer-legal-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--c-text-secondary);
+  line-height: 1.5;
+  max-width: 60ch;
+}
+
 
 /* ==========================================================================
    Scroll-in motion
