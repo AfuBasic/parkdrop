@@ -20,7 +20,7 @@ class CreateSmsCreditPurchaseAction
     /**
      * Authorizes and initiates an SMS credit purchase for a business.
      */
-    public function execute(Business $business, User $user, string $bundleKey, ?string $callbackUrl = null): SmsCreditPurchase
+    public function execute(Business $business, User $user, string $bundleKey, ?string $callbackUrl = null, ?string $providerName = null): SmsCreditPurchase
     {
         // 1. Authorize: Only Owner and Manager can buy SMS credits.
         $membership = BusinessMembership::where('business_id', $business->id)
@@ -46,9 +46,17 @@ class CreateSmsCreditPurchaseAction
 
         // 4. Default callback URL if not provided by caller (always constrained to configured frontend origin)
         if (! $callbackUrl) {
-            $frontendBase = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173')), '/');
+            $frontendBase = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5174')), '/');
             $callbackUrl = "{$frontendBase}/sms-credits/purchase/return";
         }
+
+        // Resolve gateway based on requested provider or default
+        $gateway = match ($providerName) {
+            'paystack' => app(\App\Services\Payments\PaystackPaymentGateway::class),
+            'flutterwave' => app(\App\Services\Payments\FlutterwavePaymentGateway::class),
+            'fake' => app(\App\Services\Payments\FakePaymentGateway::class),
+            default => $this->paymentGateway,
+        };
 
         // 5. Create immutable commercial purchase record in PENDING status
         $purchase = SmsCreditPurchase::create([
@@ -60,11 +68,11 @@ class CreateSmsCreditPurchaseAction
             'currency' => $currency,
             'status' => 'PENDING',
             'reference' => $reference,
-            'provider' => $this->paymentGateway->getName(),
+            'provider' => $gateway->getName(),
         ]);
 
         // 6. Initialize payment session with provider
-        $initResult = $this->paymentGateway->initializePayment(
+        $initResult = $gateway->initializePayment(
             purchase: $purchase,
             callbackUrl: $callbackUrl,
             payerEmail: $user->email ?? 'billing@parkdrop.com.ng'
