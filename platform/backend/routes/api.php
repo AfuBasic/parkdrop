@@ -99,6 +99,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('events', [DailyOperationsReportController::class, 'events']);
         Route::get('export', [DailyOperationsReportController::class, 'export']);
     });
+    
+    // Range Reports
+    Route::get('v1/reports/range', [\App\Http\Controllers\Api\V1\Reports\RangeReportController::class, 'show']);
 
     // Account, Security & Device Management (Build 22)
     Route::prefix('v1/account')->group(function () {
