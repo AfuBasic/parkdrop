@@ -6,6 +6,7 @@ export type HomeFilter = 'all' | 'unpaid';
 export interface FilterChipsProps {
   value: HomeFilter;
   onChange: (value: HomeFilter) => void;
+  unpaidCount?: number;
   className?: string;
 }
 
@@ -21,8 +22,14 @@ const OPTIONS: Array<{ id: HomeFilter; label: string }> = [
  * asks of this list that the list does not already answer by being sorted
  * oldest first. Every further filter would be a choice to make in front of a
  * waiting customer.
+ *
+ * If there are no unpaid packages (unpaidCount === 0), the filter is hidden entirely
+ * since filtering would provide no extra utility.
  */
-export function FilterChips({ value, onChange, className }: FilterChipsProps) {
+export function FilterChips({ value, onChange, unpaidCount, className }: FilterChipsProps) {
+  if (unpaidCount !== undefined && unpaidCount === 0) {
+    return null;
+  }
   return (
     <div className={cn('flex items-center gap-2', className)} role="group">
       {OPTIONS.map((option) => {
