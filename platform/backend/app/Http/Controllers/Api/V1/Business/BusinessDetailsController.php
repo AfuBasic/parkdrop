@@ -39,6 +39,7 @@ class BusinessDetailsController extends Controller
                 'public_id' => $business->public_id,
                 'name' => $business->name,
                 'status' => $business->status,
+                'daily_storage_fee_minor' => $business->daily_storage_fee_minor,
                 'created_at' => $business->created_at?->toIso8601String(),
             ],
             'current_pickup_point' => $currentPickupPoint ? [
@@ -70,7 +71,8 @@ class BusinessDetailsController extends Controller
         }
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:100'],
+            'name' => ['sometimes', 'required', 'string', 'min:2', 'max:100'],
+            'daily_storage_fee_minor' => ['sometimes', 'required', 'integer', 'min:0', 'max:10000000'],
         ]);
 
         try {
@@ -82,6 +84,7 @@ class BusinessDetailsController extends Controller
                     'id' => $updated->id,
                     'public_id' => $updated->public_id,
                     'name' => $updated->name,
+                    'daily_storage_fee_minor' => $updated->daily_storage_fee_minor,
                 ],
             ]);
         } catch (DomainException $e) {
