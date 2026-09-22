@@ -35,7 +35,6 @@ class SendArrivalSmsJob implements ShouldQueue
     public array $backoff = [30, 120];
 
     public function __construct(
-        public readonly int $packageId,
         public readonly string $packageUuid,
         public readonly int $businessId,
         public readonly string $recipientPhone,
@@ -56,11 +55,13 @@ class SendArrivalSmsJob implements ShouldQueue
      */
     public function handle(SmsProvider $smsProvider): void
     {
-        // Check if already successfully sent (idempotency guard via outbox_events)
+        // Check if THIS specific outbox event already sent successfully — guards
+        // against a duplicate dispatch of the same job/event (e.g. a Horizon
+        // race), not against the package having been messaged before. Scoping
+        // by package_id instead of outboxEventId would also block a deliberate
+        // resend, since the package's earlier event is already SENT.
         $alreadySent = DB::table('outbox_events')
-            ->where('business_id', $this->businessId)
-            ->where('type', 'ARRIVAL_SMS_REQUESTED')
-            ->whereJsonContains('payload->package_id', $this->packageUuid)
+            ->where('id', $this->outboxEventId)
             ->where('sms_status', 'SENT')
             ->exists();
 
@@ -80,7 +81,7 @@ class SendArrivalSmsJob implements ShouldQueue
             ['outbox_event_id' => $this->outboxEventId],
             [
                 'business_id' => $this->businessId,
-                'package_id' => $this->packageId,
+                'package_id' => $this->packageUuid,
                 'recipient_phone' => $this->recipientPhone,
                 'message_body' => $this->message,
                 'status' => SmsMessage::STATUS_PENDING,
@@ -104,11 +105,12 @@ class SendArrivalSmsJob implements ShouldQueue
                 'error_message' => null,
             ]);
 
+            // Scoped by this event's own id, not whereNull('dispatched_at') — the
+            // claiming command (ProcessOutboxCommand) already sets dispatched_at
+            // before this job ever runs, so that guard would never match and
+            // sms_status would silently never get written.
             DB::table('outbox_events')
-                ->where('business_id', $this->businessId)
-                ->where('type', 'ARRIVAL_SMS_REQUESTED')
-                ->whereJsonContains('payload->package_id', $this->packageUuid)
-                ->whereNull('dispatched_at')
+                ->where('id', $this->outboxEventId)
                 ->update([
                     'dispatched_at' => now(),
                     'sms_status' => 'SENT',
@@ -222,10 +224,7 @@ class SendArrivalSmsJob implements ShouldQueue
         ]);
 
         DB::table('outbox_events')
-            ->where('business_id', $this->businessId)
-            ->where('type', 'ARRIVAL_SMS_REQUESTED')
-            ->whereJsonContains('payload->package_id', $this->packageUuid)
-            ->whereNull('dispatched_at')
+            ->where('id', $this->outboxEventId)
             ->update([
                 'dispatched_at' => now(),
                 'sms_status' => 'FAILED',
@@ -252,10 +251,7 @@ class SendArrivalSmsJob implements ShouldQueue
         ]);
 
         DB::table('outbox_events')
-            ->where('business_id', $this->businessId)
-            ->where('type', 'ARRIVAL_SMS_REQUESTED')
-            ->whereJsonContains('payload->package_id', $this->packageUuid)
-            ->whereNull('dispatched_at')
+            ->where('id', $this->outboxEventId)
             ->update([
                 'dispatched_at' => now(),
                 'sms_status' => 'NEEDS_RECONCILIATION',
@@ -279,7 +275,7 @@ class SendArrivalSmsJob implements ShouldQueue
     {
         SmsMessage::create([
             'business_id' => $this->businessId,
-            'package_id' => $this->packageId,
+            'package_id' => $this->packageUuid,
             'outbox_event_id' => $this->outboxEventId,
             'recipient_phone' => $this->recipientPhone,
             'message_body' => $this->message,
