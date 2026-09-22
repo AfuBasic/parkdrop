@@ -26,6 +26,7 @@ import {
   matchesFilters,
   sortPackages,
 } from '@/features/packages/domain/package-filters';
+import { accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 
 export interface PackagesScreenProps {
   initialStatus?: StatusTab;
@@ -155,6 +156,8 @@ export function PackagesScreen({
     setOtherChips(new Set());
   };
 
+  const dailyStorageFeeMinor = business?.daily_storage_fee_minor ?? DEFAULT_DAILY_STORAGE_FEE_MINOR;
+
   // 1. Live Query for All Packages, Customers, and Payments for business
   const liveData = useLiveQuery(async () => {
     if (!businessId) return null;
@@ -179,7 +182,8 @@ export function PackagesScreen({
     const cardItems: PackageCardData[] = allPackages.map((pkg) => {
       const customer = customerMap.get(pkg.customer_id);
       const pkgPayments = paymentsByPackageId.get(pkg.id) || [];
-      const paymentEval = evaluatePackagePayment(pkg.amount_due_minor, pkgPayments);
+      const effectiveAmountDueMinor = accruedAmountDueMinor(pkg, dailyStorageFeeMinor, now);
+      const paymentEval = evaluatePackagePayment(effectiveAmountDueMinor, pkgPayments);
       const ageDays = calculateAgeDays(pkg.client_created_at, now);
 
       return {
@@ -187,7 +191,7 @@ export function PackagesScreen({
         customerName: customer?.name || null,
         customerPhone: customer?.phone_display || customer?.phone_normalized || null,
         paymentState: paymentEval.paymentState,
-        amountDueMinor: pkg.amount_due_minor,
+        amountDueMinor: effectiveAmountDueMinor,
         balanceMinor: paymentEval.balanceMinor,
         ageDays,
         ageBand: getAgeBand(ageDays),
@@ -196,7 +200,7 @@ export function PackagesScreen({
     });
 
     return cardItems;
-  }, [businessId]);
+  }, [businessId, dailyStorageFeeMinor]);
 
   // 2. Cross-tab search query using PackageSearchRepository
   const searchResults = useLiveQuery(async () => {
