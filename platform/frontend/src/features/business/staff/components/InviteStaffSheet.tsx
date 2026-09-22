@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import type { BusinessRole } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
-import { X, Send, AlertTriangle } from 'lucide-react';
+import type { BusinessRole } from '@/features/business/permissions/business-permissions';
+import { Send, AlertTriangle } from 'lucide-react';
+import { Sheet, SheetContent } from '@/design-system';
+import { StaffStrings } from '@/features/business/staff/strings';
 
 interface InviteStaffSheetProps {
   currentUserRole: BusinessRole;
@@ -20,44 +22,16 @@ export const InviteStaffSheet: React.FC<InviteStaffSheetProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
-  // Role options according to inviter permissions:
-  // Owner can invite Owner, Manager, or Attendant.
-  // Manager can invite Attendant only.
-  const assignableRoles: { value: BusinessRole; label: string; description: string }[] =
-    currentUserRole === 'owner'
-      ? [
-          {
-            value: 'attendant',
-            label: 'Attendant',
-            description: 'Can log packages, record payments, and release parcels.',
-          },
-          {
-            value: 'manager',
-            label: 'Manager',
-            description: 'Can view staff and invite attendants alongside operational tasks.',
-          },
-          {
-            value: 'owner',
-            label: 'Owner',
-            description: 'Full business management, staff roles, and settings.',
-          },
-        ]
-      : [
-          {
-            value: 'attendant',
-            label: 'Attendant',
-            description: 'Can log packages, record payments, and release parcels.',
-          },
-        ];
+  // Owner can invite owner, manager or attendant. Manager can invite attendant only.
+  const assignableRoles: BusinessRole[] =
+    currentUserRole === 'owner' ? ['attendant', 'manager', 'owner'] : ['attendant'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
 
     if (!cleanEmail || !cleanEmail.includes('@')) {
-      setErrorMessage('Please enter a valid email address.');
+      setErrorMessage(StaffStrings.invalidEmail);
       return;
     }
 
@@ -69,120 +43,98 @@ export const InviteStaffSheet: React.FC<InviteStaffSheetProps> = ({
       setRole('attendant');
       onClose();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Could not send invitation. Try again.');
+      setErrorMessage(err.message || StaffStrings.couldNotInvite);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="invite-sheet-title"
-    >
-      <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border-subtle">
-          <div>
-            <h2 id="invite-sheet-title" className="font-bold text-slate-900 text-base sm:text-lg">
-              Invite staff member
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Send an email invitation to join this Business
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-            aria-label="Close invite sheet"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent
+        side="bottom"
+        className="w-full max-w-md mx-auto p-5 pb-8 rounded-t-[var(--pd-sheet-radius)]"
+        aria-describedby={undefined}
+      >
+        <div className="pr-10 mb-5">
+          <h2 className="text-[22px] font-extrabold text-[var(--pd-navy)] m-0 tracking-[-0.02em]">
+            {StaffStrings.inviteTitle}
+          </h2>
+          <p className="text-[16px] font-semibold text-[var(--pd-muted)] mt-1 m-0">
+            {StaffStrings.inviteBody}
+          </p>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-xs text-red-700">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
-              <div className="flex-1">{errorMessage}</div>
+            <div className="p-3.5 bg-[var(--pd-bad-bg)] border border-[var(--pd-bad)]/25 rounded-[var(--pd-card-radius)] flex items-start gap-2.5">
+              <AlertTriangle className="w-5 h-5 shrink-0 text-[var(--pd-bad)] mt-0.5" strokeWidth={2.25} aria-hidden="true" />
+              <span className="text-[15px] font-semibold text-[var(--pd-bad)]">{errorMessage}</span>
             </div>
           )}
 
           <div>
-            <label htmlFor="staff-email" className="block text-xs font-semibold text-slate-700 mb-1">
-              Email address
+            <label htmlFor="staff-email" className="block text-[16px] font-semibold text-[var(--pd-navy)] mb-1.5">
+              {StaffStrings.emailLabel}
             </label>
             <input
               id="staff-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="e.g. emeka@example.com"
+              placeholder={StaffStrings.emailPlaceholder}
               required
               autoFocus
-              className="w-full px-3.5 py-3 rounded-xl border border-slate-300 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 min-h-[48px]"
+              className="w-full min-h-[var(--pd-field-h)] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-line)] text-[var(--pd-navy)] text-[18px] font-semibold focus:outline-none focus:border-[var(--pd-blue)]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-2">
-              Role in this Business
-            </label>
-            <div className="space-y-2">
+            <span className="block text-[16px] font-semibold text-[var(--pd-navy)] mb-2">
+              {StaffStrings.roleLabel}
+            </span>
+            <div className="flex flex-col gap-2.5">
               {assignableRoles.map((r) => (
                 <label
-                  key={r.value}
-                  className={`flex items-start justify-between p-3.5 rounded-xl border cursor-pointer transition-colors ${
-                    role === r.value
-                      ? 'border-blue-500 bg-blue-50/50'
-                      : 'border-slate-200 hover:bg-slate-50'
+                  key={r}
+                  className={`flex items-center justify-between p-4 min-h-[56px] rounded-[var(--pd-field-radius)] border-2 cursor-pointer transition-colors ${
+                    role === r ? 'border-[var(--pd-blue)] bg-[var(--pd-tint)]' : 'border-[var(--pd-line-2)]'
                   }`}
                 >
-                  <div className="flex flex-col pr-2">
-                    <span className="text-sm font-semibold text-slate-900">
-                      {r.label}
-                    </span>
-                    <span className="text-xs text-slate-500 mt-0.5">
-                      {r.description}
-                    </span>
-                  </div>
+                  <span className="text-[16px] font-semibold text-[var(--pd-navy)] pr-2">
+                    {StaffStrings.roleSentence[r]}
+                  </span>
                   <input
                     type="radio"
                     name="invite-role"
-                    value={r.value}
-                    checked={role === r.value}
-                    onChange={() => setRole(r.value)}
-                    className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500 mt-1"
+                    value={r}
+                    checked={role === r}
+                    onChange={() => setRole(r)}
+                    className="w-5 h-5 accent-[var(--pd-blue)] shrink-0"
                   />
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 min-h-[48px] cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !email.trim()}
-              className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm disabled:opacity-50 min-h-[48px] inline-flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Send className="w-4 h-4" />
-              <span>{isSubmitting ? 'Sending...' : 'Send invitation'}</span>
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isSubmitting || !email.trim()}
+            className="w-full min-h-[60px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] text-white text-[20px] font-extrabold disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer mt-1"
+          >
+            <Send className="w-5 h-5" strokeWidth={2.25} aria-hidden="true" />
+            <span>{isSubmitting ? StaffStrings.sending : StaffStrings.sendInvite}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="w-full min-h-[48px] text-[17px] font-extrabold text-[var(--pd-blue)] cursor-pointer"
+          >
+            {StaffStrings.cancel}
+          </button>
         </form>
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 };
