@@ -34,6 +34,7 @@ class SmsCreditPurchaseController extends Controller
         $request->validate([
             'bundle_key' => 'required|string',
             'callback_url' => 'nullable|url',
+            'provider' => 'nullable|string|in:paystack,flutterwave,fake',
         ]);
 
         $user = $request->user();
@@ -49,7 +50,8 @@ class SmsCreditPurchaseController extends Controller
             business: $business,
             user: $user,
             bundleKey: $request->input('bundle_key'),
-            callbackUrl: $request->input('callback_url')
+            callbackUrl: $request->input('callback_url'),
+            providerName: $request->input('provider')
         );
 
         return response()->json([
