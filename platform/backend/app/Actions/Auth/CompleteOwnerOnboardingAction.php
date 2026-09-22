@@ -139,6 +139,15 @@ class CompleteOwnerOnboardingAction
                 'acknowledged_at' => now(),
             ]);
 
+            // The pickup point was created above but its relation was never
+            // loaded onto $business, so serializing $business as-is would
+            // return pickup_points empty — the same gap the session endpoint
+            // avoids with ->with('business.pickupPoints'). Without this, the
+            // Home screen a first-time owner lands on right after setup shows
+            // the "add your pickup point" banner for a name they just typed,
+            // until their next reload picks up the real session response.
+            $business->setRelation('pickupPoints', collect([$pickupPoint]));
+
             return [
                 'user' => $user,
                 'business' => $business,
