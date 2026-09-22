@@ -114,10 +114,16 @@ export function PackageIdentityHeader({
                     setMoreOpen(false);
                     onResendSms();
                   }}
-                  className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-navy)] hover:bg-[var(--pd-page)] active:scale-98 transition-transform cursor-pointer"
+                  disabled={pkg.sync_status !== 'SYNCED'}
+                  className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-navy)] hover:bg-[var(--pd-page)] active:scale-98 transition-transform cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <SendHorizontal className="w-5 h-5 text-[var(--pd-blue)]" />
-                  <span>{PackagesStrings.resendSmsAction}</span>
+                  <div className="flex flex-col">
+                    <span>{PackagesStrings.resendSmsAction}</span>
+                    {pkg.sync_status !== 'SYNCED' && (
+                      <span className="text-[12px] text-[var(--pd-muted)] font-normal">Package is syncing...</span>
+                    )}
+                  </div>
                 </button>
               )}
 
