@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { PackageCheck, CheckCircle2, RotateCcw, Ban, RefreshCw } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/design-system';
+
 import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 import { PackagesStrings } from '@/features/packages/strings';
@@ -182,77 +182,88 @@ export function PackageStickyActionBar({
         </div>
       </footer>
 
-      {/* Release Confirmation Bottom Sheet */}
-      <Dialog open={isReleaseSheetOpen} onOpenChange={setIsReleaseSheetOpen}>
-        <DialogContent className="w-full max-w-[380px] p-5 rounded-[var(--pd-card-radius)]">
-          <DialogTitle className="text-[22px] font-extrabold text-[var(--pd-navy)] mb-1">
-            {PackagesStrings.releaseTitle(displayName)}
-          </DialogTitle>
+      {/* Release Confirmation Bottom Sheet Overlay */}
+      {isReleaseSheetOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+            onClick={() => !isSubmitting && setIsReleaseSheetOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-10 w-full max-w-[380px] bg-white rounded-[var(--pd-card-radius)] p-5 shadow-2xl border border-[var(--pd-line)] animate-in zoom-in-95 duration-150"
+          >
+            <h2 className="text-[22px] font-extrabold text-[var(--pd-navy)] mb-3">
+              {PackagesStrings.releaseTitle(displayName)}
+            </h2>
 
-          <div className="flex flex-col gap-4">
-            {/* Customer pickup code presentation */}
-            <div className="p-4 rounded-xl bg-[var(--pd-page)] border border-[var(--pd-line)] flex flex-col items-center gap-1">
-              <span className="text-[15px] font-bold text-[var(--pd-muted)]">
-                {PackagesStrings.checkCodePrompt}
-              </span>
-              <span className="font-mono text-[32px] font-extrabold text-[var(--pd-navy)] tracking-widest tabular-nums">
-                {pkg.pickup_code}
-              </span>
-            </div>
-
-            {/* Balance Due Notice if owing */}
-            {hasBalance && (
-              <div className="p-3 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-between text-[#92400E]">
-                <span className="text-[15px] font-bold">{PackagesStrings.balanceLabel}</span>
-                <span className="text-[18px] font-extrabold tabular-nums">{balanceStr}</span>
+            <div className="flex flex-col gap-4">
+              {/* Customer pickup code presentation */}
+              <div className="p-4 rounded-xl bg-[var(--pd-page)] border border-[var(--pd-line)] flex flex-col items-center gap-1">
+                <span className="text-[15px] font-bold text-[var(--pd-muted)]">
+                  {PackagesStrings.checkCodePrompt}
+                </span>
+                <span className="font-mono text-[32px] font-extrabold text-[var(--pd-navy)] tracking-widest tabular-nums">
+                  {pkg.pickup_code}
+                </span>
               </div>
-            )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-2 pt-2">
-              {hasBalance ? (
-                <>
+              {/* Balance Due Notice if owing */}
+              {hasBalance && (
+                <div className="p-3 rounded-xl bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-between text-[#92400E]">
+                  <span className="text-[15px] font-bold">{PackagesStrings.balanceLabel}</span>
+                  <span className="text-[18px] font-extrabold tabular-nums">{balanceStr}</span>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-2 pt-2">
+                {hasBalance ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleCollectAndRelease}
+                      className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[17px] font-extrabold active:scale-98 transition-transform shadow-xs"
+                    >
+                      {PackagesStrings.collectAndReleasePrimary(balanceStr)}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={handleReleaseWithoutPayment}
+                      className="w-full min-h-[48px] rounded-[var(--pd-field-radius)] bg-[#FEF3C7] border border-[#FCD34D] text-[#92400E] text-[15px] font-extrabold active:scale-98 transition-transform"
+                    >
+                      {PackagesStrings.releaseWithoutPaymentAction}
+                    </button>
+                  </>
+                ) : (
                   <button
                     type="button"
                     disabled={isSubmitting}
-                    onClick={handleCollectAndRelease}
-                    className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[17px] font-extrabold active:scale-98 transition-transform shadow-xs"
+                    onClick={handleReleasePaid}
+                    className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[18px] font-extrabold active:scale-98 transition-transform shadow-xs"
                   >
-                    {PackagesStrings.collectAndReleasePrimary(balanceStr)}
+                    {PackagesStrings.yesReleaseAction}
                   </button>
+                )}
 
-                  <button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleReleaseWithoutPayment}
-                    className="w-full min-h-[48px] rounded-[var(--pd-field-radius)] bg-[#FEF3C7] border border-[#FCD34D] text-[#92400E] text-[15px] font-extrabold active:scale-98 transition-transform"
-                  >
-                    {PackagesStrings.releaseWithoutPaymentAction}
-                  </button>
-                </>
-              ) : (
                 <button
                   type="button"
                   disabled={isSubmitting}
-                  onClick={handleReleasePaid}
-                  className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[18px] font-extrabold active:scale-98 transition-transform shadow-xs"
+                  onClick={() => setIsReleaseSheetOpen(false)}
+                  className="min-h-[48px] text-[16px] font-extrabold text-[var(--pd-muted)] hover:text-[var(--pd-navy)]"
                 >
-                  {PackagesStrings.yesReleaseAction}
+                  {PackagesStrings.notYetAction}
                 </button>
-              )}
-
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => setIsReleaseSheetOpen(false)}
-                className="min-h-[48px] text-[16px] font-extrabold text-[var(--pd-muted)] hover:text-[var(--pd-navy)]"
-              >
-                {PackagesStrings.notYetAction}
-              </button>
+              </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 }
