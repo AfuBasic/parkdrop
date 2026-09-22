@@ -74,12 +74,14 @@ export class SyncEngine {
     const deviceUuid = getDeviceUuid();
 
     try {
-      const response = await fetch('/api/v1/sync/push', {
+      const url = `${import.meta.env.VITE_API_URL || ''}/api/v1/sync/push`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           device_uuid: deviceUuid,
           mutations: mappedPending.map(m => ({
@@ -233,8 +235,10 @@ export class SyncEngine {
     let currentCursor = syncState.last_sync_cursor;
 
     while (hasMore) {
-      const response = await fetch(`/api/v1/sync/pull?cursor=${currentCursor}&limit=100`, {
-        headers: { 'Accept': 'application/json' }
+      const url = `${import.meta.env.VITE_API_URL || ''}/api/v1/sync/pull?cursor=${currentCursor}&limit=100`;
+      const response = await fetch(url, {
+        headers: { 'Accept': 'application/json' },
+        credentials: 'include',
       });
 
       if (!response.ok) break;
