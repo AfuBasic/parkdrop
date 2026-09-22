@@ -35,3 +35,4 @@ coverage/
 # Screenshots taken while checking a screen — evidence for a review, never source
 .screenshots/
 *.screenshot.png
+platform/.claude
