@@ -162,7 +162,7 @@ export function PackageSavedScreen({
             <h1 className="text-[28px] font-extrabold tracking-[-0.02em] leading-tight m-0 text-white">
               {AddPackageStrings.savedTitle}
             </h1>
-            <p className="text-[16px] font-semibold text-white/90 m-0 mt-0.5">
+            <p className="text-[16px] font-semibold text-white m-0 mt-0.5">
               {AddPackageStrings.writeInstruction}
             </p>
           </div>
@@ -177,7 +177,7 @@ export function PackageSavedScreen({
             <div className="absolute top-0 left-0 bottom-0 w-2.5 bg-[#CF9A4D]" />
 
             <div className="pl-2">
-              <span className="text-[13px] font-extrabold uppercase tracking-wider text-[var(--pd-muted)]">
+              <span className="text-[15px] font-extrabold uppercase tracking-wider text-[var(--pd-muted)]">
                 Package ID
               </span>
               <div className="pd-nums text-[44px] font-extrabold text-[var(--pd-navy)] tracking-tight leading-none my-1">
@@ -195,7 +195,7 @@ export function PackageSavedScreen({
                 </div>
 
                 <div className="mt-2 inline-flex items-center gap-2 bg-[var(--pd-tint)] px-3 py-1.5 rounded-lg self-start">
-                  <span className="text-[14px] font-bold text-[var(--pd-blue-dark)]">
+                  <span className="text-[15px] font-bold text-[var(--pd-blue-dark)]">
                     {AddPackageStrings.pickupCodeLabel}:
                   </span>
                   <span className="pd-nums text-[18px] font-extrabold text-[var(--pd-blue)] tracking-wider">
@@ -252,20 +252,20 @@ export function PackageSavedScreen({
                     alt="Package"
                     className="w-14 h-14 rounded-lg object-cover border border-[var(--pd-line)]"
                   />
-                  <span className="text-[14px] font-bold text-[var(--pd-ok)]">Photo added</span>
+                  <span className="text-[15px] font-bold text-[var(--pd-ok)]">Photo added</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="min-h-[48px] px-3 text-[14px] font-extrabold text-[var(--pd-blue-hover)] hover:underline"
+                    className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-blue-hover)] hover:underline"
                   >
                     {AddPackageStrings.retakePhotoAction}
                   </button>
                   <button
                     type="button"
                     onClick={handleRemovePhoto}
-                    className="min-h-[48px] px-3 text-[14px] font-extrabold text-[var(--pd-bad)] hover:underline"
+                    className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-bad)] hover:underline"
                   >
                     {AddPackageStrings.removePhotoAction}
                   </button>
