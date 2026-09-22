@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { CreditCard, Check, Minus, Clock, RefreshCw } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/design-system';
+import { CreditCard, Check, Minus, Clock, RefreshCw, X } from 'lucide-react';
 import type { LocalPayment, PaymentMethod } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 import { PackagesStrings } from '@/features/packages/strings';
@@ -186,68 +185,89 @@ export function PackagePaymentCard({
         </div>
       )}
 
-      {/* Record Payment Bottom Sheet */}
-      <Dialog open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <DialogContent className="w-full max-w-[360px] p-5 rounded-[var(--pd-card-radius)]">
-          <DialogTitle className="text-[20px] font-extrabold text-[var(--pd-navy)] mb-3">
-            {PackagesStrings.recordPaymentTitle}
-          </DialogTitle>
-
-          <div className="flex flex-col gap-3">
-            {/* Quick full balance button */}
-            <button
-              type="button"
-              onClick={() => handleRecord(balanceMinor)}
-              disabled={isSaving}
-              className="w-full min-h-[52px] px-4 rounded-[var(--pd-field-radius)] bg-[var(--pd-tint)] border border-[var(--pd-blue)] text-[var(--pd-blue)] text-[16px] font-extrabold flex items-center justify-between active:scale-98"
-            >
-              <span>{PackagesStrings.fullBalanceChip(formatNaira(balanceMinor))}</span>
-              <Check className="w-5 h-5 stroke-[3]" />
-            </button>
-
-            {/* Part Payment Toggle & Input */}
-            <div className="flex flex-col gap-2 pt-1 border-t border-[var(--pd-line-2)]">
+      {/* Record Payment Bottom Sheet Overlay */}
+      {isSheetOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+            onClick={() => setIsSheetOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-10 w-full max-w-[360px] bg-white rounded-[var(--pd-card-radius)] p-5 shadow-2xl border border-[var(--pd-line)] animate-in zoom-in-95 duration-150"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[20px] font-extrabold text-[var(--pd-navy)]">
+                {PackagesStrings.recordPaymentTitle}
+              </h2>
               <button
                 type="button"
-                onClick={() => setIsPartPayment(!isPartPayment)}
-                className="text-left text-[15px] font-bold text-[var(--pd-blue)] hover:underline"
+                onClick={() => setIsSheetOpen(false)}
+                className="p-1.5 -mr-1 text-[var(--pd-muted)] hover:text-[var(--pd-navy)] rounded-full hover:bg-[var(--pd-page)] transition-colors cursor-pointer"
+                aria-label="Close"
               >
-                {PackagesStrings.partPaymentOption}
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {/* Quick full balance button */}
+              <button
+                type="button"
+                onClick={() => handleRecord(balanceMinor)}
+                disabled={isSaving}
+                className="w-full min-h-[52px] px-4 rounded-[var(--pd-field-radius)] bg-[var(--pd-tint)] border border-[var(--pd-blue)] text-[var(--pd-blue)] text-[16px] font-extrabold flex items-center justify-between active:scale-98"
+              >
+                <span>{PackagesStrings.fullBalanceChip(formatNaira(balanceMinor))}</span>
+                <Check className="w-5 h-5 stroke-[3]" />
               </button>
 
-              {isPartPayment && (
-                <div className="flex flex-col gap-3 mt-1">
-                  <div className="relative flex items-center">
-                    <span className="absolute left-3.5 text-[18px] font-extrabold text-[var(--pd-muted)]">₦</span>
-                    <input
-                      type="number"
-                      aria-label="Amount"
-                      inputMode="numeric"
-                      min={1}
-                      max={balanceNaira}
-                      value={customAmountNaira}
-                      onChange={(e) => setCustomAmountNaira(e.target.value)}
-                      placeholder="0"
-                      className="w-full h-[52px] pl-9 pr-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-line)] text-[20px] font-extrabold text-[var(--pd-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--pd-blue)]"
-                    />
-                  </div>
+              {/* Part Payment Toggle & Input */}
+              <div className="flex flex-col gap-2 pt-1 border-t border-[var(--pd-line-2)]">
+                <button
+                  type="button"
+                  onClick={() => setIsPartPayment(!isPartPayment)}
+                  className="text-left text-[15px] font-bold text-[var(--pd-blue)] hover:underline"
+                >
+                  {PackagesStrings.partPaymentOption}
+                </button>
 
-                  <button
-                    type="button"
-                    onClick={handleCustomSubmit}
-                    disabled={isSaving || !customAmountNaira}
-                    className="w-full min-h-[52px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[17px] font-extrabold active:scale-98 disabled:opacity-50 cursor-pointer"
-                  >
-                    {PackagesStrings.recordAmountButton(
-                      customAmountNaira ? formatNaira(Number(customAmountNaira) * 100) : formatNaira(0)
-                    )}
-                  </button>
-                </div>
-              )}
+                {isPartPayment && (
+                  <div className="flex flex-col gap-3 mt-1">
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3.5 text-[18px] font-extrabold text-[var(--pd-muted)]">₦</span>
+                      <input
+                        type="number"
+                        aria-label="Amount"
+                        inputMode="numeric"
+                        min={1}
+                        max={balanceNaira}
+                        value={customAmountNaira}
+                        onChange={(e) => setCustomAmountNaira(e.target.value)}
+                        placeholder="0"
+                        className="w-full h-[52px] pl-9 pr-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-line)] text-[20px] font-extrabold text-[var(--pd-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--pd-blue)]"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleCustomSubmit}
+                      disabled={isSaving || !customAmountNaira}
+                      className="w-full min-h-[52px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-white text-[17px] font-extrabold active:scale-98 disabled:opacity-50 cursor-pointer"
+                    >
+                      {PackagesStrings.recordAmountButton(
+                        customAmountNaira ? formatNaira(Number(customAmountNaira) * 100) : formatNaira(0)
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 }
