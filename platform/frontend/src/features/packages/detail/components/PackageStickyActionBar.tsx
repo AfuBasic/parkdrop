@@ -104,7 +104,7 @@ export function PackageStickyActionBar({
                   <button
                     type="button"
                     onClick={onOpenRecordPaymentOnly}
-                    className="min-h-[44px] px-3 text-[14px] font-extrabold text-[var(--pd-blue)] hover:underline active:scale-95"
+                    className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-blue)] hover:underline active:scale-95"
                   >
                     {PackagesStrings.recordPaymentOnlyAction}
                   </button>
@@ -125,7 +125,7 @@ export function PackageStickyActionBar({
           {/* COLLECTED State */}
           {isCollected && (
             <div className="w-full py-2 px-3 rounded-xl bg-[#DCFCE7] border border-[#86EFAC] flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-[#15803D] text-[14px] font-extrabold">
+              <div className="flex items-center gap-2 text-[#15803D] text-[15px] font-extrabold">
                 <CheckCircle2 className="w-5 h-5 shrink-0" />
                 <span>
                   {pkg.collected_at
@@ -147,7 +147,7 @@ export function PackageStickyActionBar({
                 <button
                   type="button"
                   onClick={onUndoRelease}
-                  className="min-h-[44px] px-2.5 rounded-lg text-[13px] font-extrabold text-[#15803D] hover:bg-[#86EFAC]/30 flex items-center gap-1 active:scale-95 shrink-0"
+                  className="min-h-[48px] px-2.5 rounded-lg text-[15px] font-extrabold text-[#15803D] hover:bg-[#86EFAC]/30 flex items-center gap-1 active:scale-95 shrink-0"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>{PackagesStrings.undoReleaseAction}</span>
@@ -192,7 +192,7 @@ export function PackageStickyActionBar({
           <div className="flex flex-col gap-4">
             {/* Customer pickup code presentation */}
             <div className="p-4 rounded-xl bg-[var(--pd-page)] border border-[var(--pd-line)] flex flex-col items-center gap-1">
-              <span className="text-[13px] font-bold text-[var(--pd-muted)]">
+              <span className="text-[15px] font-bold text-[var(--pd-muted)]">
                 {PackagesStrings.checkCodePrompt}
               </span>
               <span className="font-mono text-[32px] font-extrabold text-[var(--pd-navy)] tracking-widest tabular-nums">
