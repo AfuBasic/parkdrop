@@ -65,11 +65,13 @@ export function ActionTiles({ onAddPackage, onFindPackage, className }: ActionTi
           'focus-visible:ring-[var(--pd-blue)]/35'
         )}
       >
-        <Search
-          className="w-7 h-7 mb-1.5 flex-none text-[var(--pd-blue)]"
-          strokeWidth={2.75}
-          aria-hidden="true"
-        />
+        <div className="w-8 h-8 rounded-full bg-[var(--pd-tint-2)] flex items-center justify-center mb-1 flex-none">
+          <Search
+            className="w-5 h-5 flex-none text-[var(--pd-blue)]"
+            strokeWidth={2.75}
+            aria-hidden="true"
+          />
+        </div>
         <span className="text-[var(--pd-size-tile)] font-extrabold leading-[1.15] tracking-[-0.01em]">
           {HomeStrings.findTitle}
         </span>
