@@ -25,6 +25,7 @@ import {
   evaluatePackagePayment,
   matchesFilters,
   sortPackages,
+  isOverdue24h,
 } from '@/features/packages/domain/package-filters';
 import { accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 
@@ -54,10 +55,12 @@ export function PackagesScreen({
   // Active status tab: WAITING, COLLECTED, OTHER
   const [activeTab, setActiveTab] = useState<StatusTab>(initialStatus);
 
+  // URL-driven 24h overdue filter
+  const [isAge24hActive, setIsAge24hActive] = useState<boolean>(() => initialAgeFilter === '24h');
+
   // Filter chips per tab
   const [waitingChips, setWaitingChips] = useState<Set<WaitingFilterChip>>(() => {
     const set = new Set<WaitingFilterChip>();
-    if (initialPayFilter === 'unpaid') set.add('unpaid');
     if (initialAgeFilter === '3d') set.add('3d');
     if (initialAgeFilter === '7d') set.add('7d');
     return set;
@@ -66,8 +69,10 @@ export function PackagesScreen({
   const [collectedChips, setCollectedChips] = useState<Set<CollectedFilterChip>>(new Set());
   const [otherChips, setOtherChips] = useState<Set<OtherFilterChip>>(new Set());
 
-  // Sort order: default 'oldest' for WAITING, 'newest' for others
-  const [sortOrder, setSortOrder] = useState<SortOrder>(activeTab === 'WAITING' ? 'oldest' : 'newest');
+  // Sort order: default 'oldest' for WAITING or when age=24h, 'newest' for others
+  const [sortOrder, setSortOrder] = useState<SortOrder>(
+    (activeTab === 'WAITING' || initialAgeFilter === '24h') ? 'oldest' : 'newest'
+  );
 
   // Live search query (cross-tab)
   const [searchQuery, setSearchQuery] = useState('');
@@ -95,12 +100,14 @@ export function PackagesScreen({
   // Sync sort default when tab changes if user hasn't explicitly set it
   const handleTabChange = (tab: StatusTab) => {
     setActiveTab(tab);
+    setIsAge24hActive(false);
     setSortOrder(tab === 'WAITING' ? 'oldest' : 'newest');
     setRenderLimit(30);
   };
 
   // Chip toggles
   const handleToggleWaitingChip = (chip: WaitingFilterChip) => {
+    setIsAge24hActive(false);
     setWaitingChips((prev) => {
       const next = new Set(prev);
       if (chip === '3d') {
@@ -120,6 +127,7 @@ export function PackagesScreen({
   };
 
   const handleToggleCollectedChip = (chip: CollectedFilterChip) => {
+    setIsAge24hActive(false);
     setCollectedChips((prev) => {
       const next = new Set(prev);
       if (chip === 'today') {
@@ -139,6 +147,7 @@ export function PackagesScreen({
   };
 
   const handleToggleOtherChip = (chip: OtherFilterChip) => {
+    setIsAge24hActive(false);
     setOtherChips((prev) => {
       const next = new Set(prev);
       if (next.has(chip)) next.delete(chip);
@@ -151,6 +160,7 @@ export function PackagesScreen({
   };
 
   const handleClearFilters = () => {
+    setIsAge24hActive(false);
     setWaitingChips(new Set());
     setCollectedChips(new Set());
     setOtherChips(new Set());
@@ -250,28 +260,47 @@ export function PackagesScreen({
 
   // 4. Filtered and Sorted Items for Active Tab (when not searching)
   const filteredAndSortedItems = useMemo(() => {
-    const filtered = allItems.filter((item) =>
+    let filtered = allItems.filter((item) =>
       matchesFilters(item, activeTab, waitingChips, collectedChips, otherChips)
     );
-    return sortPackages(filtered, sortOrder);
-  }, [allItems, activeTab, waitingChips, collectedChips, otherChips, sortOrder]);
+
+    if (isAge24hActive && activeTab === 'WAITING') {
+      const now = new Date();
+      filtered = filtered.filter((item) => isOverdue24h(item.pkg.client_created_at, now));
+    }
+
+    // When age=24h is active, sort defaults to oldest first
+    const effectiveSort: SortOrder = isAge24hActive ? 'oldest' : sortOrder;
+    return sortPackages(filtered, effectiveSort);
+  }, [allItems, activeTab, waitingChips, collectedChips, otherChips, sortOrder, isAge24hActive]);
 
   // Active filters count and summary text
   const { hasActiveFilters, filterSummaryText, isPositiveEmpty, positiveEmptyType } = useMemo(() => {
-    const parts: string[] = [];
     let positiveEmpty = false;
-    let emptyType: 'unpaid' | '7d' | undefined;
+    let emptyType: 'unpaid' | '7d' | '24h' | undefined;
+
+    if (isAge24hActive && activeTab === 'WAITING') {
+      const count = filteredAndSortedItems.length;
+      if (count === 0 && allItems.some((i) => i.pkg.status === 'WAITING')) {
+        positiveEmpty = true;
+        emptyType = '24h';
+      }
+      return {
+        hasActiveFilters: true,
+        filterSummaryText: PackagesStrings.overdue24hSummary(count),
+        isPositiveEmpty: positiveEmpty,
+        positiveEmptyType: emptyType,
+      };
+    }
+
+    const parts: string[] = [];
 
     if (activeTab === 'WAITING') {
-      if (waitingChips.has('unpaid')) parts.push(PackagesStrings.chipUnpaid);
       if (waitingChips.has('7d')) parts.push(PackagesStrings.chipAge7d);
       else if (waitingChips.has('3d')) parts.push(PackagesStrings.chipAge3d);
 
       if (filteredAndSortedItems.length === 0 && allItems.some((i) => i.pkg.status === 'WAITING')) {
-        if (waitingChips.has('unpaid') && !waitingChips.has('7d') && !waitingChips.has('3d')) {
-          positiveEmpty = true;
-          emptyType = 'unpaid';
-        } else if (waitingChips.has('7d') && !waitingChips.has('unpaid')) {
+        if (waitingChips.has('7d')) {
           positiveEmpty = true;
           emptyType = '7d';
         }
@@ -298,11 +327,27 @@ export function PackagesScreen({
       isPositiveEmpty: positiveEmpty,
       positiveEmptyType: emptyType,
     };
-  }, [activeTab, waitingChips, collectedChips, otherChips, filteredAndSortedItems.length, allItems]);
+  }, [activeTab, waitingChips, collectedChips, otherChips, filteredAndSortedItems.length, allItems, isAge24hActive]);
 
   // 5. Grouping Calculation
   const groupedItems = useMemo(() => {
     const sliced = filteredAndSortedItems.slice(0, renderLimit);
+
+    // When age=24h is active: show one flat oldest-first list without sticky group headers
+    if (isAge24hActive && activeTab === 'WAITING') {
+      return {
+        type: 'flat' as const,
+        groups: [
+          {
+            id: 'overdue-flat',
+            label: '',
+            count: sliced.length,
+            items: sliced,
+            tone: 'neutral' as const,
+          },
+        ],
+      };
+    }
 
     if (activeTab === 'WAITING' && sortOrder === 'oldest') {
       const g7Plus: PackageCardData[] = [];
@@ -341,7 +386,7 @@ export function PackagesScreen({
     }));
 
     return { type: 'days' as const, groups };
-  }, [filteredAndSortedItems, activeTab, sortOrder, renderLimit]);
+  }, [filteredAndSortedItems, activeTab, sortOrder, renderLimit, isAge24hActive]);
 
   const isSearching = searchQuery.trim().length > 0;
   const isSearchLoading = isSearching && searchResults === undefined;
@@ -449,17 +494,19 @@ export function PackagesScreen({
               <div className="flex flex-col gap-4">
                 {groupedItems.groups.map((group) => (
                   <div key={group.id} className="flex flex-col gap-2">
-                    {/* Sticky Section Header */}
-                    <div className="sticky top-[108px] z-10 py-1 px-1 bg-[var(--pd-page)]/95 backdrop-blur-xs flex items-center justify-between text-[15px] font-extrabold text-[var(--pd-navy)]">
-                      <div className="flex items-center gap-1.5">
-                        {group.tone === 'bad' && <span className="w-2.5 h-2.5 rounded-full bg-[var(--pd-bad)]" />}
-                        {group.tone === 'warn' && <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />}
-                        <span>{group.label}</span>
+                    {/* Sticky Section Header (hidden if label is empty, such as flat 24h overdue list) */}
+                    {group.label ? (
+                      <div className="sticky top-[108px] z-10 py-1 px-1 bg-[var(--pd-page)]/95 backdrop-blur-xs flex items-center justify-between text-[15px] font-extrabold text-[var(--pd-navy)]">
+                        <div className="flex items-center gap-1.5">
+                          {group.tone === 'bad' && <span className="w-2.5 h-2.5 rounded-full bg-[var(--pd-bad)]" />}
+                          {group.tone === 'warn' && <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />}
+                          <span>{group.label}</span>
+                        </div>
+                        <span className="text-[15px] text-[var(--pd-muted)] font-bold tabular-nums">
+                          {group.count}
+                        </span>
                       </div>
-                      <span className="text-[15px] text-[var(--pd-muted)] font-bold tabular-nums">
-                        {group.count}
-                      </span>
-                    </div>
+                    ) : null}
 
                     {/* Group Items */}
                     <ul className="flex flex-col gap-2.5 p-0 m-0" role="list">
@@ -492,6 +539,16 @@ export function PackagesScreen({
           </div>
         )}
       </main>
+
+      {/* Quick Add Package Floating Action Button: Exactly one reachable without scrolling across all states */}
+      <button
+        type="button"
+        onClick={() => handleNavigateToAdd()}
+        aria-label={PackagesStrings.addPackageAction}
+        className="fixed bottom-[calc(var(--pd-nav-h)+16px)] sm:bottom-8 right-4 sm:right-8 z-40 w-14 h-14 rounded-full bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] active:scale-95 text-white flex items-center justify-center shadow-lg transition-transform focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/30 cursor-pointer"
+      >
+        <PackagePlus className="w-6 h-6 stroke-[2.5]" aria-hidden="true" />
+      </button>
     </div>
   );
 }
