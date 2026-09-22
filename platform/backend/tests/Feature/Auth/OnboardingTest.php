@@ -34,12 +34,22 @@ class OnboardingTest extends TestCase
             'email' => 'owner@example.com',
             'first_name' => 'John',
             'pickup_point_name' => 'Main Gate',
+            'park_name' => 'Peace Park',
+            'contact_phone' => '08031234567',
             'challenge_id' => $challenge->id,
             'device_uuid' => 'test-device-uuid',
         ]);
 
         $response->assertStatus(200)
             ->assertJsonStructure(['user' => ['id'], 'business' => ['id']]);
+
+        // The pickup point just created in this same request must come back
+        // on the business object immediately — not just after a reload. A
+        // first-time owner whose Home screen reads pickup_points from this
+        // very response would otherwise see a stale "add your pickup point"
+        // banner for a name they just typed.
+        $response->assertJsonPath('business.pickup_points.0.name', 'Main Gate');
+        $response->assertJsonPath('business.pickup_points.0.park_name', 'Peace Park');
 
         // Assert User created
         $this->assertDatabaseHas('users', [
