@@ -179,17 +179,29 @@ All colors must use **ParkDrop semantic tokens**. No ad-hoc hex values.
 
 ## 9. Typography
 
-| Role | Size range |
-|---|---|
-| Body text | 16–18px |
-| Labels / secondary | 14–16px |
-| Important values (amounts, codes) | larger as appropriate |
-| Captions | 12px minimum |
+The scale is named for the thing it sizes, so a row and a tile cannot silently
+drift apart. See `docs/design-plan/02-design-plan.md` §5.3 for the reasoning.
 
-- Avoid tiny SaaS typography
+| Role | Size |
+|---|---|
+| A pickup code being written down; an SMS balance | 48–64px |
+| Screen question or title | 30px (28px on a short screen) |
+| What the person has typed into a field | 25px |
+| Sheet title; name at the top of a detail screen | 22px |
+| Primary button label; action tile label | 20px |
+| Body; customer name in a row; section heading | 18px |
+| Labels, helper text, metadata, chips | 16px |
+| **The floor. Nothing goes below this, anywhere.** | **15px** |
+
+- Avoid tiny SaaS typography. **`text-xs` (12px), `text-[11px]` and `text-[10px]`
+  are retired from this product** — the screen is in sunlight, the reader may be
+  reading slowly, and the phone is at arm's length with a customer waiting.
 - Avoid oversized headings that push the task below the fold
 - Support **200% text scaling** without layout breakage
-- Use `Inter` (from the design system) — not browser defaults
+- Use `Manrope` (from the design system) — not browser defaults. Weights 600,
+  700, 800.
+- Tabular figures on anything read digit by digit — phone numbers, codes, PINs,
+  amounts, counts, countdowns.
 
 ---
 
