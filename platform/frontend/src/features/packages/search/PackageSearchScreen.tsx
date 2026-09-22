@@ -62,7 +62,7 @@ export function PackageSearchScreen({
   const showNoResults = hasQuery && !isLoading && !hasResults && debouncedQuery.trim().length >= 2;
 
   return (
-    <div className="flex flex-col min-h-screen bg-bg-surface-page pb-12">
+    <div className="flex flex-col min-h-screen bg-surface-page pb-12">
       {/* Search Header */}
       <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-border-subtle px-4 pt-3 pb-3">
         <div className="flex items-center justify-between gap-3 mb-2.5">
