@@ -229,6 +229,7 @@ export function PackageDetailScreen({
         <PackagePaymentCard
           paymentSummary={paymentSummary}
           payments={payments}
+          packageStatus={pkg.status}
           canRecordPayment={pkg.status === 'WAITING'}
           onRecordPayment={handleRecordPayment}
         />
