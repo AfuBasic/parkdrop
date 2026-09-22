@@ -159,7 +159,7 @@ This rule applies to the **ParkDrop operational application**.
 - **Home & More Integration:**
   - `More`: Subtle row entry with `unresolvedCount` badge.
   - `Home`: Restrained `AttentionSummary` preview card displaying up to 2 items and a `View all` link; hidden completely when `unresolvedCount === 0`.
-  - Canonical 5-item bottom navigation remains untouched (`Home`, `Packages`, `Add`, `Customers`, `More`).
+  - Canonical 4-item bottom navigation remains untouched (`Home`, `Packages`, `Customers`, `More`). `Add` is an action, not a place, and is reached from the Add tile on Home; see `docs/design-plan/02-design-plan.md` §3.1.
 -
 -### 5. Daily Operations & Reports (Build 21)
 -- **Core Principle:** Clear daily operational facts, not analytics theater. No charts, no profit/loss claims, no forecasting, no employee or customer leaderboards.
