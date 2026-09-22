@@ -452,7 +452,7 @@ export function PackagesScreen({
                         {group.tone === 'warn' && <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />}
                         <span>{group.label}</span>
                       </div>
-                      <span className="text-[13px] text-[var(--pd-muted)] font-bold tabular-nums">
+                      <span className="text-[15px] text-[var(--pd-muted)] font-bold tabular-nums">
                         {group.count}
                       </span>
                     </div>
