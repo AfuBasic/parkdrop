@@ -6,7 +6,7 @@ import { useAttentionItems } from '@/features/attention/hooks/useAttentionItems'
 import { useOnline } from '@/features/auth/lib/useOnline';
 import { Logo } from '@/features/auth/components/Logo';
 import { SettingsGroup, SettingsRow } from '@/design-system/patterns/SettingsRow';
-import { Dialog, DialogContent, DialogTitle } from '@/design-system';
+
 import { MoreStrings } from '@/features/more/strings';
 import {
   MessageSquare,
@@ -198,38 +198,50 @@ export function MoreScreen() {
         </button>
       </div>
 
-      <Dialog open={confirming !== null} onOpenChange={(open) => !open && setConfirming(null)}>
-        <DialogContent className="w-full max-w-[360px] p-5 rounded-[var(--pd-card-radius)]">
-          <DialogTitle className="text-[22px] font-extrabold text-[var(--pd-navy)] m-0 leading-tight">
-            {confirming === 'forget' ? MoreStrings.forgetTitle : MoreStrings.signOutTitle}
-          </DialogTitle>
-          <p className="text-[18px] font-semibold text-[var(--pd-muted)] m-0 mt-3 leading-snug">
-            {confirming === 'forget' ? MoreStrings.forgetBody : MoreStrings.signOutBody}
-          </p>
-          <div className="flex flex-col gap-3 mt-5">
-            {/* The safe choice is the primary button. */}
-            <button
-              type="button"
-              onClick={() => setConfirming(null)}
-              className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-[18px] font-extrabold text-white hover:bg-[var(--pd-blue-hover)] active:scale-[0.99] transition-all cursor-pointer"
-            >
-              {MoreStrings.stay}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const action = confirming;
-                setConfirming(null);
-                if (action === 'forget') void forgetRememberedIdentity();
-                else void logout();
-              }}
-              className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/30 bg-[var(--pd-bad-bg)] text-[18px] font-extrabold text-[var(--pd-bad)] hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
-            >
-              {confirming === 'forget' ? MoreStrings.forgetMe : MoreStrings.signOut}
-            </button>
+      {/* Sign Out / Forget Confirmation Overlay */}
+      {confirming !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+            onClick={() => setConfirming(null)}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-10 w-full max-w-[360px] bg-white rounded-[var(--pd-card-radius)] p-5 shadow-2xl border border-[var(--pd-line)] animate-in zoom-in-95 duration-150"
+          >
+            <h2 className="text-[22px] font-extrabold text-[var(--pd-navy)] m-0 leading-tight">
+              {confirming === 'forget' ? MoreStrings.forgetTitle : MoreStrings.signOutTitle}
+            </h2>
+            <p className="text-[18px] font-semibold text-[var(--pd-muted)] m-0 mt-3 leading-snug">
+              {confirming === 'forget' ? MoreStrings.forgetBody : MoreStrings.signOutBody}
+            </p>
+            <div className="flex flex-col gap-3 mt-5">
+              {/* The safe choice is the primary button. */}
+              <button
+                type="button"
+                onClick={() => setConfirming(null)}
+                className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] text-[18px] font-extrabold text-white hover:bg-[var(--pd-blue-hover)] active:scale-[0.99] transition-all cursor-pointer"
+              >
+                {MoreStrings.stay}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const action = confirming;
+                  setConfirming(null);
+                  if (action === 'forget') void forgetRememberedIdentity();
+                  else void logout();
+                }}
+                className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/30 bg-[var(--pd-bad-bg)] text-[18px] font-extrabold text-[var(--pd-bad)] hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
+              >
+                {confirming === 'forget' ? MoreStrings.forgetMe : MoreStrings.signOut}
+              </button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
