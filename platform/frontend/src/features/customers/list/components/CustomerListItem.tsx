@@ -40,17 +40,17 @@ export function CustomerListItem({ item, onSelect }: CustomerListItemProps) {
               {item.name}
             </span>
             {item.syncStatus === 'PENDING_CREATE' && (
-              <span className="shrink-0 text-[10px] font-semibold tracking-wide uppercase text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+              <span className="shrink-0 text-[15px] font-semibold tracking-wide uppercase text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                 Local
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-text-secondary mt-0.5 tabular-nums">
+          <div className="flex items-center gap-2 text-[15px] text-text-secondary mt-0.5 tabular-nums">
             <span>{formatPhone(item.phoneDisplay)}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs mt-1.5 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[15px] mt-1.5 flex-wrap">
             {item.waitingPackageCount > 0 ? (
               <span className="inline-flex items-center gap-1 font-medium text-action-primary bg-action-primary/10 px-2 py-0.5 rounded-md">
                 <PackageCheck className="w-3.5 h-3.5 shrink-0" />
