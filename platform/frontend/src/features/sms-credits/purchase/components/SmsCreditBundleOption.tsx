@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react';
 import type { SmsCreditBundle } from '@/features/sms-credits/purchase/types';
 import { formatMoney } from '@/lib/formatters';
 
@@ -6,13 +7,17 @@ interface SmsCreditBundleOptionProps {
   selected: boolean;
   disabled?: boolean;
   onSelect: (bundle: SmsCreditBundle) => void;
+  /** The plain third line, e.g. "Enough for about 200 packages" (design plan §3.3.30). */
+  enoughForLabel: string;
 }
 
+/** A bundle card, 96px tall: the SMS count, the price, and what it covers. */
 export function SmsCreditBundleOption({
   bundle,
   selected,
   disabled = false,
   onSelect,
+  enoughForLabel,
 }: SmsCreditBundleOptionProps) {
   return (
     <div
@@ -29,41 +34,36 @@ export function SmsCreditBundleOption({
         }
       }}
       className={`
-        w-full p-4 rounded-[var(--radius-xl)] border transition-all cursor-pointer flex items-center justify-between
-        min-h-[64px] select-none
+        w-full min-h-[96px] p-4 rounded-[var(--pd-card-radius)] border-2 transition-all cursor-pointer
+        flex items-center justify-between select-none
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'active:scale-[0.99]'}
         ${
           selected
-            ? 'bg-blue-50/70 border-action-primary shadow-sm ring-1 ring-action-primary'
-            : 'bg-surface-default border-border-subtle hover:border-border-default hover:bg-surface-subtle/50'
+            ? 'bg-[var(--pd-tint)] border-[var(--pd-blue)]'
+            : 'bg-white border-[var(--pd-line-2)]'
         }
       `}
     >
-      <div className="flex items-center gap-3.5">
-        {/* Custom semantic radio indicator */}
-        <div
-          className={`
-            w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors
-            ${selected ? 'border-action-primary bg-action-primary' : 'border-slate-300 bg-white'}
-          `}
-        >
-          {selected && <div className="w-2 h-2 rounded-full bg-white" />}
+      <div className="text-left">
+        <div className="text-[30px] font-extrabold text-[var(--pd-navy)] leading-none">
+          {bundle.credits} SMS
         </div>
-
-        <div className="text-left">
-          <div className="text-[15px] font-semibold text-text-primary leading-tight">
-            {bundle.credits} SMS credits
-          </div>
-          {bundle.description && (
-            <div className="text-xs text-text-muted mt-0.5">{bundle.description}</div>
-          )}
+        <div className="text-[22px] font-bold text-[var(--pd-navy)] mt-1.5">
+          {formatMoney(bundle.amount_minor)}
+        </div>
+        <div className="text-[15px] font-semibold text-[var(--pd-muted)] mt-1">
+          {enoughForLabel}
         </div>
       </div>
 
-      <div className="text-right shrink-0">
-        <span className="text-[16px] font-bold text-text-primary">
-          {formatMoney(bundle.amount_minor)}
-        </span>
+      <div
+        className={`
+          w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0
+          ${selected ? 'border-[var(--pd-blue)] bg-[var(--pd-blue)]' : 'border-[var(--pd-line)] bg-white'}
+        `}
+        aria-hidden="true"
+      >
+        {selected && <Check className="w-5 h-5 text-white" strokeWidth={3} />}
       </div>
     </div>
   );
