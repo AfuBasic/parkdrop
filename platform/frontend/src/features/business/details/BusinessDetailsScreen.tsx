@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Building2, MapPin, Phone, Shield, Pencil, Check, X, AlertCircle, Lock } from 'lucide-react';
+import { Building2, MapPin, Phone, Shield, Pencil, Check, X, AlertCircle, Lock, Coins } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { businessApi, type BusinessDetailsResponse } from '@/features/business/api/business-api';
 import type { BusinessRole } from '@/features/business/permissions/business-permissions';
@@ -14,6 +14,7 @@ import {
   NATIONAL_LENGTH,
 } from '@/features/auth/lib/phone';
 import { renderCustomerSms, SMS_MAX_CHARS } from '@/lib/smsTemplate';
+import { formatNaira } from '@/features/packages/domain/package-filters';
 import { SmsPreview } from '@/features/auth/components/SmsPreview';
 import { verifyPin } from '@/lib/pin';
 import { db } from '@/lib/db';
@@ -46,6 +47,12 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
   const [businessNameInput, setBusinessNameInput] = useState('');
   const [isSavingName, setIsSavingName] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+
+  // Edit daily storage fee state
+  const [isEditingFee, setIsEditingFee] = useState(false);
+  const [feeInput, setFeeInput] = useState('');
+  const [isSavingFee, setIsSavingFee] = useState(false);
+  const [feeEditError, setFeeEditError] = useState<string | null>(null);
 
   // Edit contact phone state
   const [isEditingPhone, setIsEditingPhone] = useState(false);
@@ -127,6 +134,50 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
       setEditError(err.message || BusinessDetailsStrings.couldNotUpdateName);
     } finally {
       setIsSavingName(false);
+    }
+  };
+
+  // Start editing the daily storage fee
+  const handleStartEditFee = () => {
+    if (!details) return;
+    setFeeInput(String(Math.round(details.business.daily_storage_fee_minor / 100)));
+    setFeeEditError(null);
+    setIsEditingFee(true);
+  };
+
+  const handleCancelEditFee = () => {
+    setFeeEditError(null);
+    setIsEditingFee(false);
+  };
+
+  const handleSaveFee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const naira = Number(feeInput);
+    if (!Number.isFinite(naira) || naira < 0) {
+      setFeeEditError(BusinessDetailsStrings.dailyStorageFeeInvalid);
+      return;
+    }
+    const minor = Math.round(naira * 100);
+
+    try {
+      setIsSavingFee(true);
+      setFeeEditError(null);
+      await businessApi.updateDailyStorageFee(minor);
+      setDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              business: { ...prev.business, daily_storage_fee_minor: minor },
+            }
+          : null
+      );
+      setIsEditingFee(false);
+      setSuccessMessage(BusinessDetailsStrings.dailyStorageFeeUpdated);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err: any) {
+      setFeeEditError(err.message || BusinessDetailsStrings.couldNotUpdateDailyStorageFee);
+    } finally {
+      setIsSavingFee(false);
     }
   };
 
@@ -385,6 +436,85 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                       type="button"
                       onClick={handleCancelEditName}
                       disabled={isSavingName}
+                      className="min-h-[48px] px-4 inline-flex items-center gap-1.5 text-[var(--pd-muted)] text-[16px] font-extrabold cursor-pointer"
+                    >
+                      <X className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                      <span>{BusinessDetailsStrings.cancel}</span>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+
+            {/* Daily storage fee */}
+            <div className={cardClass}>
+              <div className="flex items-center justify-between">
+                <div className={labelClass}>
+                  <Coins className="w-5 h-5 text-[var(--pd-blue)]" strokeWidth={2.25} aria-hidden="true" />
+                  <span>{BusinessDetailsStrings.dailyStorageFee}</span>
+                </div>
+                {permissions.canEditBusinessDetails && !isEditingFee && (
+                  <button
+                    type="button"
+                    onClick={handleStartEditFee}
+                    aria-label="Edit daily storage fee"
+                    className={editLinkClass}
+                  >
+                    <Pencil className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                    <span>{BusinessDetailsStrings.edit}</span>
+                  </button>
+                )}
+              </div>
+
+              {!isEditingFee ? (
+                <div className="flex flex-col gap-0.5">
+                  <div className="text-[18px] font-bold text-[var(--pd-navy)]">
+                    {formatNaira(details.business.daily_storage_fee_minor)}
+                    <span className="text-[15px] font-semibold text-[var(--pd-muted)]">
+                      {BusinessDetailsStrings.dailyStorageFeeSuffix}
+                    </span>
+                  </div>
+                  <p className="text-[15px] text-[var(--pd-muted)] m-0">
+                    {BusinessDetailsStrings.dailyStorageFeeHelperText}
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSaveFee} className="flex flex-col gap-3">
+                  {feeEditError && (
+                    <div role="alert" className="text-[15px] font-semibold text-[var(--pd-bad)] bg-[var(--pd-bad-bg)] p-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/25">
+                      {feeEditError}
+                    </div>
+                  )}
+                  <div>
+                    <label htmlFor="daily-storage-fee" className="block text-[16px] font-semibold text-[var(--pd-navy)] mb-1.5">
+                      {BusinessDetailsStrings.dailyStorageFeeLabel}
+                    </label>
+                    <input
+                      id="daily-storage-fee"
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      step="1"
+                      value={feeInput}
+                      onChange={(e) => setFeeInput(e.target.value)}
+                      required
+                      autoFocus
+                      className="w-full min-h-[var(--pd-field-h)] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-blue)] text-[var(--pd-navy)] text-[18px] font-semibold focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      disabled={isSavingFee}
+                      className="min-h-[48px] px-4 inline-flex items-center gap-1.5 bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] text-white text-[16px] font-extrabold rounded-[var(--pd-field-radius)] disabled:opacity-50 cursor-pointer"
+                    >
+                      <Check className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                      <span>{isSavingFee ? BusinessDetailsStrings.saving : BusinessDetailsStrings.save}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelEditFee}
+                      disabled={isSavingFee}
                       className="min-h-[48px] px-4 inline-flex items-center gap-1.5 text-[var(--pd-muted)] text-[16px] font-extrabold cursor-pointer"
                     >
                       <X className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
