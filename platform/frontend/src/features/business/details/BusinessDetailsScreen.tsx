@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { ChevronLeft, Building2, MapPin, Phone, Shield, Edit3, Check, X, AlertCircle, Lock } from 'lucide-react';
+import { Building2, MapPin, Phone, Shield, Pencil, Check, X, AlertCircle, Lock } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { businessApi, type BusinessDetailsResponse } from '@/features/business/api/business-api';
 import type { BusinessRole } from '@/features/business/permissions/business-permissions';
@@ -10,6 +10,8 @@ import { renderCustomerSms, SMS_MAX_CHARS } from '@/lib/smsTemplate';
 import { SmsPreview } from '@/features/auth/components/SmsPreview';
 import { verifyPin } from '@/lib/pin';
 import { db } from '@/lib/db';
+import { TaskHeader } from '@/design-system/shell/TaskHeader';
+import { BusinessDetailsStrings } from '@/features/business/details/strings';
 
 interface BusinessDetailsScreenProps {
   onBack?: () => void;
@@ -60,7 +62,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
         setPhoneInput(formatPhoneDisplay(res.current_pickup_point.contact_phone));
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Could not load business details. Check connection and try again.');
+      setErrorMessage(err.message || BusinessDetailsStrings.couldNotLoad);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +97,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
     e.preventDefault();
     const cleanName = businessNameInput.trim();
     if (!cleanName || cleanName.length < 2) {
-      setEditError('Business name must be at least 2 characters.');
+      setEditError(BusinessDetailsStrings.nameTooShort);
       return;
     }
 
@@ -112,10 +114,10 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
           : null
       );
       setIsEditingName(false);
-      setSuccessMessage('Business name updated.');
+      setSuccessMessage(BusinessDetailsStrings.nameUpdated);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err: any) {
-      setEditError(err.message || 'Could not update business name. Try again.');
+      setEditError(err.message || BusinessDetailsStrings.couldNotUpdateName);
     } finally {
       setIsSavingName(false);
     }
@@ -148,7 +150,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
 
     const validation = validateNigerianMobile(phoneInput);
     if (!validation.valid) {
-      setPhoneError(validation.error || 'Enter a valid 11-digit phone number.');
+      setPhoneError(validation.error || BusinessDetailsStrings.phoneInputHelp);
       return;
     }
 
@@ -158,7 +160,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
       const parkName = details.current_pickup_point.park_name || 'Park';
       const canonicalPhone = toCanonicalPhone(phoneInput);
       if (!canonicalPhone) {
-        setPhoneError('Enter a valid 11-digit phone number.');
+        setPhoneError(BusinessDetailsStrings.phoneInputHelp);
         return;
       }
       const displayPhone = formatPhoneDisplay(canonicalPhone);
@@ -169,7 +171,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
         phone: displayPhone,
       });
       if (!result.valid || result.length > SMS_MAX_CHARS) {
-        setPhoneError('This phone number makes the SMS too long. Please contact support.');
+        setPhoneError(BusinessDetailsStrings.smsTooLong);
         return;
       }
     }
@@ -187,7 +189,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
     setPinError(null);
 
     if (pinInput.length !== 4) {
-      setPinError('Enter your 4-digit PIN.');
+      setPinError(BusinessDetailsStrings.pinIncomplete);
       return;
     }
 
@@ -199,7 +201,7 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
       if (meta?.pin_hash && meta?.pin_salt) {
         const isValid = await verifyPin(pinInput, meta.pin_hash, meta.pin_salt);
         if (!isValid) {
-          setPinError('Wrong PIN. Try again.');
+          setPinError(BusinessDetailsStrings.pinWrong);
           setIsSavingPhone(false);
           return;
         }
@@ -229,23 +231,21 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
       setIsVerifyingPin(false);
       setIsEditingPhone(false);
       setPinInput('');
-      setSuccessMessage('Shop phone number updated.');
+      setSuccessMessage(BusinessDetailsStrings.phoneUpdated);
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: any) {
       if (err.status === 429 || err.message?.includes('3 times')) {
-        setPinError('You have changed this number 3 times today. Please try again tomorrow.');
+        setPinError(BusinessDetailsStrings.phoneChangeLimitReached);
       } else {
-        setPinError(err.message || 'Could not update phone number. Check connection.');
+        setPinError(err.message || BusinessDetailsStrings.couldNotUpdatePhone);
       }
     } finally {
       setIsSavingPhone(false);
     }
   };
 
-  const roleDisplay = effectiveRole.charAt(0).toUpperCase() + effectiveRole.slice(1);
-
   // Live SMS Preview computation
-  const currentPickupName = details?.current_pickup_point?.name || 'Shop Name';
+  const currentPickupName = details?.current_pickup_point?.name || 'Shop name';
   const currentParkName = details?.current_pickup_point?.park_name || 'Central Park';
   const previewPhone = isEditingPhone
     ? validateNigerianMobile(phoneInput).valid
@@ -263,93 +263,70 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
   });
   const previewSms = previewSmsResult.text;
 
-  return (
-    <div className="flex flex-col min-h-screen bg-slate-50 w-full max-w-lg mx-auto pb-12">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-border-subtle px-4 h-14 flex items-center justify-between shrink-0">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center text-slate-600 hover:text-slate-900 transition-colors py-2 pr-4 -ml-2 min-h-[44px] cursor-pointer"
-          aria-label="Back to more menu"
-        >
-          <ChevronLeft className="h-6 w-6" />
-          <span className="text-[17px] font-medium ml-0.5">Back</span>
-        </button>
-        <h1 className="text-[17px] font-bold text-slate-900 tracking-tight">
-          Business details
-        </h1>
-        <div className="w-12" />
-      </header>
+  const cardClass = 'bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-5 shadow-sm flex flex-col gap-3';
+  const labelClass = 'flex items-center gap-2 text-[15px] font-bold text-[var(--pd-muted)]';
+  const editLinkClass = 'min-h-[48px] px-2 -mr-2 inline-flex items-center gap-1 text-[16px] font-extrabold text-[var(--pd-blue)] cursor-pointer';
 
-      {/* Content */}
-      <main className="flex-1 p-4 space-y-6">
-        {/* Success toast */}
+  return (
+    <div className="flex flex-col min-h-screen bg-[var(--pd-page-2)] w-full max-w-lg mx-auto pb-12">
+      <TaskHeader title={BusinessDetailsStrings.title} onBack={handleBack} screenName="Business details" />
+
+      <main className="flex-1 p-4 flex flex-col gap-4">
         {successMessage && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2 text-xs text-emerald-800 animate-in fade-in duration-200">
-            <Check className="w-4 h-4 shrink-0 text-emerald-600" />
-            <span>{successMessage}</span>
+          <div className="p-4 bg-[var(--pd-ok-bg)] border border-[var(--pd-ok)]/25 rounded-[var(--pd-card-radius)] flex items-center gap-2.5">
+            <Check className="w-5 h-5 shrink-0 text-[var(--pd-ok)]" strokeWidth={2.25} aria-hidden="true" />
+            <span className="text-[16px] font-semibold text-[var(--pd-ok)]">{successMessage}</span>
           </div>
         )}
 
-        {/* Error message */}
         {errorMessage && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3 text-xs text-red-700">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-              <span>{errorMessage}</span>
+          <div className="p-4 bg-[var(--pd-bad-bg)] border border-[var(--pd-bad)]/25 rounded-[var(--pd-card-radius)] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <AlertCircle className="w-5 h-5 shrink-0 text-[var(--pd-bad)]" strokeWidth={2.25} aria-hidden="true" />
+              <span className="text-[15px] font-semibold text-[var(--pd-bad)]">{errorMessage}</span>
             </div>
             <button
               type="button"
               onClick={loadDetails}
-              className="px-2.5 py-1 text-xs font-semibold text-red-700 bg-red-100 hover:bg-red-200 rounded-lg shrink-0 cursor-pointer"
+              className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-bad)] shrink-0 cursor-pointer"
             >
-              Try again
+              {BusinessDetailsStrings.tryAgain}
             </button>
           </div>
         )}
 
-        {/* Loading state */}
         {isLoading && (
-          <div className="bg-white rounded-2xl border border-border-subtle p-6 space-y-4 animate-pulse">
-            <div className="h-4 bg-slate-200 rounded w-1/3" />
-            <div className="h-6 bg-slate-100 rounded w-2/3" />
-            <div className="h-4 bg-slate-200 rounded w-1/4" />
-            <div className="h-6 bg-slate-100 rounded w-1/2" />
+          <div className={`${cardClass} animate-pulse`}>
+            <div className="h-4 bg-[var(--pd-line-2)] rounded w-1/3" />
+            <div className="h-6 bg-[var(--pd-line-2)] rounded w-2/3" />
+            <div className="h-4 bg-[var(--pd-line-2)] rounded w-1/4" />
+            <div className="h-6 bg-[var(--pd-line-2)] rounded w-1/2" />
           </div>
         )}
 
-        {/* Details Cards */}
         {!isLoading && details && (
-          <div className="space-y-4">
-            {/* Business Information */}
-            <div className="bg-white rounded-2xl border border-border-subtle p-5 shadow-sm space-y-4">
+          <div className="flex flex-col gap-4">
+            {/* Business name */}
+            <div className={cardClass}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                  <span>Business Name</span>
+                <div className={labelClass}>
+                  <Building2 className="w-5 h-5 text-[var(--pd-blue)]" strokeWidth={2.25} aria-hidden="true" />
+                  <span>{BusinessDetailsStrings.businessName}</span>
                 </div>
                 {permissions.canEditBusinessDetails && !isEditingName && (
-                  <button
-                    type="button"
-                    onClick={handleStartEditName}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 p-1 cursor-pointer"
-                    aria-label="Edit business name"
-                  >
-                    <Edit3 className="w-3.5 h-3.5" />
-                    <span>Edit</span>
+                  <button type="button" onClick={handleStartEditName} className={editLinkClass}>
+                    <Pencil className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                    <span>{BusinessDetailsStrings.edit}</span>
                   </button>
                 )}
               </div>
 
               {!isEditingName ? (
-                <div className="text-lg font-bold text-slate-900">
-                  {details.business.name}
-                </div>
+                <div className="text-[18px] font-bold text-[var(--pd-navy)]">{details.business.name}</div>
               ) : (
-                <form onSubmit={handleSaveName} className="space-y-3">
+                <form onSubmit={handleSaveName} className="flex flex-col gap-3">
                   {editError && (
-                    <div className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200">
+                    <div className="text-[15px] font-semibold text-[var(--pd-bad)] bg-[var(--pd-bad-bg)] p-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/25">
                       {editError}
                     </div>
                   )}
@@ -359,114 +336,111 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                     onChange={(e) => setBusinessNameInput(e.target.value)}
                     required
                     autoFocus
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-blue-500 text-slate-900 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 min-h-[44px]"
+                    className="w-full min-h-[var(--pd-field-h)] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-blue)] text-[var(--pd-navy)] text-[18px] font-semibold focus:outline-none"
                   />
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       type="submit"
                       disabled={isSavingName}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg disabled:opacity-50 min-h-[38px] cursor-pointer"
+                      className="min-h-[48px] px-4 inline-flex items-center gap-1.5 bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] text-white text-[16px] font-extrabold rounded-[var(--pd-field-radius)] disabled:opacity-50 cursor-pointer"
                     >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{isSavingName ? 'Saving...' : 'Save'}</span>
+                      <Check className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                      <span>{isSavingName ? BusinessDetailsStrings.saving : BusinessDetailsStrings.save}</span>
                     </button>
                     <button
                       type="button"
                       onClick={handleCancelEditName}
                       disabled={isSavingName}
-                      className="inline-flex items-center gap-1 px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg min-h-[38px] cursor-pointer"
+                      className="min-h-[48px] px-4 inline-flex items-center gap-1.5 text-[var(--pd-muted)] text-[16px] font-extrabold cursor-pointer"
                     >
-                      <X className="w-3.5 h-3.5" />
-                      <span>Cancel</span>
+                      <X className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                      <span>{BusinessDetailsStrings.cancel}</span>
                     </button>
                   </div>
                 </form>
               )}
             </div>
 
-            {/* Current Pickup Point Context */}
-            <div className="bg-white rounded-2xl border border-border-subtle p-5 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                  <MapPin className="w-4 h-4 text-emerald-600" />
-                  <span>Current Pickup Point</span>
-                </div>
+            {/* Pickup point */}
+            <div className={cardClass}>
+              <div className={labelClass}>
+                <MapPin className="w-5 h-5 text-[var(--pd-ok)]" strokeWidth={2.25} aria-hidden="true" />
+                <span>{BusinessDetailsStrings.pickupPoint}</span>
               </div>
 
               {details.current_pickup_point ? (
-                <div>
-                  <div className="text-base font-bold text-slate-900">
+                <div className="flex flex-col gap-0.5">
+                  <div className="text-[18px] font-bold text-[var(--pd-navy)]">
                     {details.current_pickup_point.name}
                   </div>
                   {details.current_pickup_point.park_name && (
-                    <div className="text-xs font-medium text-slate-600 mt-0.5">
-                      Park: {details.current_pickup_point.park_name}
+                    <div className="text-[16px] font-semibold text-[var(--pd-muted)]">
+                      {BusinessDetailsStrings.park}: {details.current_pickup_point.park_name}
                     </div>
                   )}
                   {details.current_pickup_point.address && (
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-[15px] text-[var(--pd-muted)] mt-0.5">
                       {details.current_pickup_point.address}
                     </div>
                   )}
                   {details.current_pickup_point.landmark && (
-                    <div className="text-xs text-slate-400 mt-0.5">
-                      Landmark: {details.current_pickup_point.landmark}
+                    <div className="text-[15px] text-[var(--pd-muted)]">
+                      {details.current_pickup_point.landmark}
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-xs text-slate-500 italic">
-                  No pickup point registered for this Business.
+                <div className="text-[15px] font-semibold text-[var(--pd-muted)]">
+                  {BusinessDetailsStrings.noPickupPoint}
                 </div>
               )}
             </div>
 
-            {/* Shop Contact Phone for Customer SMS */}
+            {/* Contact phone */}
             {details.current_pickup_point && (
-              <div className="bg-white rounded-2xl border border-border-subtle p-5 shadow-sm space-y-4">
+              <div className={cardClass}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                    <Phone className="w-4 h-4 text-blue-600" />
-                    <span>Customer Contact Phone</span>
+                  <div className={labelClass}>
+                    <Phone className="w-5 h-5 text-[var(--pd-blue)]" strokeWidth={2.25} aria-hidden="true" />
+                    <span>{BusinessDetailsStrings.contactPhone}</span>
                   </div>
                   {permissions.canEditBusinessDetails && !isEditingPhone && (
-                    <button
-                      type="button"
-                      onClick={handleStartEditPhone}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 p-1 cursor-pointer"
-                      aria-label="Edit contact phone"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>{details.current_pickup_point.contact_phone ? 'Edit' : 'Add'}</span>
+                    <button type="button" onClick={handleStartEditPhone} className={editLinkClass}>
+                      <Pencil className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                      <span>
+                        {details.current_pickup_point.contact_phone
+                          ? BusinessDetailsStrings.edit
+                          : BusinessDetailsStrings.add}
+                      </span>
                     </button>
                   )}
                 </div>
 
                 {!isEditingPhone ? (
-                  <div className="space-y-2">
+                  <div className="flex flex-col gap-2">
                     {details.current_pickup_point.contact_phone ? (
-                      <div className="text-base font-bold text-slate-900 tracking-wider">
+                      <div className="text-[18px] font-bold text-[var(--pd-navy)] tracking-wide">
                         {formatPhoneDisplay(details.current_pickup_point.contact_phone)}
                       </div>
                     ) : (
-                      <div className="text-xs text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-200">
-                        No phone number added yet. Customers receive arrival SMS without a call line.
+                      <div className="text-[15px] font-semibold text-[var(--pd-warn)] bg-[var(--pd-warn-bg)] p-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-warn)]/25">
+                        {BusinessDetailsStrings.noPhoneYet}
                       </div>
                     )}
-                    <p className="text-xs text-slate-500">
-                      This number is printed on customer arrival SMS so customers can call your shop.
+                    <p className="text-[15px] text-[var(--pd-muted)] m-0">
+                      {BusinessDetailsStrings.phoneHelperText}
                     </p>
                   </div>
                 ) : (
-                  <form onSubmit={handleProceedToPin} className="space-y-4">
+                  <form onSubmit={handleProceedToPin} className="flex flex-col gap-4">
                     {phoneError && (
-                      <div className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200">
+                      <div className="text-[15px] font-semibold text-[var(--pd-bad)] bg-[var(--pd-bad-bg)] p-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/25">
                         {phoneError}
                       </div>
                     )}
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        Phone number
+                      <label className="block text-[16px] font-semibold text-[var(--pd-navy)] mb-1.5">
+                        {BusinessDetailsStrings.phoneLabel}
                       </label>
                       <input
                         type="tel"
@@ -476,36 +450,32 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                         placeholder="0803 123 4567"
                         required
                         autoFocus
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-blue-500 text-slate-900 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 min-h-[44px]"
+                        className="w-full min-h-[var(--pd-field-h)] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-blue)] text-[var(--pd-navy)] text-[18px] font-semibold focus:outline-none"
                       />
-                      <p className="text-[11px] text-slate-500 mt-1">
-                        Enter an 11-digit Nigerian mobile number.
+                      <p className="text-[15px] text-[var(--pd-muted)] mt-1.5 m-0">
+                        {BusinessDetailsStrings.phoneInputHelp}
                       </p>
                     </div>
 
-                    {/* Live SMS Preview */}
-                    <div className="pt-2 border-t border-slate-100">
-                      <SmsPreview
-                        message={previewSms}
-                        highlight={previewPhone ? [previewPhone] : []}
-                      />
+                    <div className="pt-2 border-t border-[var(--pd-line-2)]">
+                      <SmsPreview message={previewSms} highlight={previewPhone ? [previewPhone] : []} />
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <button
                         type="submit"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg min-h-[38px] cursor-pointer"
+                        className="min-h-[48px] px-4 inline-flex items-center gap-1.5 bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] text-white text-[16px] font-extrabold rounded-[var(--pd-field-radius)] cursor-pointer"
                       >
-                        <Lock className="w-3.5 h-3.5" />
-                        <span>Continue with PIN</span>
+                        <Lock className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                        <span>{BusinessDetailsStrings.continueWithPin}</span>
                       </button>
                       <button
                         type="button"
                         onClick={handleCancelEditPhone}
-                        className="inline-flex items-center gap-1 px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg min-h-[38px] cursor-pointer"
+                        className="min-h-[48px] px-4 inline-flex items-center gap-1.5 text-[var(--pd-muted)] text-[16px] font-extrabold cursor-pointer"
                       >
-                        <X className="w-3.5 h-3.5" />
-                        <span>Cancel</span>
+                        <X className="w-4 h-4" strokeWidth={2.25} aria-hidden="true" />
+                        <span>{BusinessDetailsStrings.cancel}</span>
                       </button>
                     </div>
                   </form>
@@ -513,27 +483,19 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
               </div>
             )}
 
-            {/* Current Access Role */}
-            <div className="bg-white rounded-2xl border border-border-subtle p-5 shadow-sm space-y-1">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                <Shield className="w-4 h-4 text-purple-600" />
-                <span>Your Role</span>
+            {/* Role */}
+            <div className={cardClass}>
+              <div className={labelClass}>
+                <Shield className="w-5 h-5 text-[var(--pd-blue)]" strokeWidth={2.25} aria-hidden="true" />
+                <span>{BusinessDetailsStrings.yourRole}</span>
               </div>
-              <div className="text-base font-bold text-slate-900">
-                {roleDisplay}
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {effectiveRole === 'owner'
-                  ? 'You have full administration access over this Business.'
-                  : effectiveRole === 'manager'
-                  ? 'You can view staff and perform operational actions.'
-                  : 'You have attendant operational access.'}
+              <p className="text-[16px] font-semibold text-[var(--pd-navy)] m-0">
+                {BusinessDetailsStrings.roleBody[effectiveRole] ?? BusinessDetailsStrings.roleBody.attendant}
               </p>
             </div>
           </div>
         )}
 
-        {/* PIN Verification Modal */}
         {isVerifyingPin && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs"
@@ -541,22 +503,22 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
             aria-modal="true"
             aria-labelledby="pin-modal-title"
           >
-            <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-200 p-6 space-y-4">
-              <div className="text-center space-y-1">
-                <div className="w-10 h-10 mx-auto rounded-full bg-blue-50 flex items-center justify-center text-blue-600 mb-2">
-                  <Lock className="w-5 h-5" />
+            <div className="bg-white w-full max-w-sm rounded-[var(--pd-sheet-radius)] shadow-xl border border-[var(--pd-line-2)] p-6 flex flex-col gap-4">
+              <div className="text-center flex flex-col items-center gap-1.5">
+                <div className="w-11 h-11 rounded-full bg-[var(--pd-tint)] flex items-center justify-center text-[var(--pd-blue)] mb-1">
+                  <Lock className="w-5 h-5" strokeWidth={2.25} aria-hidden="true" />
                 </div>
-                <h3 id="pin-modal-title" className="text-base font-bold text-slate-900">
-                  Enter your 4-digit PIN
+                <h3 id="pin-modal-title" className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">
+                  {BusinessDetailsStrings.pinTitle}
                 </h3>
-                <p className="text-xs text-slate-500">
-                  Confirm your PIN to update the shop contact phone number. (Max 3 changes per day).
+                <p className="text-[15px] font-semibold text-[var(--pd-muted)] m-0">
+                  {BusinessDetailsStrings.pinBody}
                 </p>
               </div>
 
-              <form onSubmit={handleConfirmPinAndSave} className="space-y-4">
+              <form onSubmit={handleConfirmPinAndSave} className="flex flex-col gap-4">
                 {pinError && (
-                  <div className="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200">
+                  <div className="text-[15px] font-semibold text-[var(--pd-bad)] bg-[var(--pd-bad-bg)] p-3 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/25">
                     {pinError}
                   </div>
                 )}
@@ -571,10 +533,10 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                   autoFocus
                   required
                   placeholder="••••"
-                  className="w-full text-center tracking-[1em] text-2xl font-bold py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20"
+                  className="w-full text-center tracking-[1em] text-[25px] font-bold py-3 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-line)] focus:outline-none focus:border-[var(--pd-blue)]"
                 />
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-3 pt-1">
                   <button
                     type="button"
                     onClick={() => {
@@ -583,16 +545,16 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
                       setPinError(null);
                     }}
                     disabled={isSavingPhone}
-                    className="flex-1 py-2.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl min-h-[44px] cursor-pointer"
+                    className="flex-1 min-h-[56px] text-[16px] font-extrabold text-[var(--pd-navy)] bg-[var(--pd-page-2)] rounded-[var(--pd-field-radius)] cursor-pointer"
                   >
-                    Cancel
+                    {BusinessDetailsStrings.cancel}
                   </button>
                   <button
                     type="submit"
                     disabled={isSavingPhone || pinInput.length !== 4}
-                    className="flex-1 py-2.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl disabled:opacity-50 min-h-[44px] cursor-pointer"
+                    className="flex-1 min-h-[56px] text-[16px] font-extrabold text-white bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] rounded-[var(--pd-field-radius)] disabled:opacity-50 cursor-pointer"
                   >
-                    {isSavingPhone ? 'Verifying...' : 'Confirm & Save'}
+                    {isSavingPhone ? BusinessDetailsStrings.verifying : BusinessDetailsStrings.confirmAndSave}
                   </button>
                 </div>
               </form>
