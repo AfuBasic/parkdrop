@@ -37,12 +37,13 @@ Do not allow precision-tapping requirements for common actions.
 **Mobile information architecture:**
 
 ```
-Home  |  Packages  |  Add  |  Customers  |  More
+Home  |  Packages  |  Customers  |  More
 ```
 
 Bottom navigation bar rules:
 - Every destination: **icon + label**
-- The Add action may receive visual emphasis (elevated or accented)
+- **The bar holds places, never actions.** `Add` is not in the bar — adding a
+  package happens from the Add tile on Home. See `docs/design-plan/02-design-plan.md` §3.1.
 - **Do not** use a giant floating action button unless ergonomics clearly demand it
 - Account for `env(safe-area-inset-bottom)` on all bottom-anchored elements
 
