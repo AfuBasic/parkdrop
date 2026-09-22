@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { UserProfile, BusinessMembershipSummary } from '../account-types';
+import { AccountStrings } from '@/features/account/strings';
 
 interface AccountIdentitySectionProps {
   user: UserProfile;
@@ -22,11 +23,11 @@ export const AccountIdentitySection: React.FC<AccountIdentitySectionProps> = ({
     e.preventDefault();
     const trimmed = name.trim();
     if (trimmed.length < 2) {
-      setError('Display name must be at least 2 characters.');
+      setError(AccountStrings.nameTooShort);
       return;
     }
     if (trimmed.length > 100) {
-      setError('Display name cannot exceed 100 characters.');
+      setError(AccountStrings.nameTooLong);
       return;
     }
 
@@ -35,7 +36,7 @@ export const AccountIdentitySection: React.FC<AccountIdentitySectionProps> = ({
       await onUpdateName(trimmed);
       setIsEditing(false);
     } catch (err: any) {
-      setError(err?.message || 'Failed to update name. Please try again.');
+      setError(err?.message || AccountStrings.couldNotUpdateName);
     }
   };
 
@@ -46,56 +47,44 @@ export const AccountIdentitySection: React.FC<AccountIdentitySectionProps> = ({
   };
 
   return (
-    <section aria-labelledby="account-identity-heading" className="bg-white rounded-2xl border border-neutral-200/80 p-5 shadow-xs">
-      <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-neutral-100">
-        <div>
-          <h2 id="account-identity-heading" className="text-base font-semibold text-neutral-900 tracking-tight">
-            Account Identity
-          </h2>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            Passwordless account credentials and linked workplaces
-          </p>
-        </div>
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-          Verified
-        </span>
-      </div>
+    <section
+      aria-labelledby="account-identity-heading"
+      className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-5 shadow-sm"
+    >
+      <h2
+        id="account-identity-heading"
+        className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0 mb-4 pb-3 border-b border-[var(--pd-line-2)]"
+      >
+        {AccountStrings.whoYouAreHeading}
+      </h2>
 
-      <div className="space-y-4">
-        {/* Email - Strictly read-only */}
+      <div className="flex flex-col gap-4">
         <div>
-          <label className="block text-xs font-medium text-neutral-500 mb-1">
-            Email address (Passwordless login)
-          </label>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-neutral-50 border border-neutral-200/60 text-sm font-medium text-neutral-800">
-            <span className="truncate">{user.email}</span>
-            <span className="text-xs text-neutral-400 font-normal ml-2 shrink-0">Read-only</span>
+          <span className="block text-[15px] font-bold text-[var(--pd-muted)] mb-1">
+            {AccountStrings.emailLabel}
+          </span>
+          <div className="p-3.5 rounded-[var(--pd-field-radius)] bg-[var(--pd-page-2)] border border-[var(--pd-line-2)] text-[18px] font-semibold text-[var(--pd-navy)] truncate">
+            {user.email}
           </div>
-          <p className="text-[11px] text-neutral-400 mt-1">
-            Sign in anytime with one-time verification codes sent to this address.
-          </p>
+          <p className="text-[15px] text-[var(--pd-muted)] mt-1.5 m-0">{AccountStrings.signInMethod}</p>
         </div>
 
-        {/* Display Name */}
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label htmlFor="display-name-input" className="block text-xs font-medium text-neutral-500">
-              Display Name
-            </label>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[15px] font-bold text-[var(--pd-muted)]">{AccountStrings.nameLabel}</span>
             {!isEditing && (
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="text-xs font-medium text-sky-600 hover:text-sky-700 active:text-sky-800 focus:outline-hidden"
+                className="min-h-[48px] px-2 -mr-2 text-[16px] font-extrabold text-[var(--pd-blue)] cursor-pointer"
               >
-                Change name
+                {AccountStrings.changeName}
               </button>
             )}
           </div>
 
           {isEditing ? (
-            <form onSubmit={handleSave} className="space-y-2">
+            <form onSubmit={handleSave} className="flex flex-col gap-3">
               <input
                 id="display-name-input"
                 type="text"
@@ -103,56 +92,55 @@ export const AccountIdentitySection: React.FC<AccountIdentitySectionProps> = ({
                 onChange={(e) => setName(e.target.value)}
                 disabled={isSaving}
                 autoFocus
-                className="w-full text-sm font-medium px-3.5 py-2.5 rounded-xl border border-sky-400 bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-500/20 text-neutral-900"
-                placeholder="Enter your first name or display name"
-                aria-label="Display Name"
+                className="w-full min-h-[var(--pd-field-h)] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-blue)] text-[var(--pd-navy)] text-[18px] font-semibold focus:outline-none"
+                placeholder={AccountStrings.namePlaceholder}
+                aria-label={AccountStrings.nameLabel}
               />
               {error && (
-                <p className="text-xs text-rose-600 font-medium" role="alert">
+                <p className="text-[15px] font-semibold text-[var(--pd-bad)] m-0" role="alert">
                   {error}
                 </p>
               )}
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-3">
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-white bg-sky-600 hover:bg-sky-700 active:bg-sky-800 disabled:opacity-50 transition-colors shadow-xs"
+                  className="min-h-[48px] px-4 rounded-[var(--pd-field-radius)] text-[16px] font-extrabold text-white bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] disabled:opacity-50 cursor-pointer"
                 >
-                  {isSaving ? 'Saving...' : 'Save'}
+                  {isSaving ? AccountStrings.saving : AccountStrings.save}
                 </button>
                 <button
                   type="button"
                   onClick={handleCancel}
                   disabled={isSaving}
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium text-neutral-600 bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 disabled:opacity-50 transition-colors"
+                  className="min-h-[48px] px-4 text-[16px] font-extrabold text-[var(--pd-muted)] cursor-pointer"
                 >
-                  Cancel
+                  {AccountStrings.cancel}
                 </button>
               </div>
             </form>
           ) : (
-            <div className="p-3 rounded-xl bg-neutral-50/60 border border-neutral-200/60 text-sm font-medium text-neutral-900">
-              {user.first_name || 'Not set'}
+            <div className="p-3.5 rounded-[var(--pd-field-radius)] bg-[var(--pd-page-2)] border border-[var(--pd-line-2)] text-[18px] font-semibold text-[var(--pd-navy)]">
+              {user.first_name || AccountStrings.nameNotSet}
             </div>
           )}
         </div>
 
-        {/* Workplaces / Businesses */}
         {businesses.length > 0 && (
           <div>
-            <label className="block text-xs font-medium text-neutral-500 mb-1.5">
-              Workplaces & Memberships
-            </label>
-            <div className="space-y-1.5">
+            <span className="block text-[15px] font-bold text-[var(--pd-muted)] mb-1.5">
+              {AccountStrings.workplacesHeading}
+            </span>
+            <div className="flex flex-col gap-2">
               {businesses.map((b) => (
                 <div
                   key={b.business_id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-neutral-50/70 border border-neutral-200/50 text-xs"
+                  className="flex items-center justify-between p-3 rounded-[var(--pd-field-radius)] bg-[var(--pd-page-2)] border border-[var(--pd-line-2)]"
                 >
-                  <span className="font-medium text-neutral-800 truncate">
+                  <span className="text-[16px] font-semibold text-[var(--pd-navy)] truncate">
                     {b.business_name || 'Business #' + b.business_id}
                   </span>
-                  <span className="capitalize font-medium text-neutral-500 ml-2 px-2 py-0.5 rounded-md bg-white border border-neutral-200/70 shrink-0">
+                  <span className="text-[15px] font-semibold text-[var(--pd-muted)] ml-2 shrink-0">
                     {b.role}
                   </span>
                 </div>
@@ -160,12 +148,6 @@ export const AccountIdentitySection: React.FC<AccountIdentitySectionProps> = ({
             </div>
           </div>
         )}
-
-        {/* App Version & Diagnostics Indicator */}
-        <div className="pt-2 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-400">
-          <span>ParkDrop Mobile</span>
-          <span className="font-mono">v{import.meta.env.VITE_APP_VERSION || '1.0.0'}</span>
-        </div>
       </div>
     </section>
   );
