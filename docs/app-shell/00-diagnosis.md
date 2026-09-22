@@ -42,3 +42,17 @@ There is **no client-side router wired into the authenticated app**. Navigation 
 ## Path Taken: Path B
 
 A full migration from state-swapping to real URL-based routing via TanStack Router is required before any other work. The plan follows.
+
+## Finding: Customers and More/Settings Headers
+
+The `CustomersScreen` and `MoreScreen` are currently rendered inside the `AppShell` (via `mainShellRoute` in `router.tsx`), which provides the desktop sidebar and mobile bottom navigation. 
+
+However, **`AppShell` does not provide a mobile top header**. The mobile top headers in the app are currently managed by the individual screens themselves:
+- `HomeScreen` renders its own `HomeHeader` (which includes the Logo).
+- `PackagesScreen` renders its own `PackagesListHeader` (which includes the Logo).
+
+Because `AppShell` lacks a mobile top header, `CustomersScreen` and `MoreScreen` were built with their own inline HTML `<header>` blocks to provide a title. In `CustomersScreen`, this inline header includes a stray `<Logo tone="light" markOnly />` (the package-pin icon) crammed on the right side next to an "Add package" button. `MoreScreen` does the same.
+
+There is a `Page` component (`design-system/shell/Page.tsx`) that can provide a standard top bar (with a title and back button), but **it does not include the ParkDrop Logo** and it is currently **not used** by `Home` or `Packages` (they bypass it to render their custom blue headers).
+
+**Conclusion:** The missing shell header is because the shell (`AppShell`) was never built to provide a mobile top header. Every screen currently builds its own.
