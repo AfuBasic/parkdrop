@@ -58,4 +58,14 @@ export const StaffStrings = {
   removing: 'Removing…',
   couldNotChangeRole: 'Could not change this role. Try again.',
   couldNotRemove: 'Could not remove access. Try again.',
+
+  // ── Invite someone sheet ─────────────────────────────────────────────
+  inviteTitle: 'Invite someone',
+  inviteBody: "We'll email them a link to join this business.",
+  emailLabel: 'Their email address',
+  emailPlaceholder: 'e.g. emeka@example.com',
+  invalidEmail: 'Enter a valid email address.',
+  roleLabel: 'What they can do',
+  sendInvite: 'Send invite',
+  couldNotInvite: 'Could not send that invite. Try again.',
 } as const;
