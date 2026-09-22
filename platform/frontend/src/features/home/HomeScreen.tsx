@@ -120,6 +120,13 @@ export function HomeScreen({
   // this pickup point has actually held a package.
   const showStats = data.status === 'ready' && !data.isFirstDay;
 
+  // When there are no unpaid packages, auto-reset filter to 'all' so no empty ghost filter is stuck
+  React.useEffect(() => {
+    if (data.status === 'ready' && data.stats.unpaidCount === 0 && filter !== 'all') {
+      setFilter('all');
+    }
+  }, [data.status, data.stats.unpaidCount, filter]);
+
   return (
     <div
       key={retryKey}
@@ -192,6 +199,7 @@ export function HomeScreen({
               <WaitingList
                 rows={rows}
                 filter={filter}
+                unpaidCount={data.stats.unpaidCount}
                 onFilterChange={setFilter}
                 onSelectPackage={(id) => handleSelectPackage(id)}
                 onSeeAll={() => handleNavigateToPackages('WAITING')}
