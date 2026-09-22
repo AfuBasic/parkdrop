@@ -5,6 +5,25 @@ application. Read it before designing or building any application screen.
 
 It supplements `mobile-ui-rules.md` and `docs/design-system.md`.
 
+> **This document predates the redesign and is only partly reliable.**
+> `docs/design-plan/02-design-plan.md` is authoritative wherever the two
+> disagree. The following parts of this file are known to be wrong against the
+> shipped product and must not be followed:
+>
+> - It says **"Released"** where the product says **"Collected"**.
+> - It maps **Waiting → Warning**; the design system maps Waiting → Neutral.
+> - It shows an **SMS checkbox on the create screen**. No such control exists —
+>   the arrival SMS is always sent.
+> - It specifies a low-credit warning at **`< 10` credits**. The implemented
+>   rule is `1–4` for the warning and `0` for the error.
+> - It gives the auth order as email → OTP → name → PIN → pickup. The real flow
+>   has **seven** steps and includes a business phone step:
+>   identifier → code → name → PIN → pickup point → business phone → ready.
+> - It prescribes **swipe-to-dismiss** bottom sheets, which §4.3 of the design
+>   plan excludes outright.
+> - Its ASCII anatomies are drawn in the pre-redesign visual language
+>   (small type, Title Case). Take structure from them, never type sizes or copy.
+
 ---
 
 ## Authentication Flow
@@ -570,17 +589,18 @@ Use `StatusBadge` component from `@/design-system`.
 
 ```
 ┌──────────────────────────────────────┐
-│  [🏠]     [📦]    [➕]    [👤]  [⋯] │
-│  Home   Packages  Add   Customers More│
+│  [🏠]      [📦]      [👤]       [⋯]  │
+│  Home    Packages  Customers    More │
 └──────────────────────────────────────┘
   ↑ env(safe-area-inset-bottom) below ↑
 ```
 
 **Rules:**
 - Icon: 24px
-- Label: 10–12px, `text-text-secondary` inactive / `text-action-primary` active
+- Label: 15px minimum, `text-text-secondary` inactive / `text-action-primary` active
 - Active indicator: blue dot above or underline, or icon colour change
-- Add tab: may use elevated circle or accent colour for emphasis
+- **Four items, never five.** The bar holds places, never actions. `Add` is
+  reached from the Add tile on Home. See `docs/design-plan/02-design-plan.md` §3.1.
 - Background: `bg-surface-default` with subtle top border
 - `role="tablist"` with `aria-selected`
 
