@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle } from '@/design-system';
+
 import { cn } from '@/lib/utils';
 import { AddPackageStrings } from '@/features/packages/add/strings';
 
@@ -16,12 +16,23 @@ export function DiscardConfirmDialog({
   onStay,
   onLeave,
 }: DiscardConfirmDialogProps) {
+  if (!open) return null;
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onStay()}>
-      <DialogContent className="w-full max-w-[340px] rounded-[var(--pd-card-radius)] p-5">
-        <DialogTitle className="text-[20px] font-extrabold text-[var(--pd-navy)] mb-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+        onClick={onStay}
+        aria-hidden="true"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        className="relative z-10 w-full max-w-[340px] bg-white rounded-[var(--pd-card-radius)] p-5 shadow-2xl border border-[var(--pd-line)] animate-in zoom-in-95 duration-150"
+      >
+        <h2 className="text-[20px] font-extrabold text-[var(--pd-navy)] mb-2">
           {AddPackageStrings.discardTitle}
-        </DialogTitle>
+        </h2>
 
         <p className="text-[15px] font-semibold text-[var(--pd-muted)] mb-6 leading-[1.4]">
           {AddPackageStrings.discardBody}
@@ -52,7 +63,7 @@ export function DiscardConfirmDialog({
             {AddPackageStrings.discardLeave}
           </button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
