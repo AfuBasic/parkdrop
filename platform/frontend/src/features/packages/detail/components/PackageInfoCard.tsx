@@ -1,4 +1,4 @@
-import { Calendar, MapPin, UserCheck, Hash, Info } from 'lucide-react';
+import { Calendar, MapPin, UserCheck, Hash, Info, CheckCircle2 } from 'lucide-react';
 import type { LocalPackage } from '@/offline/db/schema';
 import { PackagesStrings } from '@/features/packages/strings';
 import { Section } from '@/design-system/shell/Section';
@@ -19,6 +19,21 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
     hour: 'numeric',
     minute: '2-digit',
   });
+
+  let collectedDateStr = null;
+  if (pkg.status === 'COLLECTED' && pkg.collected_at) {
+    const collectedDate = new Date(pkg.collected_at);
+    const cDate = collectedDate.toLocaleDateString('en-NG', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    const cTime = collectedDate.toLocaleTimeString('en-NG', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+    collectedDateStr = `${cDate} · ${cTime}`;
+  }
 
   const realPointName = pickupPointName || pkg.pickup_point_name || null;
   const isPlaceholder = !realPointName;
@@ -43,6 +58,19 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
             {formattedDate} · {formattedTime}
           </span>
         </div>
+
+        {/* Optional Line: Collected Date & Time */}
+        {collectedDateStr && (
+          <div className="py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[#15803D] font-bold">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{PackagesStrings.collectedAtLabel}</span>
+            </div>
+            <span className="font-extrabold text-[#15803D] tabular-nums">
+              {collectedDateStr}
+            </span>
+          </div>
+        )}
 
         {/* Line 2: Received by */}
         <div className="py-2.5 flex items-center justify-between">
