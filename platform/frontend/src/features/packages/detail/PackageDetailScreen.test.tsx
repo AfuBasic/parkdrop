@@ -66,7 +66,7 @@ describe('PackageDetailScreen', () => {
     expect(screen.getByRole('button', { name: 'Record payment' })).toBeDefined();
 
     // Sticky Action Bar button
-    expect(screen.getByText(/Collect ₦3,500 and release/i)).toBeDefined();
+    expect(screen.getByText(/Mark as paid and release.../i)).toBeDefined();
 
     // Operational info
     expect(screen.getByText('Ikeja Hub')).toBeDefined();
