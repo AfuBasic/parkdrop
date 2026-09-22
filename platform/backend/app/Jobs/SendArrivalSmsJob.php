@@ -146,7 +146,7 @@ class SendArrivalSmsJob implements ShouldQueue
                     businessId: $this->businessId,
                     amount: 1,
                     referenceType: 'ARRIVAL_SMS',
-                    referenceId: (string) $smsRecord->id,
+                    referenceId: (string) $this->packageUuid,
                 );
             } catch (InsufficientSmsCreditsException $e) {
                 Log::warning('[SendArrivalSmsJob] Sent with no SMS credits left to charge.', [
