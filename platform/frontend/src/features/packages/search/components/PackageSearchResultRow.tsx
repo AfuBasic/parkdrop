@@ -69,7 +69,7 @@ export function PackageSearchResultRow({
               {result.customerName}
             </span>
             {result.syncStatus === 'PENDING_CREATE' && (
-              <span className="shrink-0 text-[11px] font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+              <span className="shrink-0 text-[15px] font-medium text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                 Local
               </span>
             )}
@@ -80,7 +80,7 @@ export function PackageSearchResultRow({
         </div>
 
         {/* Middle Row: Phone & Package Identifiers */}
-        <div className="flex items-center justify-between text-xs text-text-secondary mt-0.5">
+        <div className="flex items-center justify-between text-[15px] text-text-secondary mt-0.5">
           <div className="flex items-center gap-1.5 truncate">
             <span>{formatPhone(result.phoneDisplay)}</span>
             <span className="text-text-muted">·</span>
@@ -95,7 +95,7 @@ export function PackageSearchResultRow({
         </div>
 
         {/* Bottom Row: Received Time, Amount, & Optional Cross-Location Tag */}
-        <div className="flex items-center justify-between text-xs text-text-secondary mt-1">
+        <div className="flex items-center justify-between text-[15px] text-text-secondary mt-1">
           <div className="flex items-center gap-1.5 truncate">
             <span>{getRelativeTime(result.clientCreatedAt)}</span>
             {isOtherLocation && (
