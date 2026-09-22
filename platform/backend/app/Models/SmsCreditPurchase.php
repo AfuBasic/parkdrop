@@ -62,4 +62,11 @@ class SmsCreditPurchase extends Model
     {
         return in_array($this->status, ['PAID', 'FAILED', 'CANCELLED'], true);
     }
+
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->where('id', $value)
+            ->orWhere('reference', $value)
+            ->first() ?? abort(404);
+    }
 }
