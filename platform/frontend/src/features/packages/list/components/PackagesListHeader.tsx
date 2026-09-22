@@ -23,10 +23,10 @@ export function PackagesListHeader({
   return (
     <header className="flex-none bg-[var(--pd-blue)] pt-3 pb-4 px-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h1 className="text-[28px] sm:text-[30px] font-extrabold text-white tracking-tight m-0">
+        <Logo tone="blue" />
+        <h1 className="text-[20px] sm:text-[22px] font-extrabold text-white tracking-tight m-0">
           {PackagesStrings.title}
         </h1>
-        <Logo tone="blue" markOnly />
       </div>
 
       {/* 60px White Search Input Container */}
