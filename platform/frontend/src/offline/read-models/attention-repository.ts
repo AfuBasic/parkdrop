@@ -45,14 +45,16 @@ export class AttentionRepository {
         id: `photo-upload:${media.id}`,
         type: 'PHOTO_UPLOAD_FAILED',
         severity: 'ERROR',
-        title: "Package photo couldn't upload",
-        message: media.last_error_safe || 'Failed to upload parcel photo to cloud storage.',
+        title: 'A photo did not send.',
+        message: customer?.name
+          ? `${customer.name}'s package photo is still on this phone.`
+          : 'This package photo is still on this phone.',
         entityType: 'package',
         entityId: media.package_id,
         occurredAt: media.last_attempt_at || media.created_at,
         action: {
           type: 'RETRY_PHOTO',
-          label: 'Retry upload',
+          label: 'Send it again',
           targetId: media.id,
           requiresOnline: true,
         },
@@ -78,14 +80,14 @@ export class AttentionRepository {
         id: `payment-rejected:${payment.id}`,
         type: 'PAYMENT_SYNC_REJECTED',
         severity: 'ERROR',
-        title: 'Payment needs attention',
-        message: payment.sync_error || 'This payment could not be recorded because the package is already paid or status forbids payment.',
+        title: 'A payment was not saved.',
+        message: 'The package may already be paid. Open it to see what ParkDrop has.',
         entityType: 'payment',
         entityId: payment.package_id,
         occurredAt: payment.client_recorded_at || payment.recorded_at,
         action: {
           type: 'VIEW_PACKAGE',
-          label: 'View package',
+          label: 'See the package',
           targetId: payment.package_id,
           requiresOnline: false,
         },
@@ -114,14 +116,18 @@ export class AttentionRepository {
         id: `sync-conflict:${conflict.conflict_id}`,
         type: isCollectionConflict ? 'COLLECTION_SYNC_CONFLICT' : 'PACKAGE_LIFECYCLE_CONFLICT',
         severity: 'WARNING',
-        title: isCollectionConflict ? 'Package was already collected' : 'Package status conflict',
-        message: (conflict.server_summary?.message as string) || 'A conflicting change was applied on another device.',
+        title: isCollectionConflict
+          ? 'This package was collected on another phone.'
+          : 'This package changed on another phone.',
+        message: isCollectionConflict
+          ? 'Another phone collected it first. ParkDrop kept that.'
+          : 'Another phone changed it first. ParkDrop kept that.',
         entityType: 'conflict',
         entityId: conflict.entity_id,
         occurredAt: conflict.created_at,
         action: {
           type: 'VIEW_PACKAGE',
-          label: 'View package',
+          label: 'See the package',
           targetId: conflict.entity_id,
           requiresOnline: false,
         },
@@ -144,20 +150,20 @@ export class AttentionRepository {
           id: `sms-wallet-zero:${businessId}`,
           type: 'ZERO_SMS_CREDITS',
           severity: 'ERROR',
-          title: 'No SMS credits remaining',
-          message: "Customer arrival SMS notifications won't be sent until credits are added.",
+          title: 'You have no SMS credits.',
+          message: 'Your customers are not being texted when their packages arrive.',
           entityType: 'wallet',
           entityId: wallet.id,
           occurredAt: wallet.updated_at || new Date().toISOString(),
           action: isOwnerOrManager
             ? {
                 type: 'BUY_SMS_CREDITS',
-                label: 'Buy credits',
+                label: 'Buy SMS credits',
                 requiresOnline: true,
               }
             : {
                 type: 'VIEW_SMS_CREDITS',
-                label: 'View SMS credits',
+                label: 'See SMS credits',
                 requiresOnline: false,
               },
           metadata: {
@@ -169,20 +175,20 @@ export class AttentionRepository {
           id: `sms-wallet-low:${businessId}`,
           type: 'LOW_SMS_CREDITS',
           severity: 'WARNING',
-          title: 'SMS credits are running low',
-          message: `Only ${wallet.balance} ${wallet.balance === 1 ? 'credit' : 'credits'} remaining. Top up to keep arrival SMS active.`,
+          title: `You have ${wallet.balance} SMS ${wallet.balance === 1 ? 'credit' : 'credits'} left.`,
+          message: 'When they run out, your customers stop being texted.',
           entityType: 'wallet',
           entityId: wallet.id,
           occurredAt: wallet.updated_at || new Date().toISOString(),
           action: isOwnerOrManager
             ? {
                 type: 'BUY_SMS_CREDITS',
-                label: 'Buy credits',
+                label: 'Buy SMS credits',
                 requiresOnline: true,
               }
             : {
                 type: 'VIEW_SMS_CREDITS',
-                label: 'View SMS credits',
+                label: 'See SMS credits',
                 requiresOnline: false,
               },
           metadata: {
@@ -199,14 +205,14 @@ export class AttentionRepository {
           id: `purchase-pending:${activePurchase.id}`,
           type: 'SMS_CREDIT_PURCHASE_PENDING',
           severity: 'INFO',
-          title: 'SMS credit payment is still being confirmed',
-          message: `${activePurchase.credits} credits. Please do not pay again while confirmation is in progress.`,
+          title: 'We are still checking your payment.',
+          message: 'This can take a few minutes. Please do not pay again.',
           entityType: 'purchase',
           entityId: activePurchase.id,
           occurredAt: activePurchase.created_at,
           action: {
             type: 'CHECK_PURCHASE',
-            label: 'Check status',
+            label: 'Check again',
             targetId: activePurchase.id,
             requiresOnline: true,
           },
@@ -220,8 +226,8 @@ export class AttentionRepository {
           id: `purchase-failed:${activePurchase.id}`,
           type: 'SMS_CREDIT_PURCHASE_FAILED',
           severity: 'WARNING',
-          title: "SMS credit payment wasn't completed",
-          message: 'No credits were added. You can try purchasing again when ready.',
+          title: 'Your payment did not go through.',
+          message: 'No credits were added. You can try again.',
           entityType: 'purchase',
           entityId: activePurchase.id,
           occurredAt: activePurchase.created_at,
