@@ -5,6 +5,8 @@ import { PackageX, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { usePickupIdentity } from '@/features/home/hooks/usePickupIdentity';
 import { usePackageDetail } from '@/features/packages/detail/hooks/usePackageDetail';
+import { usePollingSync } from '@/offline/sync/usePollingSync';
+
 import { DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import { packagesApi } from '@/features/packages/api/packages-api';
 import { PackageIdentityHeader } from '@/features/packages/detail/components/PackageIdentityHeader';
@@ -55,6 +57,9 @@ export function PackageDetailScreen({
 
   const dailyStorageFeeMinor = business?.daily_storage_fee_minor ?? DEFAULT_DAILY_STORAGE_FEE_MINOR;
   const { data, isLoading, notFound } = usePackageDetail(packageId, businessId, dailyStorageFeeMinor);
+
+  // Actively poll while viewing this package to catch incoming SMS webhook updates
+  usePollingSync(15_000);
 
   // Loading Skeleton State
   if (isLoading) {
