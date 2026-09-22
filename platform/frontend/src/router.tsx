@@ -20,7 +20,7 @@ import { CustomersScreen } from '@/features/customers/list/CustomersScreen';
 import { CustomerDetailScreen } from '@/features/customers/detail/CustomerDetailScreen';
 import { MoreScreen } from '@/features/more/MoreScreen';
 import { AttentionScreen } from '@/features/attention/AttentionScreen';
-import { DailyOperationsScreen } from '@/features/reports/DailyOperationsScreen';
+import { ReportsScreen } from '@/features/reports/ReportsScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
 import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
 import { PurchaseReturnScreen } from '@/features/sms-credits/purchase/screens/PurchaseReturnScreen';
@@ -202,7 +202,7 @@ const attentionRoute = createRoute({
 const reportsRoute = createRoute({
   getParentRoute: () => taskShellRoute,
   path: '/more/reports',
-  component: DailyOperationsScreen,
+  component: ReportsScreen,
 });
 
 // SMS Credits
