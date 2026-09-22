@@ -66,7 +66,7 @@ export function PackagesListHeader({
 
       {/* Cross-tab search announcement */}
       {isSearching && (
-        <div className="flex items-center gap-1.5 text-white/90 text-[14px] font-bold px-1" role="status">
+        <div className="flex items-center gap-1.5 text-white text-[15px] font-bold px-1" role="status">
           <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
           <span>{PackagesStrings.searchingCaption}</span>
         </div>
