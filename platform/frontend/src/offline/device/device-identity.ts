@@ -1,16 +1,32 @@
 export function getDeviceUuid(): string {
   let uuid = localStorage.getItem('pd_device_uuid');
-  
+
   if (!uuid) {
     uuid = crypto.randomUUID();
     localStorage.setItem('pd_device_uuid', uuid);
   }
-  
+
   return uuid;
 }
 
 export function removeDeviceUuid(): void {
   localStorage.removeItem('pd_device_uuid');
+}
+
+/**
+ * Monotonic per-device mutation sequence, persisted independently of the
+ * local mutation queue. The queue itself deletes rows once a mutation is
+ * APPLIED (see MutationQueue.resolveResult), so deriving "next sequence" by
+ * scanning it regresses to a lower number the moment the queue fully
+ * drains — colliding with a sequence the server already has a receipt for
+ * under this same device_uuid.
+ */
+export function getNextDeviceSequence(): number {
+  const KEY = 'pd_device_sequence';
+  const current = parseInt(localStorage.getItem(KEY) || '0', 10);
+  const next = current + 1;
+  localStorage.setItem(KEY, String(next));
+  return next;
 }
 
 import { db } from '@/offline/db/database';
