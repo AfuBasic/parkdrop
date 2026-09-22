@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { DailyOperationsReportRepository } from '@/offline/read-models/daily-operations-report-repository';
+import { ReportsStrings } from '@/features/reports/strings';
 
 interface ReportDateNavigatorProps {
   currentDate: string; // YYYY-MM-DD
@@ -51,20 +52,20 @@ export function ReportDateNavigator({
   })();
 
   return (
-    <div className="flex items-center justify-between bg-surface-default border border-border-subtle rounded-[var(--radius-xl)] p-2 shadow-xs">
+    <div className="flex items-center justify-between bg-white border border-[var(--pd-line-2)] rounded-[var(--pd-card-radius)] p-2 shadow-sm">
       <button
         type="button"
         onClick={handlePreviousDay}
-        className="w-11 h-11 flex items-center justify-center rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-subtle active:scale-95 transition-all cursor-pointer"
+        className="w-12 h-12 flex items-center justify-center rounded-[var(--pd-field-radius)] text-[var(--pd-muted)] hover:text-[var(--pd-navy)] active:scale-95 transition-all cursor-pointer"
         aria-label="Previous day"
       >
-        <ChevronLeft className="w-5 h-5" />
+        <ChevronLeft className="w-5 h-5" strokeWidth={2.25} />
       </button>
 
       <div className="flex items-center gap-2">
-        <label className="relative flex items-center gap-1.5 cursor-pointer px-2 py-1 rounded-md hover:bg-surface-subtle transition-colors">
-          <Calendar className="w-4 h-4 text-action-primary" />
-          <span className="font-semibold text-text-primary text-sm tabular-nums">
+        <label className="relative flex items-center gap-1.5 cursor-pointer px-2 py-1.5 rounded-[var(--pd-field-radius)] min-h-[48px]">
+          <Calendar className="w-5 h-5 text-[var(--pd-blue)]" strokeWidth={2.25} aria-hidden="true" />
+          <span className="font-bold text-[var(--pd-navy)] text-[16px] tabular-nums">
             {formattedDisplay}
           </span>
           <input
@@ -85,9 +86,9 @@ export function ReportDateNavigator({
           <button
             type="button"
             onClick={handleTodayClick}
-            className="text-xs font-semibold px-2 py-1 rounded-md bg-blue-50 text-action-primary hover:bg-blue-100 transition-colors cursor-pointer"
+            className="min-h-[48px] px-2.5 text-[15px] font-bold text-[var(--pd-blue)] cursor-pointer"
           >
-            Today
+            {ReportsStrings.today}
           </button>
         )}
       </div>
@@ -96,14 +97,14 @@ export function ReportDateNavigator({
         type="button"
         onClick={handleNextDay}
         disabled={isToday}
-        className={`w-11 h-11 flex items-center justify-center rounded-lg transition-all ${
+        className={`w-12 h-12 flex items-center justify-center rounded-[var(--pd-field-radius)] transition-all ${
           isToday
-            ? 'text-text-muted/40 cursor-not-allowed'
-            : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle active:scale-95 cursor-pointer'
+            ? 'text-[var(--pd-line)] cursor-not-allowed'
+            : 'text-[var(--pd-muted)] hover:text-[var(--pd-navy)] active:scale-95 cursor-pointer'
         }`}
         aria-label="Next day"
       >
-        <ChevronRight className="w-5 h-5" />
+        <ChevronRight className="w-5 h-5" strokeWidth={2.25} />
       </button>
     </div>
   );
