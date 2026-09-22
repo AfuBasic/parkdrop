@@ -168,6 +168,8 @@ class ProcessOutboxCommand extends Command
         // Where to collect it. Without this the customer is told a parcel arrived
         // but not where to go, and the pickup-point names the owner types during
         // setup would never actually reach a customer.
+        $pickupPoint = $package->pickupPoint;
+
         // Build place string
         $pickupPointName = trim($pickupPoint?->name ?? '');
         $parkName = trim($pickupPoint?->park_name ?? '');
