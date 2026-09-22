@@ -11,7 +11,6 @@ export interface PackageStickyActionBarProps {
   pkg: LocalPackage;
   customer: LocalCustomer | null;
   paymentSummary: PaymentSummaryData;
-  onOpenRecordPaymentOnly: () => void;
   onConfirmCollectAndRelease: (pickupCode: string) => Promise<void>;
   onConfirmReleaseWithoutPayment: (pickupCode: string) => Promise<void>;
   onConfirmReleasePaid: (pickupCode: string) => Promise<void>;
@@ -20,7 +19,7 @@ export interface PackageStickyActionBarProps {
 
 /**
  * Pinned 84px action bar above safe area:
- * - Waiting with balance due: primary "Collect ₦X and release", secondary text "Record payment only"
+ * - Waiting with balance due: primary "Collect ₦X and release"
  * - Waiting paid / ₦0: primary "Release package"
  * - Collected: green banner + check ("Collected on date, time by staff"), "Owing ₦X" if balance due, "Undo release" button
  * - Returned / Cancelled: grey banner with icon and date
@@ -29,7 +28,6 @@ export function PackageStickyActionBar({
   pkg,
   customer,
   paymentSummary,
-  onOpenRecordPaymentOnly,
   onConfirmCollectAndRelease,
   onConfirmReleaseWithoutPayment,
   onConfirmReleasePaid,
@@ -91,24 +89,14 @@ export function PackageStickyActionBar({
           {isWaiting && (
             <div className="flex flex-col gap-1 items-center w-full">
               {hasBalance ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setIsReleaseSheetOpen(true)}
-                    className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] text-white text-[17px] font-extrabold flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-xs cursor-pointer"
-                  >
-                    <PackageCheck className="w-5 h-5" />
-                    <span>{PackagesStrings.collectAndReleasePrimary(balanceStr)}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={onOpenRecordPaymentOnly}
-                    className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-blue)] hover:underline active:scale-95"
-                  >
-                    {PackagesStrings.recordPaymentOnlyAction}
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={() => setIsReleaseSheetOpen(true)}
+                  className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] text-white text-[17px] font-extrabold flex items-center justify-center gap-2 active:scale-98 transition-transform shadow-xs cursor-pointer"
+                >
+                  <PackageCheck className="w-5 h-5" />
+                  <span>{PackagesStrings.collectAndReleasePrimary(balanceStr)}</span>
+                </button>
               ) : (
                 <button
                   type="button"
