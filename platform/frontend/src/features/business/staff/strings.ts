@@ -45,4 +45,17 @@ export const StaffStrings = {
   tryAgain: 'Try again',
   couldNotResend: 'Could not resend that invite.',
   couldNotCancel: 'Could not cancel that invite.',
+
+  // ── Member actions sheet ─────────────────────────────────────────────
+  changeRole: 'Change role',
+  removeAccess: 'Remove access',
+  removeAccessBody: (name: string) =>
+    `${name} will no longer be able to use ParkDrop here. Past packages and payments stay on record.`,
+  pickNewRole: (name: string) => `Pick a new role for ${name}`,
+  saveRole: 'Save role',
+  saving: 'Saving…',
+  cancel: 'Cancel',
+  removing: 'Removing…',
+  couldNotChangeRole: 'Could not change this role. Try again.',
+  couldNotRemove: 'Could not remove access. Try again.',
 } as const;
