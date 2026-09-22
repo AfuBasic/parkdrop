@@ -32,7 +32,7 @@ export function LifecycleReasonField<T extends string>({
 
   return (
     <fieldset className="flex flex-col gap-3 border-none p-0 m-0" disabled={disabled}>
-      <legend className="text-sm font-bold text-text-primary mb-1">
+      <legend className="text-[15px] font-bold text-text-primary mb-1">
         {legend}
       </legend>
 
@@ -43,7 +43,7 @@ export function LifecycleReasonField<T extends string>({
             <label
               key={option.value}
               className={cn(
-                'flex items-center gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none text-sm font-medium min-h-[48px]',
+                'flex items-center gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none text-[15px] font-medium min-h-[48px]',
                 isSelected
                   ? 'bg-action-primary/5 border-action-primary text-text-primary shadow-xs'
                   : 'bg-surface-default border-border-default text-text-secondary hover:bg-surface-subtle active:bg-surface-subtle/80'
@@ -65,7 +65,7 @@ export function LifecycleReasonField<T extends string>({
 
       {isOther && (
         <div className="flex flex-col gap-1.5 mt-2 animate-in fade-in duration-200">
-          <label htmlFor={noteInputId} className="text-xs font-semibold text-text-secondary">
+          <label htmlFor={noteInputId} className="text-[15px] font-semibold text-text-secondary">
             Provide details for "Other" reason <span className="text-status-danger-text">*</span>
           </label>
           <textarea
@@ -78,13 +78,13 @@ export function LifecycleReasonField<T extends string>({
             aria-invalid={Boolean(noteError)}
             aria-describedby={noteError ? `${noteInputId}-error` : undefined}
             className={cn(
-              'w-full p-3 text-sm rounded-xl bg-surface-default border transition-all focus:outline-none focus:ring-2 resize-none',
+              'w-full p-3 text-[15px] rounded-xl bg-surface-default border transition-all focus:outline-none focus:ring-2 resize-none',
               noteError
                 ? 'border-status-danger-border focus:ring-status-danger-border text-status-danger-text'
                 : 'border-border-default focus:ring-action-primary text-text-primary'
             )}
           />
-          <div className="flex items-center justify-between text-[11px] text-text-muted">
+          <div className="flex items-center justify-between text-[15px] text-text-muted">
             {noteError ? (
               <span id={`${noteInputId}-error`} className="text-status-danger-text font-medium">
                 {noteError}
