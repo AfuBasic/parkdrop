@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchApi } from '@/lib/api';
-import { useAuth } from '@/features/auth/lib/useAuth';
+import { useAuth } from '@/features/auth/AuthContext';
 
 export type ReportPreset = 'today' | 'this_week' | 'last_7_days' | 'last_30_days';
 
