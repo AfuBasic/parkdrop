@@ -3,7 +3,7 @@ import { calculatePaymentSummary, type PaymentState } from '@/features/payments/
 
 export type StatusTab = 'WAITING' | 'COLLECTED' | 'OTHER';
 
-export type WaitingFilterChip = 'unpaid' | '3d' | '7d';
+export type WaitingFilterChip = '3d' | '7d';
 export type CollectedFilterChip = 'today' | 'week' | 'owing';
 export type OtherFilterChip = 'returned' | 'cancelled';
 
@@ -30,6 +30,30 @@ export interface PackageCardData {
   ageDays: number;
   ageBand: AgeBand;
   ageDisplay: string;
+}
+
+/**
+ * Computes whether a package was received 24 hours or more ago.
+ * Live computation relative to now, not a stored flag.
+ */
+export function isOverdue24h(createdIso: string, now: Date = new Date()): boolean {
+  const createdTime = new Date(createdIso).getTime();
+  const diffMs = now.getTime() - createdTime;
+  return diffMs >= 24 * 60 * 60 * 1000;
+}
+
+/**
+ * Returns subline naming the worst case: "Oldest waiting {N} days" or "{N} hours".
+ */
+export function formatOverdueAgeSubline(oldestCreatedIso: string, now: Date = new Date()): string {
+  const createdTime = new Date(oldestCreatedIso).getTime();
+  const diffMs = Math.max(0, now.getTime() - createdTime);
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffHours < 48) {
+    return `Oldest waiting ${diffHours} ${diffHours === 1 ? 'hour' : 'hours'}`;
+  }
+  const diffDays = Math.floor(diffHours / 24);
+  return `Oldest waiting ${diffDays} ${diffDays === 1 ? 'day' : 'days'}`;
 }
 
 /**
@@ -128,10 +152,7 @@ export function matchesFilters(
   if (tab === 'WAITING') {
     if (item.pkg.status !== 'WAITING') return false;
 
-    // Waiting filter chips (Unpaid, 3+ days, 7+ days)
-    if (waitingChips.has('unpaid')) {
-      if (item.balanceMinor <= 0) return false;
-    }
+    // Waiting filter chips (3+ days, 7+ days)
     if (waitingChips.has('7d')) {
       if (item.ageDays < 7) return false;
     } else if (waitingChips.has('3d')) {
