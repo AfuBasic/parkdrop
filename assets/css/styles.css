@@ -1484,9 +1484,25 @@ html[data-reduced-motion="true"] .demo-result {
 .cta-visual {
   display: flex;
   justify-content: center;
+  position: relative;
+}
+
+/* The one kraft-parcel illustration on the marketing site, reused exactly
+   from the product's own sign-in screen so the two feel like one brand.
+   Anchored behind the phone mockup, peeking out to the lower-right. */
+.cta-kraft-art {
+  position: absolute;
+  width: 150px;
+  height: auto;
+  right: 4%;
+  bottom: -28px;
+  z-index: 0;
+  filter: drop-shadow(0 12px 20px rgba(13, 27, 42, 0.25));
 }
 
 .mini-phone {
+  position: relative;
+  z-index: 1;
   background-color: var(--c-white);
   border-radius: 24px;
   padding: 16px;
