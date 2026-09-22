@@ -43,7 +43,7 @@ export function CustomerMatchChip({
             {match.customer.name}
           </span>
           {historyNote && (
-            <span className="text-[14px] font-semibold text-[var(--pd-muted)]">
+            <span className="text-[15px] font-semibold text-[var(--pd-muted)]">
               {historyNote}
             </span>
           )}
