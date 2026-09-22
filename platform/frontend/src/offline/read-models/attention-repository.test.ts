@@ -131,7 +131,7 @@ describe('AttentionRepository', () => {
     expect(items.length).toBe(1);
     expect(items[0].id).toBe('sync-conflict:conflict-col-1');
     expect(items[0].type).toBe('COLLECTION_SYNC_CONFLICT');
-    expect(items[0].title).toBe('Package was already collected');
+    expect(items[0].title).toBe('This package was collected on another phone.');
     expect(items[0].action?.type).toBe('VIEW_PACKAGE');
 
     // Resolving conflict status to RESOLVED removes it
