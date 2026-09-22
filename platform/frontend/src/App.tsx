@@ -7,7 +7,6 @@ import { AuthFlow } from '@/features/auth/components/AuthFlow';
 import { RememberedReauthFlow } from '@/features/auth/components/RememberedReauthFlow';
 import { ForgotPinFlow } from '@/features/auth/components/ForgotPinFlow';
 import { UnlockScreen } from '@/features/auth/screens/UnlockScreen';
-import { ThemeDemo } from '@/routes/theme-demo';
 import { RecoveryScreen } from '@/features/recovery/RecoveryScreen';
 
 /** Shown while the app resolves who this is, and while the app chunk loads. */
@@ -115,6 +114,15 @@ const HomePreview = import.meta.env.DEV
   ? React.lazy(() => import('@/routes/home-preview'))
   : null;
 
+/**
+ * The internal design-token/component gallery. Gated on import.meta.env.DEV
+ * for the same reason as HomePreview: it must not be a URL anyone can guess
+ * their way into on the production build.
+ */
+const ThemeDemo = import.meta.env.DEV
+  ? React.lazy(() => import('@/routes/theme-demo').then((m) => ({ default: m.ThemeDemo })))
+  : null;
+
 function App() {
   if (
     HomePreview &&
@@ -128,12 +136,12 @@ function App() {
     );
   }
 
-  if (typeof window !== 'undefined' && window.location.pathname === '/theme') {
+  if (ThemeDemo && typeof window !== 'undefined' && window.location.pathname === '/theme') {
     return (
-      <React.Fragment>
+      <React.Suspense fallback={<BootSplash />}>
         <ThemeDemo />
         <Toaster />
-      </React.Fragment>
+      </React.Suspense>
     );
   }
 
