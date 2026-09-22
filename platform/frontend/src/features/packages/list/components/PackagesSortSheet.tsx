@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/design-system';
+import { ChevronDown, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PackagesStrings } from '@/features/packages/strings';
 import type { SortOrder } from '@/features/packages/domain/package-filters';
@@ -74,37 +73,58 @@ export function PackagesSortSheet({
         </div>
       </div>
 
-      {/* 56px Radio rows Bottom Sheet */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="w-full max-w-[360px] p-5 rounded-[var(--pd-card-radius)]">
-          <DialogTitle className="text-[20px] font-extrabold text-[var(--pd-navy)] mb-3">
-            {PackagesStrings.sortTitle}
-          </DialogTitle>
+      {/* 56px Radio rows Bottom Sheet Overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative z-10 w-full max-w-[360px] bg-white rounded-[var(--pd-card-radius)] p-5 shadow-2xl border border-[var(--pd-line)] animate-in zoom-in-95 duration-150"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-[20px] font-extrabold text-[var(--pd-navy)]">
+                {PackagesStrings.sortTitle}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 -mr-1 text-[var(--pd-muted)] hover:text-[var(--pd-navy)] rounded-full hover:bg-[var(--pd-page)] transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-          <div className="flex flex-col divide-y divide-[var(--pd-line-2)]">
-            {sortOptions.map((opt) => {
-              const isSelected = currentSort === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => {
-                    onSelectSort(opt.id);
-                    setIsOpen(false);
-                  }}
-                  className={cn(
-                    'w-full min-h-[56px] px-3 flex items-center justify-between text-left text-[17px] font-extrabold transition-colors active:scale-98',
-                    isSelected ? 'text-[var(--pd-blue)]' : 'text-[var(--pd-navy)] hover:bg-[var(--pd-page)]'
-                  )}
-                >
-                  <span>{opt.label}</span>
-                  {isSelected && <Check className="w-5 h-5 text-[var(--pd-blue)] stroke-[3]" />}
-                </button>
-              );
-            })}
+            <div className="flex flex-col divide-y divide-[var(--pd-line-2)]">
+              {sortOptions.map((opt) => {
+                const isSelected = currentSort === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      onSelectSort(opt.id);
+                      setIsOpen(false);
+                    }}
+                    className={cn(
+                      'w-full min-h-[56px] px-3 flex items-center justify-between text-left text-[17px] font-extrabold transition-colors active:scale-98',
+                      isSelected ? 'text-[var(--pd-blue)]' : 'text-[var(--pd-navy)] hover:bg-[var(--pd-page)]'
+                    )}
+                  >
+                    <span>{opt.label}</span>
+                    {isSelected && <Check className="w-5 h-5 text-[var(--pd-blue)] stroke-[3]" />}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 }
