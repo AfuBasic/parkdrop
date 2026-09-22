@@ -1,9 +1,10 @@
-import { Phone, MessageSquare, User, Clock, Check, Minus } from 'lucide-react';
+import { Phone, User, Clock, Check, Minus } from 'lucide-react';
 import type { LocalCustomer, LocalPackage } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 import { formatNationalDisplay } from '@/features/auth/lib/phone';
 import { PackagesStrings } from '@/features/packages/strings';
 import { formatAgeDisplay, getAgeBand } from '@/features/packages/domain/package-filters';
+import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 
 export interface PackageCustomerCardProps {
   customer: LocalCustomer | null;
@@ -97,7 +98,7 @@ export function PackageCustomerCard({
             rel="noopener noreferrer"
             className="min-h-[56px] rounded-[var(--pd-field-radius)] bg-[#F0FDF4] border border-[#86EFAC] hover:border-[#15803D] flex items-center justify-center gap-2 text-[16px] font-extrabold text-[#15803D] active:scale-98 transition-transform"
           >
-            <MessageSquare className="w-5 h-5 text-[#15803D]" />
+            <WhatsAppIcon className="w-5 h-5 text-[#15803D]" />
             <span>{PackagesStrings.whatsappAction}</span>
           </a>
         ) : (
