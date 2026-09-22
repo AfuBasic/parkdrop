@@ -1563,23 +1563,73 @@ html[data-reduced-motion="true"] .demo-result {
   color: var(--c-text-main);
 }
 
+.footer-brand-desc {
+  font-size: 14px;
+  margin-top: 16px;
+  max-width: 300px;
+  color: var(--c-text-secondary);
+}
+
+.footer-tagline {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--c-text-secondary);
+  opacity: 0.6;
+  max-width: 300px;
+}
+
 .footer-bottom {
-  margin-top: 64px;
-  padding-top: 24px;
+  margin-top: 72px;
+  padding-top: 28px;
   border-top: 1px solid var(--c-border);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  color: var(--c-text-secondary);
-  font-size: 14px;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 @media (min-width: 768px) {
   .footer-bottom {
     flex-direction: row;
+    align-items: center;
     justify-content: space-between;
+    gap: 32px;
   }
 }
+
+.footer-legal {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.footer-legal-copy {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--c-text-secondary);
+  line-height: 1.5;
+}
+
+.footer-legal-note {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--c-text-secondary);
+  opacity: 0.7;
+  line-height: 1.55;
+  max-width: 72ch;
+}
+
+.footer-afutunde-logo {
+  width: 120px;
+  height: auto;
+  flex-shrink: 0;
+  mix-blend-mode: multiply;
+  opacity: 0.75;
+  display: block;
+}
+
 
 /* ==========================================================================
    Scroll-in motion
