@@ -42,6 +42,10 @@ export const AccountStrings = {
   // ── Other phones ──────────────────────────────────────────────────────
   otherPhonesHeading: 'Other phones',
   revokeAllOthers: 'Sign all other phones out',
+  revokeAllOthersConfirmTitle: 'Sign all other phones out?',
+  revokeAllOthersConfirmBody: 'Anyone using ParkDrop on another phone will be signed out right away.',
+  revokeAllOthersConfirmAction: 'Yes, sign them out',
+  revokeAllOthersCancelAction: 'Cancel',
   revokingOthers: 'Signing them out…',
   couldNotRevokeOthers: 'Could not sign out other phones. Try again.',
   onlyThisPhone: 'Only this phone is signed in.',
