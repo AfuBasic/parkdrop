@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, type ChangeEvent } from 'react';
-import { Check, Camera, MessageSquare, RefreshCw, Loader2 } from 'lucide-react';
+import { Check, Camera, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/features/auth/components/Logo';
 import { BigButton } from '@/features/auth/components/BigButton';
@@ -8,6 +8,7 @@ import { PackageLifecycleRepository } from '@/offline/repositories/PackageLifecy
 import { db } from '@/offline/db/database';
 import { AddPackageStrings } from '@/features/packages/add/strings';
 import { UNDO_WINDOW_SECONDS } from '@/features/packages/add/config';
+import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 
 export interface PackageSavedScreenProps {
   packageId: string;
@@ -292,7 +293,7 @@ export function PackageSavedScreen({
                 'hover:bg-[#DCFCE7] active:scale-[0.98] transition-transform'
               )}
             >
-              <MessageSquare className="w-5 h-5" strokeWidth={2.5} />
+              <WhatsAppIcon className="w-5 h-5" />
               <span>{AddPackageStrings.whatsappAction}</span>
             </button>
           </div>
