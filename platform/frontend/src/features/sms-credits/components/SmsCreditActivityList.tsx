@@ -1,6 +1,7 @@
 import { Clock } from 'lucide-react';
 import type { LocalSmsCreditTransaction } from '@/offline/db/schema';
 import { SmsCreditTransactionRow } from './SmsCreditTransactionRow';
+import { SmsCreditsStrings } from '@/features/sms-credits/strings';
 
 interface SmsCreditActivityListProps {
   transactions: LocalSmsCreditTransaction[];
@@ -13,30 +14,35 @@ export function SmsCreditActivityList({
 }: SmsCreditActivityListProps) {
   if (isLoading) {
     return (
-      <div className="w-full bg-surface-default rounded-[var(--radius-xl)] border border-border-subtle p-8 flex flex-col items-center justify-center">
-        <div className="w-6 h-6 border-2 border-action-primary border-t-transparent rounded-full animate-spin mb-2" />
-        <p className="text-xs text-text-muted">Loading SMS activity…</p>
+      <div
+        role="status"
+        className="w-full bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-8 flex flex-col items-center justify-center gap-3"
+      >
+        <div className="w-6 h-6 border-2 border-[var(--pd-blue)] border-t-transparent rounded-full animate-spin" />
+        <p className="text-[15px] text-[var(--pd-muted)] m-0">{SmsCreditsStrings.historyLoading}</p>
       </div>
     );
   }
 
   if (transactions.length === 0) {
     return (
-      <div className="w-full bg-surface-default rounded-[var(--radius-xl)] border border-border-subtle p-8 flex flex-col items-center justify-center text-center">
-        <div className="w-12 h-12 rounded-full bg-surface-subtle flex items-center justify-center text-text-muted mb-3">
-          <Clock className="w-6 h-6" />
+      <div className="w-full bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] p-8 flex flex-col items-center justify-center text-center gap-1">
+        <div className="w-12 h-12 rounded-full bg-[var(--pd-page-2)] flex items-center justify-center text-[var(--pd-muted)] mb-2">
+          <Clock className="w-6 h-6" strokeWidth={2.25} aria-hidden="true" />
         </div>
-        <h3 className="text-sm font-semibold text-text-primary">No SMS activity yet</h3>
-        <p className="text-xs text-text-muted max-w-xs mt-1">
-          When you register packages with arrival SMS notifications, credit usage will be recorded here.
+        <h3 className="text-[16px] font-bold text-[var(--pd-navy)] m-0">
+          {SmsCreditsStrings.historyEmpty}
+        </h3>
+        <p className="text-[15px] text-[var(--pd-muted)] max-w-xs m-0 mt-1">
+          {SmsCreditsStrings.historyEmptyBody}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="w-full bg-surface-default rounded-[var(--radius-xl)] border border-border-subtle shadow-sm overflow-hidden">
-      <div className="divide-y divide-border-subtle">
+    <div className="w-full bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] overflow-hidden">
+      <div>
         {transactions.map((transaction) => (
           <SmsCreditTransactionRow key={transaction.id} transaction={transaction} />
         ))}
