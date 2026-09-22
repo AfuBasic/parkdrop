@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { ArrowLeft, MoreVertical, RotateCcw, Ban } from 'lucide-react';
-import { Dialog, DialogContent, DialogTitle } from '@/design-system';
+import { ArrowLeft, MoreVertical, RotateCcw, Ban, X, SendHorizontal } from 'lucide-react';
 import type { LocalPackage } from '@/offline/db/schema';
 import { PackagesStrings } from '@/features/packages/strings';
 
 export interface PackageIdentityHeaderProps {
   pkg: LocalPackage;
   onBack: () => void;
+  isMoreSheetOpen?: boolean;
+  onOpenMoreChange?: (open: boolean) => void;
   onMarkReturned?: () => void;
   onCancelPackage?: () => void;
+  onResendSms?: () => void;
 }
 
 /**
@@ -20,10 +22,20 @@ export interface PackageIdentityHeaderProps {
 export function PackageIdentityHeader({
   pkg,
   onBack,
+  isMoreSheetOpen: controlledIsOpen,
+  onOpenMoreChange,
   onMarkReturned,
   onCancelPackage,
+  onResendSms,
 }: PackageIdentityHeaderProps) {
-  const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isMoreOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
+  const setMoreOpen = (open: boolean) => {
+    if (controlledIsOpen === undefined) {
+      setInternalIsOpen(open);
+    }
+    onOpenMoreChange?.(open);
+  };
   const isWaiting = pkg.status === 'WAITING';
 
   return (
@@ -51,7 +63,7 @@ export function PackageIdentityHeader({
         {isWaiting ? (
           <button
             type="button"
-            onClick={() => setIsMoreSheetOpen(true)}
+            onClick={() => setMoreOpen(true)}
             className="min-h-[48px] px-2.5 -mr-2 text-white/90 hover:text-white flex items-center gap-1 text-[15px] font-extrabold active:scale-95 transition-transform"
             aria-label={PackagesStrings.moreActions}
           >
@@ -64,39 +76,78 @@ export function PackageIdentityHeader({
       </header>
 
       {/* More Actions Bottom Sheet */}
-      <Dialog open={isMoreSheetOpen} onOpenChange={setIsMoreSheetOpen}>
-        <DialogContent className="w-full max-w-[360px] p-5 rounded-[var(--pd-card-radius)]">
-          <DialogTitle className="text-[20px] font-extrabold text-[var(--pd-navy)] mb-3">
-            {PackagesStrings.moreActions}
-          </DialogTitle>
+      {isMoreOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in"
+            onClick={() => setMoreOpen(false)}
+            aria-hidden="true"
+          />
 
-          <div className="flex flex-col divide-y divide-[var(--pd-line-2)]">
-            <button
-              type="button"
-              onClick={() => {
-                setIsMoreSheetOpen(false);
-                onMarkReturned?.();
-              }}
-              className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-navy)] hover:bg-[var(--pd-page)] active:scale-98 transition-transform"
-            >
-              <RotateCcw className="w-5 h-5 text-[#D97706]" />
-              <span>{PackagesStrings.markAsReturnedAction}</span>
-            </button>
+          {/* Modal Card */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="more-actions-title"
+            className="relative z-10 w-full max-w-[340px] bg-white rounded-[var(--pd-card-radius)] p-5 shadow-2xl border border-[var(--pd-line)] animate-in zoom-in-95 duration-150"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h2 id="more-actions-title" className="text-[20px] font-extrabold text-[var(--pd-navy)]">
+                {PackagesStrings.moreActions}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setMoreOpen(false)}
+                className="p-1.5 -mr-1 text-[var(--pd-muted)] hover:text-[var(--pd-navy)] rounded-full hover:bg-[var(--pd-page)] transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setIsMoreSheetOpen(false);
-                onCancelPackage?.();
-              }}
-              className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-bad)] hover:bg-[#FEF2F2] active:scale-98 transition-transform"
-            >
-              <Ban className="w-5 h-5 text-[var(--pd-bad)]" />
-              <span>{PackagesStrings.cancelEnteredByMistakeAction}</span>
-            </button>
+            <div className="flex flex-col divide-y divide-[var(--pd-line-2)]">
+              {onResendSms && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMoreOpen(false);
+                    onResendSms();
+                  }}
+                  className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-navy)] hover:bg-[var(--pd-page)] active:scale-98 transition-transform cursor-pointer"
+                >
+                  <SendHorizontal className="w-5 h-5 text-[var(--pd-blue)]" />
+                  <span>{PackagesStrings.resendSmsAction}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMoreOpen(false);
+                  onMarkReturned?.();
+                }}
+                className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-navy)] hover:bg-[var(--pd-page)] active:scale-98 transition-transform cursor-pointer"
+              >
+                <RotateCcw className="w-5 h-5 text-[#D97706]" />
+                <span>{PackagesStrings.markAsReturnedAction}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMoreOpen(false);
+                  onCancelPackage?.();
+                }}
+                className="w-full min-h-[56px] px-3 flex items-center gap-3 text-left text-[16px] font-extrabold text-[var(--pd-bad)] hover:bg-[#FEF2F2] active:scale-98 transition-transform cursor-pointer"
+              >
+                <Ban className="w-5 h-5 text-[var(--pd-bad)]" />
+                <span>{PackagesStrings.cancelEnteredByMistakeAction}</span>
+              </button>
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 }
