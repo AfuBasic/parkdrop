@@ -108,13 +108,13 @@ export function CustomerDetailScreen({
             <AlertCircle className="w-7 h-7" />
           </div>
           <h2 className="text-base font-bold text-text-primary">Customer not found</h2>
-          <p className="text-sm text-text-secondary mt-1 max-w-xs">
+          <p className="text-[15px] text-text-secondary mt-1 max-w-xs">
             This customer may not be available on this device.
           </p>
           <button
             type="button"
             onClick={handleBack}
-            className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-action-primary hover:bg-action-primary/90 shadow-sm transition-all"
+            className="mt-5 px-5 py-2.5 rounded-xl text-[15px] font-semibold text-white bg-action-primary hover:bg-action-primary/90 shadow-sm transition-all"
           >
             Back to customers
           </button>
@@ -156,12 +156,12 @@ export function CustomerDetailScreen({
                     {customer.name}
                   </h2>
                   {customer.sync_status === 'PENDING_CREATE' && (
-                    <span className="shrink-0 text-[10px] font-semibold uppercase text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                    <span className="shrink-0 text-[15px] font-semibold uppercase text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                       Local
                     </span>
                   )}
                 </div>
-                <p className="text-sm font-medium text-text-secondary tabular-nums mt-0.5">
+                <p className="text-[15px] font-medium text-text-secondary tabular-nums mt-0.5">
                   {formatPhone(customer.phone_display || customer.phone_normalized)}
                 </p>
               </div>
@@ -180,7 +180,7 @@ export function CustomerDetailScreen({
 
           {/* Quick Stats + Add Package CTA */}
           <div className="pt-3 border-t border-border-subtle flex items-center justify-between gap-3">
-            <div className="text-xs text-text-secondary">
+            <div className="text-[15px] text-text-secondary">
               <span className="font-semibold text-text-primary">{waitingCount}</span> waiting ·{' '}
               <span className="font-semibold text-text-primary">{totalCount}</span> total
             </div>
@@ -188,7 +188,7 @@ export function CustomerDetailScreen({
             <button
               type="button"
               onClick={() => handleAddPackage(customer.id)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-[15px] font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
             >
               <PackagePlus className="w-4 h-4" />
               <span>Add package</span>
@@ -199,7 +199,7 @@ export function CustomerDetailScreen({
         {/* Waiting Packages Section (Primary Focus) */}
         <section className="flex flex-col gap-2">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+            <h3 className="text-[15px] font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
               <PackageCheck className="w-4 h-4 text-action-primary" />
               <span>Waiting packages ({waitingCount})</span>
             </h3>
@@ -207,8 +207,8 @@ export function CustomerDetailScreen({
 
           {waitingPackages.length === 0 ? (
             <div className="bg-surface-default rounded-xl border border-border-subtle p-5 text-center shadow-sm">
-              <p className="text-sm font-medium text-text-secondary">No packages waiting</p>
-              <p className="text-xs text-text-muted mt-0.5">
+              <p className="text-[15px] font-medium text-text-secondary">No packages waiting</p>
+              <p className="text-[15px] text-text-muted mt-0.5">
                 New packages for this customer will appear here.
               </p>
             </div>
@@ -228,7 +228,7 @@ export function CustomerDetailScreen({
                         {pkg.publicPackageId}
                       </span>
                       {pkg.syncStatus === 'PENDING_CREATE' && (
-                        <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                        <span className="text-[15px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
                           Local
                         </span>
                       )}
@@ -238,7 +238,7 @@ export function CustomerDetailScreen({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-text-secondary">
+                  <div className="flex items-center justify-between text-[15px] text-text-secondary">
                     <div className="flex items-center gap-1.5">
                       <span className="text-text-muted">Pickup code:</span>
                       <span className="font-mono font-bold text-action-primary bg-action-primary/10 px-1.5 py-0.5 rounded">
@@ -257,7 +257,7 @@ export function CustomerDetailScreen({
         {recentPackages.length > 0 && (
           <section className="flex flex-col gap-2 pt-2">
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+              <h3 className="text-[15px] font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
                 <Clock className="w-4 h-4 text-text-muted" />
                 <span>Recent history ({recentPackages.length})</span>
               </h3>
@@ -274,19 +274,19 @@ export function CustomerDetailScreen({
                 >
                   <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-semibold text-sm text-text-primary">
+                      <span className="font-mono font-semibold text-[15px] text-text-primary">
                         {pkg.publicPackageId}
                       </span>
                       <StatusBadge variant={getStatusVariant(pkg.status)}>
                         {pkg.status.charAt(0) + pkg.status.slice(1).toLowerCase()}
                       </StatusBadge>
                     </div>
-                    <span className="text-xs text-text-muted">
+                    <span className="text-[15px] text-text-muted">
                       {getRelativeTime(pkg.clientCreatedAt)}
                     </span>
                   </div>
 
-                  <span className="text-xs font-semibold text-text-secondary tabular-nums">
+                  <span className="text-[15px] font-semibold text-text-secondary tabular-nums">
                     {formatMoney(pkg.amountDueMinor)}
                   </span>
                 </button>
