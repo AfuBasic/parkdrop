@@ -50,28 +50,28 @@ export function PackageListRow({
     switch (paymentState) {
       case 'UNPAID':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
             <span>₦</span>
             <span>{PackagesStrings.paymentUnpaid}</span>
           </span>
         );
       case 'PART_PAID':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
             <span>₦</span>
             <span>{PackagesStrings.paymentPartPaid}</span>
           </span>
         );
       case 'PAID':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] font-extrabold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[15px] font-extrabold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
             <Check className="w-3 h-3 stroke-[3]" />
             <span>{PackagesStrings.paymentPaid}</span>
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[13px] font-extrabold bg-[var(--pd-page)] text-[var(--pd-muted)] border border-[var(--pd-line)]">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[15px] font-extrabold bg-[var(--pd-page)] text-[var(--pd-muted)] border border-[var(--pd-line)]">
             <Minus className="w-3 h-3" />
             <span>{PackagesStrings.paymentNothingToPay}</span>
           </span>
@@ -127,11 +127,11 @@ export function PackageListRow({
         </div>
 
         {/* Row 2: Age Chip, Public Package ID & Sync state */}
-        <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--pd-line-2)] text-[13px]">
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-[var(--pd-line-2)] text-[15px]">
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className={cn(
-                'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[13px] tabular-nums',
+                'inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[15px] tabular-nums',
                 getAgeChipClass()
               )}
             >
@@ -144,7 +144,7 @@ export function PackageListRow({
             </span>
 
             {showStatusBadge && (
-              <span className="px-2 py-0.5 rounded-full text-[12px] font-extrabold bg-[var(--pd-tint)] text-[var(--pd-blue)] border border-[var(--pd-tint-2)]">
+              <span className="px-2 py-0.5 rounded-full text-[15px] font-extrabold bg-[var(--pd-tint)] text-[var(--pd-blue)] border border-[var(--pd-tint-2)]">
                 {pkg.status}
               </span>
             )}
