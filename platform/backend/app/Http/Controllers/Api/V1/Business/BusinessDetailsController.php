@@ -94,7 +94,13 @@ class BusinessDetailsController extends Controller
 
             return response()->json(['message' => 'Unable to update business details.'], 422);
         } catch (InvalidArgumentException $e) {
-            return response()->json(['message' => 'Invalid business name provided.'], 422);
+            $message = match ($e->getMessage()) {
+                'DAILY_STORAGE_FEE_INVALID' => 'The daily storage fee cannot be negative.',
+                'NO_CHANGES_PROVIDED' => 'Nothing to update.',
+                default => 'Invalid business name provided.',
+            };
+
+            return response()->json(['message' => $message], 422);
         }
     }
 }
