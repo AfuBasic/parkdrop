@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
 import { UserPlus, WifiOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { businessApi, type StaffMember, type PendingInvitation } from '@/features/business/api/business-api';
@@ -104,7 +105,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
       setResendingInviteId(invitationId);
       await businessApi.resendInvitation(invitationId);
     } catch (err: any) {
-      alert(err.message || StaffStrings.couldNotResend);
+      toast.error(err.message || StaffStrings.couldNotResend);
     } finally {
       setResendingInviteId(null);
     }
@@ -116,7 +117,7 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
       await businessApi.revokeInvitation(invitationId);
       setInvitations((prev) => prev.filter((inv) => inv.id !== invitationId));
     } catch (err: any) {
-      alert(err.message || StaffStrings.couldNotCancel);
+      toast.error(err.message || StaffStrings.couldNotCancel);
     } finally {
       setRevokingInviteId(null);
     }
