@@ -25,6 +25,7 @@ export const Default: Story = {
     selected: false,
     disabled: false,
     onSelect: () => {},
+    enoughForLabel: 'Enough for about 100 packages',
   },
 };
 
@@ -41,6 +42,7 @@ export const Selected: Story = {
     selected: true,
     disabled: false,
     onSelect: () => {},
+    enoughForLabel: 'Enough for about 100 packages',
   },
 };
 
@@ -57,5 +59,6 @@ export const Disabled: Story = {
     selected: false,
     disabled: true,
     onSelect: () => {},
+    enoughForLabel: 'Enough for about 250 packages',
   },
 };
