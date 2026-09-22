@@ -21,6 +21,7 @@ import { AttentionScreen } from '@/features/attention/AttentionScreen';
 import { DailyOperationsScreen } from '@/features/reports/DailyOperationsScreen';
 import { SmsCreditsScreen } from '@/features/sms-credits/screens/SmsCreditsScreen';
 import { BuySmsCreditsScreen } from '@/features/sms-credits/purchase/screens/BuySmsCreditsScreen';
+import { PurchaseReturnScreen } from '@/features/sms-credits/purchase/screens/PurchaseReturnScreen';
 import { StaffScreen } from '@/features/business/staff/StaffScreen';
 import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetailsScreen';
 import { AccountSecurityScreen } from '@/features/account/AccountSecurityScreen';
@@ -203,6 +204,19 @@ const buySmsCreditsRoute = createRoute({
   component: BuySmsCreditsScreen,
 });
 
+// SMS Credit Purchase Return (Payment Gateway Callback)
+const purchaseReturnRoute = createRoute({
+  getParentRoute: () => taskShellRoute,
+  path: '/sms-credits/purchase/return',
+  component: PurchaseReturnScreen,
+});
+
+const morePurchaseReturnRoute = createRoute({
+  getParentRoute: () => taskShellRoute,
+  path: '/more/sms-credits/return',
+  component: PurchaseReturnScreen,
+});
+
 // Staff
 const staffRoute = createRoute({
   getParentRoute: () => taskShellRoute,
@@ -270,6 +284,8 @@ const routeTree = rootRoute.addChildren([
     reportsRoute,
     smsCreditsRoute,
     buySmsCreditsRoute,
+    purchaseReturnRoute,
+    morePurchaseReturnRoute,
     staffRoute,
     businessDetailsRoute,
     accountSecurityRoute,
