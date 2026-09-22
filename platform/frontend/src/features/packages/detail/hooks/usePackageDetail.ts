@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/offline/db/database';
 import { calculatePaymentSummary } from '@/features/payments/domain/payment-summary';
+import { accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import type { PackageDetailData, PackageDetailActivityItem } from '@/features/packages/detail/package-detail-types';
 
 export interface UsePackageDetailResult {
@@ -9,7 +10,11 @@ export interface UsePackageDetailResult {
   notFound: boolean;
 }
 
-export function usePackageDetail(packageId: string | undefined, businessId: number | null): UsePackageDetailResult {
+export function usePackageDetail(
+  packageId: string | undefined,
+  businessId: number | null,
+  dailyStorageFeeMinor: number = DEFAULT_DAILY_STORAGE_FEE_MINOR
+): UsePackageDetailResult {
   const result = useLiveQuery(
     async () => {
       if (!packageId || !businessId) {
@@ -59,7 +64,10 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
           return b.id.localeCompare(a.id);
         });
 
-      const paymentSummary = calculatePaymentSummary(pkg.amount_due_minor, payments);
+      const paymentSummary = calculatePaymentSummary(
+        accruedAmountDueMinor(pkg, dailyStorageFeeMinor),
+        payments
+      );
 
       // Build deterministic activity timeline
       const timeline: PackageDetailActivityItem[] = [];
@@ -192,7 +200,7 @@ export function usePackageDetail(packageId: string | undefined, businessId: numb
 
       return { data, notFound: false };
     },
-    [packageId, businessId]
+    [packageId, businessId, dailyStorageFeeMinor]
   );
 
   return {
