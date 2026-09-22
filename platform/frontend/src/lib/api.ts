@@ -18,6 +18,12 @@ export class ApiError extends Error {
   }
 }
 
+function getXsrfToken(): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 export async function fetchApi(endpoint: string, options: RequestInit = {}): Promise<Response> {
   const url = `${import.meta.env.VITE_API_URL || ''}${endpoint}`;
   
@@ -25,6 +31,11 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}): Pro
   headers.set('Accept', 'application/json');
   if (options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  const xsrfToken = getXsrfToken();
+  if (xsrfToken && !headers.has('X-XSRF-TOKEN')) {
+    headers.set('X-XSRF-TOKEN', xsrfToken);
   }
 
   // We rely on Sanctum's withCredentials for auth
