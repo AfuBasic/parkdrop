@@ -130,6 +130,10 @@ export function PackageCustomerCard({
             <span>₦</span>
             <span>{PackagesStrings.paymentPartPaid}</span>
           </span>
+        ) : pkg.status === 'WAITING' ? (
+          // In Waiting status, almost every package is unpaid by default until collection.
+          // Do not show an "Unpaid" error/warning badge.
+          null
         ) : (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
             <span>₦</span>
