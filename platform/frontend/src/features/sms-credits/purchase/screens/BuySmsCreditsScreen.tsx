@@ -42,6 +42,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
   const currentBalance = wallet?.balance ?? 0;
 
   const [flowState, setFlowState] = React.useState<PurchaseFlowState>('CHOOSING');
+  const [selectedProvider, setSelectedProvider] = React.useState<'paystack' | 'flutterwave'>('paystack');
   const [bundles, setBundles] = React.useState<SmsCreditBundle[]>([]);
   const [selectedBundle, setSelectedBundle] = React.useState<SmsCreditBundle | null>(null);
   const [isLoadingBundles, setIsLoadingBundles] = React.useState(true);
@@ -79,7 +80,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
       setFlowState('INITIALIZING');
       setErrorMessage(null);
 
-      const res = await initializePurchase(selectedBundle.key);
+      const res = await initializePurchase(selectedBundle.key, undefined, selectedProvider);
       const purchase = res.purchase;
       setActivePurchase(purchase);
 
@@ -274,6 +275,37 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
                       ))}
                     </div>
                   )}
+
+                  {/* Payment provider selector */}
+                  <div className="mt-5">
+                    <label className="block mb-2 text-[15px] font-bold text-[var(--pd-navy)]">
+                      Pay with
+                    </label>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProvider('paystack')}
+                        className={`min-h-[50px] px-3 py-2 rounded-[var(--pd-card-radius)] border-2 font-bold text-[15px] flex items-center justify-center transition-all cursor-pointer ${
+                          selectedProvider === 'paystack'
+                            ? 'border-[var(--pd-blue)] bg-[var(--pd-tint)] text-[var(--pd-blue)]'
+                            : 'border-[var(--pd-line-2)] bg-white text-[var(--pd-navy)]'
+                        }`}
+                      >
+                        <span>Paystack</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedProvider('flutterwave')}
+                        className={`min-h-[50px] px-3 py-2 rounded-[var(--pd-card-radius)] border-2 font-bold text-[15px] flex items-center justify-center transition-all cursor-pointer ${
+                          selectedProvider === 'flutterwave'
+                            ? 'border-[var(--pd-blue)] bg-[var(--pd-tint)] text-[var(--pd-blue)]'
+                            : 'border-[var(--pd-line-2)] bg-white text-[var(--pd-navy)]'
+                        }`}
+                      >
+                        <span>Flutterwave</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="pt-6 pb-2 flex flex-col gap-3">
