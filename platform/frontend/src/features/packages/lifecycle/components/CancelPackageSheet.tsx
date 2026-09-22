@@ -58,7 +58,7 @@ export function CancelPackageSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
       <div
         role="dialog"
         aria-modal="true"
@@ -137,17 +137,17 @@ export function CancelPackageSheet({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-3.5 px-4 rounded-[var(--radius-xl)] border border-border-default font-semibold text-text-secondary hover:bg-surface-subtle transition-colors cursor-pointer text-[15px]"
+              className="flex-1 py-3.5 px-4 rounded-[var(--radius-xl)] border border-border-default font-semibold text-text-secondary hover:bg-surface-subtle transition-colors cursor-pointer text-[15px] whitespace-nowrap text-center"
             >
               Back
             </button>
             <button
               type="submit"
               disabled={!selectedReason || isSubmitting}
-              className="flex-1 py-3.5 px-4 rounded-[var(--radius-xl)] bg-status-danger-text hover:bg-status-danger-text/90 active:scale-[0.99] text-white font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[15px] flex items-center justify-center gap-2"
+              className="flex-[1.4] py-3.5 px-3 rounded-[var(--radius-xl)] bg-status-danger-text hover:bg-status-danger-text/90 active:scale-[0.99] text-white font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[15px] flex items-center justify-center gap-2 whitespace-nowrap shrink-0"
             >
-              <Ban className="w-4 h-4" />
-              <span>{isSubmitting ? 'Cancelling…' : 'Confirm cancellation'}</span>
+              <Ban className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap">{isSubmitting ? 'Cancelling…' : 'Confirm cancellation'}</span>
             </button>
           </div>
         </form>
