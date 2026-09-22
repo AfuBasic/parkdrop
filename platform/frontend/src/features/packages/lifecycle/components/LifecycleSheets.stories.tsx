@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ReturnPackageSheet } from '@/features/packages/lifecycle/components/ReturnPackageSheet';
 import { CancelPackageSheet } from '@/features/packages/lifecycle/components/CancelPackageSheet';
-import { ReleasePackageSheet } from '@/features/packages/lifecycle/components/ReleasePackageSheet';
 import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 
@@ -136,35 +135,6 @@ export const CancelSheet: StoryObj = {
       customer={mockCustomer}
       paymentSummary={unpaidSummary}
       onConfirmCancel={async () => {}}
-    />
-  ),
-};
-
-export const ReleaseDefault: StoryObj = {
-  render: () => (
-    <ReleasePackageSheet
-      isOpen={true}
-      onClose={() => {}}
-      pkg={mockPackage}
-      customer={mockCustomer}
-      paymentSummary={paidSummary}
-      onConfirmRelease={async () => {}}
-      isOnline={true}
-    />
-  ),
-};
-
-export const ReleaseWithUnpaidWarning: StoryObj = {
-  render: () => (
-    <ReleasePackageSheet
-      isOpen={true}
-      onClose={() => {}}
-      pkg={mockPackage}
-      customer={mockCustomer}
-      paymentSummary={unpaidSummary}
-      onConfirmRelease={async () => {}}
-      onOpenRecordPayment={() => {}}
-      isOnline={true}
     />
   ),
 };
