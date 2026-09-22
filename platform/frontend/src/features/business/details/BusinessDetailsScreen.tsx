@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { Building2, MapPin, Phone, Shield, Pencil, Check, X, AlertCircle, Lock, Coins } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { businessApi, type BusinessDetailsResponse } from '@/features/business/api/business-api';
@@ -33,7 +34,8 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
   mockRole,
 }) => {
   const routerNavigate = useNavigate();
-  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
+  const safeBack = useSafeBack('/more');
+  const handleBack = onBack ?? safeBack;
   const { role: contextRole, deviceMeta: contextDeviceMeta } = useAuth();
   const effectiveRole = (mockRole || contextRole || 'attendant') as BusinessRole;
   const permissions = getBusinessPermissions(effectiveRole);

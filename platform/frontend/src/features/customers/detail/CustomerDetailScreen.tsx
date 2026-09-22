@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { ArrowLeft, User, PackagePlus, Phone, PackageCheck, Clock, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useCustomerDetail } from '@/features/customers/hooks/useCustomerDetail';
@@ -22,9 +23,10 @@ export function CustomerDetailScreen({
   onAddPackageForCustomer,
 }: CustomerDetailScreenProps) {
   const routerNavigate = useNavigate();
+  const safeBack = useSafeBack('/customers');
   const { business } = useAuth();
   const businessId = propBusinessId ?? business?.id ?? 0;
-  const handleBack = onBack ?? (() => routerNavigate({ to: '/customers' }));
+  const handleBack = onBack ?? safeBack;
   const handleSelectPackage = onSelectPackage ?? ((packageId: string) => {
     routerNavigate({ to: '/packages/$packageId', params: { packageId } });
   });

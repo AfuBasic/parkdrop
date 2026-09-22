@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { toast } from 'sonner';
 import { PackageX, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -39,8 +40,8 @@ export function PackageDetailScreen({
   pickupPointName: propPickupPointName,
   onBack,
 }: PackageDetailScreenProps) {
-  const routerNavigate = useNavigate();
-  const handleBack = onBack ?? (() => routerNavigate({ to: '/packages' }));
+  const safeBack = useSafeBack('/packages');
+  const handleBack = onBack ?? safeBack;
   const { user, business } = useAuth();
   const businessId = propBusinessId ?? business?.id ?? 0;
   // The package's own pickup_point_name is a snapshot written at creation

@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { RefreshCw, WifiOff } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { db } from '@/offline/db/database';
 import { SyncEngine } from '@/offline/sync/sync-engine';
 import { useSyncState } from '@/offline/hooks/useSyncState';
@@ -35,7 +36,8 @@ function describeAge(iso: string | null | undefined): string | null {
 console.log("SmsCreditsScreen render");
 export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenProps) {
   const routerNavigate = useNavigate();
-  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
+  const safeBack = useSafeBack('/more');
+  const handleBack = onBack ?? safeBack;
   const handleNavigateToBuy =
     onNavigateToBuy ?? (() => routerNavigate({ to: '/more/sms-credits/buy' }));
   const { business, role } = useAuth();

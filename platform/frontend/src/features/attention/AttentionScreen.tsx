@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useNavigate } from '@tanstack/react-router';
+import { useSafeBack } from '@/hooks/useSafeBack';
 import { WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -26,7 +27,8 @@ export function AttentionScreen({
   onNavigateToCredits,
 }: AttentionScreenProps) {
   const routerNavigate = useNavigate();
-  const handleBack = onBack ?? (() => routerNavigate({ to: '/more' }));
+  const safeBack = useSafeBack('/more');
+  const handleBack = onBack ?? safeBack;
   const handleNavigateToPackage = onNavigateToPackage ?? ((pkgId: string) => {
     routerNavigate({ to: '/packages/$packageId', params: { packageId: pkgId } });
   });
