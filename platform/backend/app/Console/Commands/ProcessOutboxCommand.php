@@ -206,7 +206,6 @@ class ProcessOutboxCommand extends Command
         }
 
         SendArrivalSmsJob::dispatch(
-            packageId: $event->id,
             packageUuid: $packageId,
             businessId: $event->business_id,
             recipientPhone: $phone,
