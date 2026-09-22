@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import type { HealthState } from '@/offline/recovery/recovery-types';
 import { RecoveryCoordinator } from '@/offline/recovery/recovery-coordinator';
 import { RecoveryDiagnostics } from '@/offline/recovery/diagnostics';
@@ -88,7 +89,7 @@ export const RecoveryScreen: React.FC<RecoveryScreenProps> = ({
       setIsResetOpen(false);
       window.location.reload();
     } catch (err: any) {
-      alert(err?.message || 'Could not reset device data.');
+      toast.error(err?.message || 'Could not reset data on this device. Try again.');
     } finally {
       setIsResetting(false);
     }
