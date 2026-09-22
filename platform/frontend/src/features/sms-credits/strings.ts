@@ -44,6 +44,7 @@ export const SmsCreditsStrings = {
   smsAdded: (n: number) => `+${n} SMS`,
   boughtCredits: 'You bought credits',
   packageSms: "A customer's package",
+  packageDeleted: 'Package no longer available',
   welcomeCredits: 'ParkDrop gave you a welcome gift',
   refundCredits: 'An SMS did not arrive, so we gave it back',
   historyLoading: 'Getting your SMS history…',
