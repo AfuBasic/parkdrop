@@ -72,17 +72,17 @@ export function PackagePaymentCard({
   };
 
   const statusChip = paymentSummary.isFullyPaid ? (
-    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[13px] font-extrabold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[15px] font-extrabold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
       <Check className="w-3.5 h-3.5 stroke-[3]" />
       <span>{PackagesStrings.paymentPaid}</span>
     </span>
   ) : paymentSummary.amountDueMinor === 0 ? (
-    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[13px] font-extrabold bg-[var(--pd-page)] text-[var(--pd-muted)] border border-[var(--pd-line)]">
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[15px] font-extrabold bg-[var(--pd-page)] text-[var(--pd-muted)] border border-[var(--pd-line)]">
       <Minus className="w-3.5 h-3.5" />
       <span>{PackagesStrings.paymentNothingToPay}</span>
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[13px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
       <span>₦</span>
       <span>{paymentSummary.paidMinor > 0 ? PackagesStrings.paymentPartPaid : PackagesStrings.paymentUnpaid}</span>
     </span>
@@ -99,21 +99,21 @@ export function PackagePaymentCard({
           {/* 3 Metrics: Amount, Paid, Balance */}
           <div className="grid grid-cols-3 gap-2 py-2 px-3 rounded-xl bg-[var(--pd-page)] border border-[var(--pd-line-2)] text-center">
             <div className="flex flex-col">
-              <span className="text-[13px] font-bold text-[var(--pd-muted)]">{PackagesStrings.amountLabel}</span>
+              <span className="text-[15px] font-bold text-[var(--pd-muted)]">{PackagesStrings.amountLabel}</span>
               <span className="text-[17px] font-extrabold text-[var(--pd-navy)] tabular-nums mt-0.5">
                 {formatNaira(paymentSummary.amountDueMinor)}
               </span>
             </div>
 
             <div className="flex flex-col border-x border-[var(--pd-line)] px-2">
-              <span className="text-[13px] font-bold text-[var(--pd-muted)]">{PackagesStrings.paidLabel}</span>
+              <span className="text-[15px] font-bold text-[var(--pd-muted)]">{PackagesStrings.paidLabel}</span>
               <span className="text-[17px] font-extrabold text-[#15803D] tabular-nums mt-0.5">
                 {formatNaira(paymentSummary.paidMinor)}
               </span>
             </div>
 
             <div className="flex flex-col">
-              <span className="text-[13px] font-bold text-[var(--pd-muted)]">{PackagesStrings.balanceLabel}</span>
+              <span className="text-[15px] font-bold text-[var(--pd-muted)]">{PackagesStrings.balanceLabel}</span>
               <span className="text-[18px] font-extrabold text-[var(--pd-blue)] tabular-nums mt-0.5">
                 {formatNaira(paymentSummary.balanceMinor)}
               </span>
@@ -134,11 +134,11 @@ export function PackagePaymentCard({
           {/* Payment History List */}
           {payments.length > 0 && (
             <div className="flex flex-col gap-1.5 pt-2 border-t border-[var(--pd-line-2)]">
-              <span className="text-[13px] font-bold text-[var(--pd-muted)] uppercase tracking-wider">
+              <span className="text-[15px] font-bold text-[var(--pd-muted)] uppercase tracking-wider">
                 {PackagesStrings.paymentHistoryTitle}
               </span>
               {payments.map((p) => (
-                <div key={p.id} className="flex items-center justify-between text-[14px]">
+                <div key={p.id} className="flex items-center justify-between text-[15px]">
                   <div className="flex items-center gap-1 text-[var(--pd-muted)]">
                     <Clock className="w-3.5 h-3.5" />
                     <span>{new Date(p.recorded_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
@@ -161,7 +161,7 @@ export function PackagePaymentCard({
           <button
             type="button"
             onClick={() => setShowUndoToast(false)}
-            className="px-3 py-1 rounded-md text-[14px] font-extrabold text-[var(--pd-blue-hover)] bg-white/10 hover:bg-white/20 active:scale-95 flex items-center gap-1"
+            className="px-3 py-1 rounded-md text-[15px] font-extrabold text-[var(--pd-blue-hover)] bg-white/10 hover:bg-white/20 active:scale-95 flex items-center gap-1"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>{PackagesStrings.undoAction(undoCountdown)}</span>
