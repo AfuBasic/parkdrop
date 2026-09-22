@@ -53,7 +53,7 @@ export function CustomersScreen({
               Customers
             </h1>
             {!isLoading && (
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-surface-subtle text-text-secondary border border-border-subtle tabular-nums">
+              <span className="text-[15px] font-semibold px-2 py-0.5 rounded-full bg-surface-subtle text-text-secondary border border-border-subtle tabular-nums">
                 {totalCount}
               </span>
             )}
@@ -63,7 +63,7 @@ export function CustomersScreen({
             <button
               type="button"
               onClick={handleNavigateToAdd}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-xs font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action-primary text-white text-[15px] font-semibold shadow-sm hover:bg-action-primary/90 active:scale-95 transition-all cursor-pointer"
             >
               <PackagePlus className="w-4 h-4" />
               <span>Add package</span>
@@ -86,7 +86,7 @@ export function CustomersScreen({
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search name or phone"
-            className="w-full pl-9 pr-9 py-2.5 bg-surface-default border border-border-default rounded-xl text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-action-primary focus:border-transparent transition-all shadow-sm"
+            className="w-full pl-9 pr-9 py-2.5 bg-surface-default border border-border-default rounded-xl text-[15px] text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-action-primary focus:border-transparent transition-all shadow-sm"
           />
           {searchQuery.length > 0 && (
             <button
@@ -123,13 +123,13 @@ export function CustomersScreen({
             {searchQuery.trim().length > 0 ? (
               <>
                 <h2 className="text-base font-bold text-text-primary">No customers found</h2>
-                <p className="text-sm text-text-secondary mt-1 max-w-xs">
+                <p className="text-[15px] text-text-secondary mt-1 max-w-xs">
                   Try another name or phone number.
                 </p>
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold text-action-primary bg-action-primary/10 hover:bg-action-primary/20 transition-colors"
+                  className="mt-4 px-4 py-2 rounded-xl text-[15px] font-semibold text-action-primary bg-action-primary/10 hover:bg-action-primary/20 transition-colors"
                 >
                   Clear search
                 </button>
@@ -137,13 +137,13 @@ export function CustomersScreen({
             ) : (
               <>
                 <h2 className="text-base font-bold text-text-primary">No customers yet</h2>
-                <p className="text-sm text-text-secondary mt-1 max-w-xs">
+                <p className="text-[15px] text-text-secondary mt-1 max-w-xs">
                   Customers appear here when you record packages.
                 </p>
                 <button
                   type="button"
                   onClick={handleNavigateToAdd}
-                  className="mt-5 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-action-primary hover:bg-action-primary/90 shadow-sm transition-all cursor-pointer"
+                  className="mt-5 px-5 py-2.5 rounded-xl text-[15px] font-semibold text-white bg-action-primary hover:bg-action-primary/90 shadow-sm transition-all cursor-pointer"
                 >
                   Add package
                 </button>
@@ -170,7 +170,7 @@ export function CustomersScreen({
             <button
               type="button"
               onClick={() => setPageSize(prev => prev + 50)}
-              className="px-4 py-2 text-xs font-semibold rounded-xl bg-surface-default border border-border-default text-text-primary hover:bg-surface-subtle active:bg-surface-active transition-colors shadow-sm"
+              className="px-4 py-2 text-[15px] font-semibold rounded-xl bg-surface-default border border-border-default text-text-primary hover:bg-surface-subtle active:bg-surface-active transition-colors shadow-sm"
             >
               Load more customers
             </button>
