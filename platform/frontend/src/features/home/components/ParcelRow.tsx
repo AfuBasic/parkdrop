@@ -59,6 +59,12 @@ export interface ParcelRowProps {
   onSelect: (packageId: string) => void;
 }
 
+const ROW_BG: Record<PaymentState, string> = {
+  UNPAID: 'bg-[var(--pd-warn-bg)]/50 hover:bg-[var(--pd-warn-bg)]',
+  PART_PAID: 'bg-[var(--pd-tint)]/60 hover:bg-[var(--pd-tint)]',
+  PAID: 'bg-white hover:bg-[var(--pd-tint)]/40',
+};
+
 /**
  * One waiting package, shaped like the label on the parcel itself.
  *
@@ -83,9 +89,10 @@ export function ParcelRow({ row, onSelect }: ParcelRowProps) {
       className={cn(
         'relative w-full min-h-[var(--pd-row-h)] overflow-hidden text-left',
         'flex items-center gap-3 pl-5 pr-4 py-3',
-        'rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] bg-white',
+        'rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)]',
+        ROW_BG[row.paymentState],
         'transition-[background-color,transform] duration-[var(--pd-motion-fast)]',
-        'hover:bg-[var(--pd-tint)] active:scale-[0.99]',
+        'active:scale-[0.99]',
         'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[var(--pd-blue)]/30'
       )}
     >
