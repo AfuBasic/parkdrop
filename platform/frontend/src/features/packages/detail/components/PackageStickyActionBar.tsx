@@ -5,6 +5,7 @@ import type { LocalPackage, LocalCustomer } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
 import { PackagesStrings } from '@/features/packages/strings';
 import { formatNaira } from '@/features/packages/domain/package-filters';
+import { formatEventDay, formatEventTime } from '@/features/packages/domain/eventTime';
 
 export interface PackageStickyActionBarProps {
   pkg: LocalPackage;
@@ -127,7 +128,13 @@ export function PackageStickyActionBar({
               <div className="flex items-center gap-2 text-[#15803D] text-[14px] font-extrabold">
                 <CheckCircle2 className="w-5 h-5 shrink-0" />
                 <span>
-                  {PackagesStrings.collectedBanner('Today', '8:10 PM', pkg.terminal_actor_name || 'Staff')}
+                  {pkg.collected_at
+                    ? PackagesStrings.collectedBanner(
+                        formatEventDay(pkg.collected_at),
+                        formatEventTime(pkg.collected_at),
+                        pkg.terminal_actor_name || 'Staff'
+                      )
+                    : PackagesStrings.collectedBannerNoTime(pkg.terminal_actor_name || 'Staff')}
                 </span>
                 {hasBalance && (
                   <span className="text-[#92400E] bg-[#FEF3C7] px-2 py-0.5 rounded-full border border-[#FCD34D]">
@@ -153,7 +160,11 @@ export function PackageStickyActionBar({
           {isReturned && (
             <div className="w-full py-3 px-4 rounded-xl bg-[var(--pd-page)] border border-[var(--pd-line)] flex items-center gap-2 text-[var(--pd-muted)] font-extrabold text-[15px]">
               <RotateCcw className="w-5 h-5 text-[#D97706]" />
-              <span>{PackagesStrings.returnedBanner('Today')}</span>
+              <span>
+                {pkg.returned_at
+                  ? PackagesStrings.returnedBanner(formatEventDay(pkg.returned_at))
+                  : PackagesStrings.returnedBannerNoDate}
+              </span>
             </div>
           )}
 
@@ -161,7 +172,11 @@ export function PackageStickyActionBar({
           {isCancelled && (
             <div className="w-full py-3 px-4 rounded-xl bg-[#FEF2F2] border border-[#FCA5A5] flex items-center gap-2 text-[var(--pd-bad)] font-extrabold text-[15px]">
               <Ban className="w-5 h-5" />
-              <span>{PackagesStrings.cancelledBanner('Today')}</span>
+              <span>
+                {pkg.cancelled_at
+                  ? PackagesStrings.cancelledBanner(formatEventDay(pkg.cancelled_at))
+                  : PackagesStrings.cancelledBannerNoDate}
+              </span>
             </div>
           )}
         </div>
