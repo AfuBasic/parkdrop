@@ -53,7 +53,7 @@ export function CustomerSuggestionsList({
           </div>
 
           <div className="flex-none text-right">
-            <span className="text-[13px] font-bold text-[var(--pd-blue-hover)]">
+            <span className="text-[15px] font-bold text-[var(--pd-blue-hover)]">
               {item.collectedCount > 0
                 ? AddPackageStrings.matchCollectedBefore(item.collectedCount)
                 : item.waitingCount > 0
