@@ -57,7 +57,10 @@ class TermiiSmsProvider implements SmsProvider
                     'from' => $this->senderId,
                     'sms' => $message,
                     'type' => 'plain',
-                    'channel' => 'generic',
+                    // 'dnd', not 'generic': this is a transactional pickup-code
+                    // notification, not marketing, and must still reach a
+                    // customer who has registered for Do Not Disturb.
+                    'channel' => 'dnd',
                     'api_key' => $this->apiKey,
                 ]);
 
