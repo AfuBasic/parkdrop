@@ -46,7 +46,7 @@ describe('Add Package Flow Logic & Data Layer', () => {
     expect(result.package).toBeDefined();
     expect(result.package.status).toBe('WAITING');
     expect(result.package.public_package_id).toMatch(/^PD-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{5}$/);
-    expect(result.package.pickup_code.length).toBe(7);
+    expect(result.package.pickup_code.length).toBe(6);
     expect(result.package.amount_due_minor).toBe(350000);
 
     // Verify written to local IndexedDB

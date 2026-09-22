@@ -3,7 +3,7 @@ const SAFE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
 
 export const PUBLIC_PACKAGE_ID_PREFIX = 'PD-';
 export const PUBLIC_PACKAGE_ID_RANDOM_LENGTH = 5;
-export const PICKUP_CODE_LENGTH = 7;
+export const PICKUP_CODE_LENGTH = 6;
 
 /**
  * Generate a cryptographically secure random string using the safe alphabet.
