@@ -2,7 +2,6 @@ import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { HomeStrings } from '../strings';
 import type { HomePackageRow } from '../hooks/useHomeData';
-import { FilterChips, type HomeFilter } from './FilterChips';
 import { ParcelRow } from './ParcelRow';
 
 /** Home shows the five oldest and hands the rest to the Packages screen. */
@@ -10,9 +9,6 @@ export const HOME_ROW_LIMIT = 5;
 
 export interface WaitingListProps {
   rows: HomePackageRow[];
-  filter: HomeFilter;
-  unpaidCount?: number;
-  onFilterChange: (filter: HomeFilter) => void;
   onSelectPackage: (packageId: string) => void;
   onSeeAll: () => void;
   className?: string;
@@ -28,9 +24,6 @@ export interface WaitingListProps {
  */
 export function WaitingList({
   rows,
-  filter,
-  unpaidCount,
-  onFilterChange,
   onSelectPackage,
   onSeeAll,
   className,
@@ -39,26 +32,14 @@ export function WaitingList({
 
   return (
     <section className={cn('flex flex-col gap-3', className)} aria-labelledby="pd-waiting-title">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2
-          id="pd-waiting-title"
-          className="m-0 text-[var(--pd-size-section)] font-extrabold tracking-[-0.01em] text-[var(--pd-navy)]"
-        >
-          {HomeStrings.listTitle}
-        </h2>
-        <FilterChips value={filter} onChange={onFilterChange} unpaidCount={unpaidCount} />
-      </div>
+      <h2
+        id="pd-waiting-title"
+        className="m-0 text-[var(--pd-size-section)] font-extrabold tracking-[-0.01em] text-[var(--pd-navy)]"
+      >
+        {HomeStrings.listTitle}
+      </h2>
 
-      {visible.length === 0 ? (
-        <div className="rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] bg-white px-5 py-6">
-          <h3 className="m-0 mb-1.5 text-[var(--pd-size-section)] font-extrabold text-[var(--pd-navy)]">
-            {HomeStrings.emptyFilterTitle}
-          </h3>
-          <p className="m-0 text-[var(--pd-size-meta)] font-semibold leading-[1.45] text-[var(--pd-muted)]">
-            {HomeStrings.emptyFilterBody}
-          </p>
-        </div>
-      ) : (
+      {visible.length === 0 ? null : (
         <ul className="m-0 p-0 list-none flex flex-col gap-2">
           {visible.map((row) => (
             <li key={row.id}>
