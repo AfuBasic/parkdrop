@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useOnline } from '@/features/auth/lib/useOnline';
-import { useRangeReport, ReportPreset } from './api/useRangeReport';
+import { useRangeReport, type ReportPreset } from './api/useRangeReport';
 import { ReportsStrings } from './strings';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/offline/db/schema';
+import { db } from '@/offline/db/database';
+import { type LocalPackage } from '@/offline/db/schema';
 import { isOverdue24h } from '@/features/packages/domain/package-filters';
 import { ChevronLeft, Share2, AlertCircle, BarChart3, Clock, DollarSign, Package, UserCheck, Inbox } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
@@ -22,7 +23,7 @@ export function ReportsScreen() {
   const currentlyOverdueCount = useMemo(() => {
     if (!waitingPackages) return 0;
     const now = new Date();
-    return waitingPackages.filter((pkg) => isOverdue24h(pkg.client_created_at, now)).length;
+    return waitingPackages.filter((pkg: LocalPackage) => isOverdue24h(pkg.client_created_at, now)).length;
   }, [waitingPackages]);
 
   const handleShare = () => {
