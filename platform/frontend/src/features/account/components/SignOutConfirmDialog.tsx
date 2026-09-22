@@ -1,4 +1,6 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { AccountStrings } from '@/features/account/strings';
 
 interface PendingBusinessSummary {
   businessId: number;
@@ -33,81 +35,68 @@ export const SignOutConfirmDialog: React.FC<SignOutConfirmDialogProps> = ({
       aria-labelledby="signout-dialog-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
     >
-      <div className="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-neutral-200/80 animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center gap-3 mb-3 text-amber-600">
-          <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/60">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <div className="bg-white rounded-[var(--pd-sheet-radius)] max-w-sm w-full p-5 shadow-xl border border-[var(--pd-line-2)]">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-11 h-11 rounded-full bg-[var(--pd-warn-bg)] border border-[var(--pd-warn)]/25 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-6 h-6 text-[var(--pd-warn)]" strokeWidth={2.25} aria-hidden="true" />
           </div>
           <div>
-            <h3 id="signout-dialog-title" className="text-base font-bold text-neutral-900">
-              Unsynced Work on Device
+            <h3 id="signout-dialog-title" className="text-[18px] font-extrabold text-[var(--pd-navy)] m-0">
+              {AccountStrings.pendingTitle}
             </h3>
-            <span className="text-xs text-amber-700 font-medium">
-              {pendingCount} pending {pendingCount === 1 ? 'change' : 'changes'}
+            <span className="text-[15px] font-semibold text-[var(--pd-warn)]">
+              {AccountStrings.pendingCount(pendingCount)}
             </span>
           </div>
         </div>
 
-        <p className="text-xs text-neutral-600 leading-relaxed mb-3">
-          This device has changes recorded while offline that have not yet uploaded to the cloud across{' '}
-          {pendingBusinesses.length > 1
-            ? `${pendingBusinesses.length} workplaces`
-            : 'your workplace'}
-          .
+        <p className="text-[16px] font-semibold text-[var(--pd-muted)] leading-relaxed mb-4 m-0">
+          {AccountStrings.pendingBody(pendingBusinesses.length)}
         </p>
 
         {pendingBusinesses.length > 1 && (
-          <div className="mb-4 p-2.5 rounded-xl bg-neutral-50 border border-neutral-200/60 space-y-1.5 text-xs text-neutral-600">
+          <div className="mb-4 p-3 rounded-[var(--pd-field-radius)] bg-[var(--pd-page-2)] border border-[var(--pd-line-2)] flex flex-col gap-1.5">
             {pendingBusinesses.map((b) => (
-              <div key={b.businessId} className="flex justify-between items-center">
-                <span className="font-medium text-neutral-800">Business #{b.businessId}</span>
-                <span className="font-bold text-amber-700">{b.count} pending</span>
+              <div key={b.businessId} className="text-[15px] font-semibold text-[var(--pd-navy)]">
+                {AccountStrings.pendingBusinessLine(b.businessId, b.count)}
               </div>
             ))}
           </div>
         )}
 
-        <div className="space-y-2 pt-2">
-          {/* Option 1: Sync and Sign Out */}
+        <div className="flex flex-col gap-3 pt-1">
           <button
             type="button"
             onClick={onSyncAndSignOut}
             disabled={isSyncing}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 active:bg-sky-800 disabled:opacity-50 transition-colors shadow-xs flex items-center justify-center gap-2"
+            className="w-full min-h-[60px] rounded-[var(--pd-field-radius)] text-[20px] font-extrabold text-white bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
           >
             {isSyncing ? (
               <>
-                <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                <span>Syncing changes...</span>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>{AccountStrings.syncing}</span>
               </>
             ) : (
-              <span>Sync now and sign out</span>
+              <span>{AccountStrings.syncAndSignOut}</span>
             )}
           </button>
 
-          {/* Option 2: Sign Out Anyway (Preserves local DB queue safely) */}
           <button
             type="button"
             onClick={onConfirmSignOutAnyway}
             disabled={isSyncing}
-            className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 active:bg-amber-200 border border-amber-200/80 transition-colors"
+            className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-warn)] text-[18px] font-extrabold text-[var(--pd-warn)] cursor-pointer disabled:opacity-50"
           >
-            Sign out anyway (Keep local queue)
+            {AccountStrings.signOutAnyway}
           </button>
 
-          {/* Option 3: Cancel */}
           <button
             type="button"
             onClick={onClose}
             disabled={isSyncing}
-            className="w-full py-2 px-4 rounded-xl text-xs font-medium text-neutral-500 hover:text-neutral-700 active:bg-neutral-100 transition-colors"
+            className="w-full min-h-[48px] text-[17px] font-extrabold text-[var(--pd-blue)] cursor-pointer"
           >
-            Stay signed in
+            {AccountStrings.staySignedIn}
           </button>
         </div>
       </div>
