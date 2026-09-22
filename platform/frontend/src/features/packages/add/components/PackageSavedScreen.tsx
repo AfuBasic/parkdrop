@@ -9,6 +9,8 @@ import { db } from '@/offline/db/database';
 import { AddPackageStrings } from '@/features/packages/add/strings';
 import { UNDO_WINDOW_SECONDS } from '@/features/packages/add/config';
 import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
+import { usePollingSync } from '@/offline/sync/usePollingSync';
+
 
 export interface PackageSavedScreenProps {
   packageId: string;
@@ -47,6 +49,9 @@ export function PackageSavedScreen({
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoPreview);
   const [isProcessingPhoto, setIsProcessingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Actively poll while waiting on this screen to catch quick incoming SMS webhook updates
+  usePollingSync(15_000);
 
   // 10s Undo countdown
   const [undoSeconds, setUndoSeconds] = useState(UNDO_WINDOW_SECONDS);
