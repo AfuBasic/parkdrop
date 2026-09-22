@@ -110,28 +110,28 @@ export function PackageCustomerCard({
       {/* Chip row: Status, Payment, Age */}
       <div className="flex items-center gap-2 flex-wrap pt-1">
         {/* Status chip */}
-        <span className="px-2.5 py-1 rounded-full text-[13px] font-extrabold bg-[var(--pd-tint)] text-[var(--pd-blue)] border border-[var(--pd-tint-2)]">
+        <span className="px-2.5 py-1 rounded-full text-[15px] font-extrabold bg-[var(--pd-tint)] text-[var(--pd-blue)] border border-[var(--pd-tint-2)]">
           {pkg.status}
         </span>
 
         {/* Payment chip */}
         {paymentSummary.isFullyPaid ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[13px] font-extrabold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-extrabold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
             <Check className="w-3.5 h-3.5 stroke-[3]" />
             <span>{PackagesStrings.paymentPaid}</span>
           </span>
         ) : paymentSummary.amountDueMinor === 0 ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[13px] font-extrabold bg-[var(--pd-page)] text-[var(--pd-muted)] border border-[var(--pd-line)]">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-extrabold bg-[var(--pd-page)] text-[var(--pd-muted)] border border-[var(--pd-line)]">
             <Minus className="w-3.5 h-3.5" />
             <span>{PackagesStrings.paymentNothingToPay}</span>
           </span>
         ) : paymentSummary.paidMinor > 0 ? (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[13px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
             <span>₦</span>
             <span>{PackagesStrings.paymentPartPaid}</span>
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[13px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-extrabold bg-[#FEF3C7] text-[#92400E] border border-[#FCD34D]">
             <span>₦</span>
             <span>{PackagesStrings.paymentUnpaid}</span>
           </span>
@@ -139,7 +139,7 @@ export function PackageCustomerCard({
 
         {/* Age chip */}
         <span
-          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[13px] border tabular-nums ${
+          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] border tabular-nums ${
             ageBand === 'SEVEN_PLUS'
               ? 'bg-[#FEF2F2] text-[var(--pd-bad)] border-[#FCA5A5] font-extrabold'
               : ageBand === 'THREE_TO_SIX'
