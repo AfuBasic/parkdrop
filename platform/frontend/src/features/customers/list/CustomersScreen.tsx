@@ -10,11 +10,13 @@ import type { CustomerDirectoryItem } from '@/features/customers/domain/customer
 interface CustomersScreenProps {
   businessId?: number;
   onSelectCustomer?: (customerId: string) => void;
+  onNavigateToAdd?: () => void;
 }
 
 export function CustomersScreen({
   businessId: propBusinessId,
   onSelectCustomer,
+  onNavigateToAdd,
 }: CustomersScreenProps) {
   const routerNavigate = useNavigate();
   const { business } = useAuth();
@@ -22,7 +24,9 @@ export function CustomersScreen({
   const handleSelectCustomer = onSelectCustomer ?? ((customerId: string) => {
     routerNavigate({ to: '/customers/$customerId', params: { customerId } });
   });
-
+  const handleNavigateToAdd = onNavigateToAdd ?? (() => {
+    routerNavigate({ to: '/packages/new' });
+  });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [pageSize, setPageSize] = useState(50);
@@ -63,23 +67,22 @@ export function CustomersScreen({
         <input
           id={searchInputId}
           type="search"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search name or phone"
-            className="w-full pl-9 pr-9 py-2.5 bg-surface-default border border-border-default rounded-xl text-[15px] text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-action-primary focus:border-transparent transition-all shadow-sm"
-          />
-          {searchQuery.length > 0 && (
-            <button
-              type="button"
-              onClick={handleClear}
-              aria-label="Clear customer search"
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </header>
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Search name or phone"
+          className="w-full pl-9 pr-9 py-2.5 bg-surface-default border border-border-default rounded-xl text-[15px] text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-action-primary focus:border-transparent transition-all shadow-sm"
+        />
+        {searchQuery.length > 0 && (
+          <button
+            type="button"
+            onClick={handleClear}
+            aria-label="Clear customer search"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
 
       {/* Content */}
       <main className="flex-1">
