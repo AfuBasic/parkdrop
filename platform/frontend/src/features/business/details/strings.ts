@@ -51,6 +51,15 @@ export const BusinessDetailsStrings = {
   confirmAndSave: 'Confirm and save',
   verifying: 'Checking…',
 
+  dailyStorageFee: 'Daily storage fee',
+  dailyStorageFeeHelperText:
+    "Added to a package's cost for every day it waits beyond the first. The first day is always free.",
+  dailyStorageFeeSuffix: '/day after the first day',
+  dailyStorageFeeLabel: 'Amount (₦) per extra day',
+  dailyStorageFeeInvalid: 'Enter an amount of ₦0 or more.',
+  dailyStorageFeeUpdated: 'Daily storage fee updated.',
+  couldNotUpdateDailyStorageFee: 'Could not update the daily storage fee. Try again.',
+
   yourRole: 'Your role',
   roleBody: {
     owner: 'You have full access to this business.',
