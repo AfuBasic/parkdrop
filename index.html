@@ -99,12 +99,20 @@
             "@type": "Organization",
             "@id": "https://parkdrop.afuwapetunde.com/#organization",
             "name": "ParkDrop",
+            "legalName": "Afutunde Solutions",
             "url": "https://parkdrop.afuwapetunde.com/",
             "logo": {
               "@type": "ImageObject",
               "url": "https://parkdrop.afuwapetunde.com/assets/images/parkdrop-logo.png"
             },
-            "description": "ParkDrop provides free parcel management software for local park businesses."
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "PLOT 13 BLOCK 18 ELIZABETH ROYAL ESTATE ABERE AREA",
+              "addressLocality": "OSOGBO",
+              "addressRegion": "OSUN",
+              "addressCountry": "NG"
+            },
+            "description": "ParkDrop is an enterprise parcel management platform owned and operated by Afutunde Solutions."
           },
           {
             "@type": "WebSite",
@@ -163,6 +171,48 @@
 
     <!-- Styles & Scripts -->
     <link rel="stylesheet" href="assets/css/styles.css" />
+    <style>
+      @media (min-width: 1024px) {
+        .footer-grid {
+          grid-template-columns: 1.3fr 0.8fr 0.9fr 1.6fr;
+          gap: 32px;
+        }
+      }
+      .compliance-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .compliance-logo {
+        max-width: 150px;
+        height: auto;
+        border-radius: 4px;
+        display: block;
+      }
+      .compliance-text {
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--c-text-secondary);
+        margin: 0;
+      }
+      .compliance-address {
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--c-text-secondary);
+        margin: 0;
+        padding-top: 8px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .compliance-address strong {
+        color: var(--c-text-main);
+        display: block;
+        margin-bottom: 2px;
+      }
+    </style>
     <script src="assets/js/main.js" defer></script>
     <script>
       document.documentElement.classList.remove("no-js");
@@ -1319,12 +1369,30 @@
             <li><a href="privacy.html">Privacy</a></li>
           </ul>
         </div>
+
+        <div class="footer-links-col">
+          <h4>Legal Entity & Compliance</h4>
+          <div class="compliance-card">
+            <img
+              src="assets/images/afutunde-solutions-logo.png"
+              alt="Afutunde Solutions Logo"
+              class="compliance-logo"
+            />
+            <p class="compliance-text">
+              ParkDrop is an enterprise parcel operations platform owned and operated by <strong>Afutunde Solutions</strong>, registered with the Corporate Affairs Commission (CAC), Federal Republic of Nigeria.
+            </p>
+            <div class="compliance-address">
+              <strong>Registered Physical Address:</strong>
+              PLOT 13 BLOCK 18 ELIZABETH ROYAL ESTATE, ABERE AREA, OSOGBO, OSUN STATE, NIGERIA
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="container">
         <div class="footer-bottom">
-          <div>&copy; 2026 ParkDrop</div>
-          <div>Made to make parcel pickup simpler.</div>
+          <div>&copy; 2026 ParkDrop &middot; A product of Afutunde Solutions. All rights reserved.</div>
+          <div>Physical Office: PLOT 13 BLOCK 18 ELIZABETH ROYAL ESTATE, ABERE AREA, OSOGBO, OSUN STATE.</div>
         </div>
       </div>
     </footer>
