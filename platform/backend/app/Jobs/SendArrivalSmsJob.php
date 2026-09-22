@@ -2,7 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Actions\Sms\ChargeForSmsAction;
 use App\Contracts\Sms\SmsProvider;
+use App\Exceptions\Sms\InsufficientSmsCreditsException;
 use App\Models\SmsMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -117,6 +119,27 @@ class SendArrivalSmsJob implements ShouldQueue
                 'package_id' => $this->packageUuid,
                 'message_id' => $result->messageId,
             ]);
+
+            // Charged only now, after Termii has confirmed the message was
+            // accepted — never before the send, so a billing failure can
+            // never block or duplicate a message that already went out.
+            // A business with no credits left still gets its SMS sent (per
+            // the app's own promise that running out never interrupts
+            // operations); we simply cannot bill for this one.
+            try {
+                app(ChargeForSmsAction::class)->execute(
+                    businessId: $this->businessId,
+                    amount: 1,
+                    referenceType: 'ARRIVAL_SMS',
+                    referenceId: (string) $smsRecord->id,
+                );
+            } catch (InsufficientSmsCreditsException $e) {
+                Log::warning('[SendArrivalSmsJob] Sent with no SMS credits left to charge.', [
+                    'package_id' => $this->packageUuid,
+                    'business_id' => $this->businessId,
+                    'balance' => $e->balance,
+                ]);
+            }
 
             return;
         }
