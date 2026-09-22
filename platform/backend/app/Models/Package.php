@@ -20,6 +20,7 @@ class Package extends Model
         'pickup_code',
         'amount_due_minor',
         'status',
+        'collected_at',
         'returned_at',
         'cancelled_at',
         'terminal_reason',
@@ -33,6 +34,7 @@ class Package extends Model
 
     protected $casts = [
         'client_created_at' => 'datetime',
+        'collected_at' => 'datetime',
         'returned_at' => 'datetime',
         'cancelled_at' => 'datetime',
         'amount_due_minor' => 'integer',
