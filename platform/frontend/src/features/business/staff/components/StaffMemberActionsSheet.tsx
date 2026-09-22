@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import type { StaffMember } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/api/business-api';
-import type { BusinessRole } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
-import { X, Shield, UserMinus, AlertTriangle } from 'lucide-react';
+import type { StaffMember } from '@/features/business/api/business-api';
+import type { BusinessRole } from '@/features/business/permissions/business-permissions';
+import { Shield, UserMinus, AlertTriangle } from 'lucide-react';
+import { Sheet, SheetContent } from '@/design-system';
+import { StaffStrings } from '@/features/business/staff/strings';
 
 interface StaffMemberActionsSheetProps {
   member: StaffMember | null;
@@ -28,16 +30,20 @@ export const StaffMemberActionsSheet: React.FC<StaffMemberActionsSheetProps> = (
   const [isSubmittingRemove, setIsSubmittingRemove] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  if (!isOpen || !member) return null;
+  if (!member) return null;
 
   const displayName = member.name || member.email.split('@')[0];
-  const roleDisplay = member.role.charAt(0).toUpperCase() + member.role.slice(1);
 
-  // Available roles to change to:
-  // Owner can assign owner, manager, attendant.
-  // Manager cannot assign roles.
+  // Owner can assign owner, manager, attendant. Manager cannot assign roles.
   const allowedRoles: BusinessRole[] =
     currentUserRole === 'owner' ? ['owner', 'manager', 'attendant'] : [];
+
+  const resetAndClose = () => {
+    setIsChangingRole(false);
+    setIsConfirmingRemove(false);
+    setErrorMessage(null);
+    onClose();
+  };
 
   const handleStartChangeRole = () => {
     setSelectedRole(member.role);
@@ -58,7 +64,7 @@ export const StaffMemberActionsSheet: React.FC<StaffMemberActionsSheetProps> = (
       setIsChangingRole(false);
       onClose();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Could not change this role. Try again.');
+      setErrorMessage(err.message || StaffStrings.couldNotChangeRole);
     } finally {
       setIsSubmittingRole(false);
     }
@@ -78,175 +84,141 @@ export const StaffMemberActionsSheet: React.FC<StaffMemberActionsSheetProps> = (
       setIsConfirmingRemove(false);
       onClose();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Could not remove access. Try again.');
+      setErrorMessage(err.message || StaffStrings.couldNotRemove);
     } finally {
       setIsSubmittingRemove(false);
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 backdrop-blur-sm transition-opacity"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="member-action-title"
-    >
-      <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden animate-in slide-in-from-bottom duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border-subtle">
-          <div>
-            <h2 id="member-action-title" className="font-bold text-slate-900 text-base sm:text-lg">
-              {displayName}
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">{member.email} • {roleDisplay}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
-            aria-label="Close sheet"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && resetAndClose()}>
+      <SheetContent
+        side="bottom"
+        className="w-full max-w-md mx-auto p-5 pb-8 rounded-t-[var(--pd-sheet-radius)]"
+        aria-describedby={undefined}
+      >
+        <div className="pr-10 mb-4">
+          <h2 className="text-[22px] font-extrabold text-[var(--pd-navy)] m-0 tracking-[-0.02em]">
+            {displayName}
+          </h2>
+          <p className="text-[16px] font-semibold text-[var(--pd-muted)] mt-1 m-0">
+            {member.email}
+          </p>
         </div>
 
-        {/* Error alert banner */}
         {errorMessage && (
-          <div className="m-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-xs text-red-700">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
-            <div className="flex-1">{errorMessage}</div>
+          <div className="mb-4 p-3.5 bg-[var(--pd-bad-bg)] border border-[var(--pd-bad)]/25 rounded-[var(--pd-card-radius)] flex items-start gap-2.5">
+            <AlertTriangle className="w-5 h-5 shrink-0 text-[var(--pd-bad)] mt-0.5" strokeWidth={2.25} aria-hidden="true" />
+            <span className="text-[15px] font-semibold text-[var(--pd-bad)]">{errorMessage}</span>
           </div>
         )}
 
-        {/* Mode: Default Action Sheet */}
         {!isChangingRole && !isConfirmingRemove && (
-          <div className="p-4 space-y-2">
+          <div className="flex flex-col gap-3">
             {currentUserRole === 'owner' && (
               <button
                 type="button"
                 onClick={handleStartChangeRole}
-                className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 active:bg-slate-100 text-left font-medium text-slate-900 transition-colors min-h-[48px] cursor-pointer"
+                className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-line-2)] flex items-center gap-3 text-left cursor-pointer active:scale-[0.99] transition-all"
               >
-                <Shield className="w-5 h-5 text-blue-600 shrink-0" />
-                <div>
-                  <div className="text-sm font-semibold">Change role</div>
-                  <div className="text-xs text-slate-500 font-normal">
-                    Promote or adjust responsibility
-                  </div>
-                </div>
+                <Shield className="w-5 h-5 text-[var(--pd-blue)] shrink-0" strokeWidth={2.25} aria-hidden="true" />
+                <span className="text-[18px] font-bold text-[var(--pd-navy)]">{StaffStrings.changeRole}</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={handleStartRemove}
-              className="w-full flex items-center gap-3 p-3.5 rounded-xl border border-red-100 bg-red-50/50 hover:bg-red-50 active:bg-red-100 text-left font-medium text-red-700 transition-colors min-h-[48px] cursor-pointer"
+              className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-bad)] flex items-center gap-3 text-left cursor-pointer active:scale-[0.99] transition-all"
             >
-              <UserMinus className="w-5 h-5 text-red-600 shrink-0" />
-              <div>
-                <div className="text-sm font-semibold">Remove access</div>
-                <div className="text-xs text-red-500 font-normal">
-                  Revoke ParkDrop access for this Business
-                </div>
-              </div>
+              <UserMinus className="w-5 h-5 text-[var(--pd-bad)] shrink-0" strokeWidth={2.25} aria-hidden="true" />
+              <span className="text-[18px] font-bold text-[var(--pd-bad)]">{StaffStrings.removeAccess}</span>
             </button>
           </div>
         )}
 
-        {/* Mode: Change Role */}
         {isChangingRole && (
-          <div className="p-4 space-y-4">
-            <div className="text-sm font-semibold text-slate-900">
-              Select new role for {displayName}:
-            </div>
+          <div className="flex flex-col gap-4">
+            <p className="text-[16px] font-semibold text-[var(--pd-navy)] m-0">
+              {StaffStrings.pickNewRole(displayName)}
+            </p>
 
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2.5">
               {allowedRoles.map((role) => (
                 <label
                   key={role}
-                  className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-colors ${
+                  className={`flex items-center justify-between p-4 min-h-[56px] rounded-[var(--pd-field-radius)] border-2 cursor-pointer transition-colors ${
                     selectedRole === role
-                      ? 'border-blue-500 bg-blue-50/50'
-                      : 'border-slate-200 hover:bg-slate-50'
+                      ? 'border-[var(--pd-blue)] bg-[var(--pd-tint)]'
+                      : 'border-[var(--pd-line-2)]'
                   }`}
                 >
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-slate-900 capitalize">
-                      {role}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {role === 'owner'
-                        ? 'Full business & staff administration'
-                        : role === 'manager'
-                        ? 'Operational package actions & staff viewing'
-                        : 'Operational package & pickup actions'}
-                    </span>
-                  </div>
+                  <span className="text-[16px] font-semibold text-[var(--pd-navy)]">
+                    {StaffStrings.roleSentence[role]}
+                  </span>
                   <input
                     type="radio"
                     name="role"
                     value={role}
                     checked={selectedRole === role}
                     onChange={() => setSelectedRole(role)}
-                    className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500"
+                    className="w-5 h-5 accent-[var(--pd-blue)]"
                   />
                 </label>
               ))}
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsChangingRole(false)}
-                disabled={isSubmittingRole}
-                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 min-h-[48px] cursor-pointer"
-              >
-                Cancel
-              </button>
+            <div className="flex flex-col gap-3 pt-1">
               <button
                 type="button"
                 onClick={handleSaveRole}
                 disabled={isSubmittingRole}
-                className="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm disabled:opacity-50 min-h-[48px] cursor-pointer"
+                className="w-full min-h-[60px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] text-white text-[20px] font-extrabold disabled:opacity-50 cursor-pointer"
               >
-                {isSubmittingRole ? 'Saving...' : 'Save role'}
+                {isSubmittingRole ? StaffStrings.saving : StaffStrings.saveRole}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsChangingRole(false)}
+                disabled={isSubmittingRole}
+                className="w-full min-h-[48px] text-[17px] font-extrabold text-[var(--pd-blue)] cursor-pointer"
+              >
+                {StaffStrings.cancel}
               </button>
             </div>
           </div>
         )}
 
-        {/* Mode: Confirm Remove Access */}
         {isConfirmingRemove && (
-          <div className="p-4 space-y-4">
-            <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-              <div className="text-xs text-amber-800 leading-relaxed">
-                <strong>{displayName}</strong> will no longer be able to use ParkDrop for this Business.
-                Their User account and past package/payment activity will remain intact.
-              </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-start gap-3 p-4 bg-[var(--pd-warn-bg)] border border-[var(--pd-warn)]/25 rounded-[var(--pd-card-radius)]">
+              <AlertTriangle className="w-5 h-5 text-[var(--pd-warn)] shrink-0 mt-0.5" strokeWidth={2.25} aria-hidden="true" />
+              <p className="text-[15px] font-semibold text-[var(--pd-warn)] m-0 leading-relaxed">
+                {StaffStrings.removeAccessBody(displayName)}
+              </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setIsConfirmingRemove(false)}
-                disabled={isSubmittingRemove}
-                className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 min-h-[48px] cursor-pointer"
-              >
-                Cancel
-              </button>
+            <div className="flex flex-col gap-3">
               <button
                 type="button"
                 onClick={handleConfirmRemove}
                 disabled={isSubmittingRemove}
-                className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm disabled:opacity-50 min-h-[48px] cursor-pointer"
+                className="w-full min-h-[56px] rounded-[var(--pd-field-radius)] border-2 border-[var(--pd-bad)] text-[var(--pd-bad)] text-[18px] font-extrabold disabled:opacity-50 cursor-pointer"
               >
-                {isSubmittingRemove ? 'Removing...' : 'Remove access'}
+                {isSubmittingRemove ? StaffStrings.removing : StaffStrings.removeAccess}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsConfirmingRemove(false)}
+                disabled={isSubmittingRemove}
+                className="w-full min-h-[48px] text-[17px] font-extrabold text-[var(--pd-blue)] cursor-pointer"
+              >
+                {StaffStrings.cancel}
               </button>
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   );
 };
