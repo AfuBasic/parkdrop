@@ -85,16 +85,16 @@ export function ReturnPackageSheet({
         </div>
 
         {/* Identity Context */}
-        <div className="flex items-center justify-between p-3.5 rounded-xl bg-surface-subtle border border-border-subtle text-xs">
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-surface-subtle border border-border-subtle text-[15px]">
           <div className="flex flex-col">
             <span className="text-text-secondary">Customer</span>
-            <span className="font-bold text-sm text-text-primary">
+            <span className="font-bold text-[15px] text-text-primary">
               {customer?.name || 'Customer'}
             </span>
           </div>
           <div className="flex flex-col items-end">
             <span className="text-text-secondary">Package ID</span>
-            <span className="font-mono font-bold text-sm text-text-primary">
+            <span className="font-mono font-bold text-[15px] text-text-primary">
               {pkg.public_package_id}
             </span>
           </div>
@@ -126,7 +126,7 @@ export function ReturnPackageSheet({
           />
 
           {submitError && (
-            <div className="p-3 rounded-xl bg-status-danger-bg text-status-danger-text text-xs border border-status-danger-border">
+            <div className="p-3 rounded-xl bg-status-danger-bg text-status-danger-text text-[15px] border border-status-danger-border">
               {submitError}
             </div>
           )}
@@ -137,14 +137,14 @@ export function ReturnPackageSheet({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 py-3.5 px-4 rounded-[var(--radius-xl)] border border-border-default font-semibold text-text-secondary hover:bg-surface-subtle transition-colors cursor-pointer text-sm"
+              className="flex-1 py-3.5 px-4 rounded-[var(--radius-xl)] border border-border-default font-semibold text-text-secondary hover:bg-surface-subtle transition-colors cursor-pointer text-[15px]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!selectedReason || isSubmitting}
-              className="flex-1 py-3.5 px-4 rounded-[var(--radius-xl)] bg-status-warning-text hover:bg-status-warning-text/90 active:scale-[0.99] text-white font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center justify-center gap-2"
+              className="flex-1 py-3.5 px-4 rounded-[var(--radius-xl)] bg-status-warning-text hover:bg-status-warning-text/90 active:scale-[0.99] text-white font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-[15px] flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
               <span>{isSubmitting ? 'Returning…' : 'Confirm return'}</span>
