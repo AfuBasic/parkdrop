@@ -40,8 +40,6 @@ export const MAX_PIN_ATTEMPTS = 5;
 
 /** Where "Need help?" actually goes. */
 export const SUPPORT = {
-  whatsappNumber: '2348000000000',
-  phoneNumber: '+2348000000000',
   email: 'support@parkdrop.com.ng',
 } as const;
 
