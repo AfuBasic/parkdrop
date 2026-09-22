@@ -37,15 +37,15 @@ export interface RangeReportResponse {
 }
 
 export function useRangeReport(preset: ReportPreset) {
-  const { auth } = useAuth();
+  const { business } = useAuth();
 
   return useQuery<RangeReportResponse>({
-    queryKey: ['reports', 'range', auth?.business_id, preset],
+    queryKey: ['reports', 'range', business?.id, preset],
     queryFn: async () => {
       const res = await fetchApi(`/api/v1/reports/range?preset=${preset}`);
       return res.json();
     },
-    enabled: !!auth?.business_id,
+    enabled: !!business?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
