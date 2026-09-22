@@ -116,6 +116,7 @@ export const PackagesStrings = {
   receivedDateLabel: 'Received at',
   collectedAtLabel: 'Collected at',
   receivedByLabel: 'Received by',
+  releasedByLabel: 'Released by',
   packageIdLabel: 'Package ID',
   pickupPointLabel: 'Pickup point',
   setupRequiredNotice: 'Finish pickup point setup to show the location name.',
