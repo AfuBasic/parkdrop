@@ -35,7 +35,7 @@ const HELP_ARTICLES: HelpArticle[] = [
     icon: Sparkles,
     summary: 'ParkDrop is offline-first parcel holding and pickup point software designed for fast motor park and pickup point operations.',
     steps: [
-      'Sign in with your email using a one-time passcode (OTP).',
+      'Sign in with your phone or email. We send you a 6-digit code, no password needed.',
       'If you are an Owner, create your Business and initial Pickup Point.',
       'Record packages as they arrive from dispatchers or customers.',
       'When customers arrive, verify their pickup code and release the parcel.'
@@ -49,7 +49,7 @@ const HELP_ARTICLES: HelpArticle[] = [
     icon: Package,
     summary: 'Intake parcels quickly using the customer phone number and optional details.',
     steps: [
-      'Tap "Add package" from Home or the bottom navigation bar.',
+      'Tap "Add package" on the Home screen.',
       'Enter the customer\'s phone number. Existing customers are automatically retrieved.',
       'Enter the amount due if the customer needs to pay on collection (₦0 if already paid).',
       'Optionally take a parcel photo to record parcel condition.',
@@ -70,7 +70,7 @@ const HELP_ARTICLES: HelpArticle[] = [
       'When the customer arrives to collect, ask them for this code.',
       'Enter the code during collection to verify authorization.'
     ],
-    tips: 'The pickup code is different from the public Package ID (e.g. PKG-1234). The code prevents wrongful package handover.'
+    tips: 'The pickup code is different from the public Package ID (e.g. PD-4K72Q). The code prevents wrongful package handover.'
   },
   {
     id: 'collecting-packages',
@@ -82,10 +82,10 @@ const HELP_ARTICLES: HelpArticle[] = [
       'Search for the package using the customer phone, name, or pickup code.',
       'Open the Package Detail screen.',
       'If an unpaid balance remains, tap "Record payment" to record the cash, transfer, or POS payment.',
-      'Tap "Release package" to open the collection sheet.',
-      'Enter the customer\'s pickup code and tap "Confirm package collected".'
+      'Tap "Release package". ParkDrop shows the pickup code on screen.',
+      'Check it matches what the customer tells you, then tap to confirm the release.'
     ],
-    tips: 'Once collected, the package status permanently changes to COLLECTED and moves to the Collected queue tab.'
+    tips: 'Once collected, the package status permanently changes to Collected and moves to the Collected tab.'
   },
   {
     id: 'recording-payments',
@@ -108,7 +108,7 @@ const HELP_ARTICLES: HelpArticle[] = [
     icon: Search,
     summary: 'Quickly find any package on your shelf or in your history.',
     steps: [
-      'Tap the search bar on Home or go to the Packages tab.',
+      'Tap "Find package" on Home, or go to the Packages tab.',
       'Search by customer phone number, customer name, public package ID, or pickup code.',
       'Filter by status (Waiting, Collected, Returned, Cancelled) to narrow down items.'
     ],
@@ -136,7 +136,7 @@ const HELP_ARTICLES: HelpArticle[] = [
     summary: 'How SMS notifications work and what customers receive.',
     steps: [
       'When recording a package, enable "Send arrival SMS".',
-      'The customer receives a text with the business name, package ID, and 7-character pickup code.',
+      'The customer receives a text naming your pickup point and park, with the 7-character pickup code to show at collection.',
       'If SMS delivery fails or credits are zero, the package still saves safely and the code can be given manually.'
     ]
   },
@@ -147,7 +147,7 @@ const HELP_ARTICLES: HelpArticle[] = [
     icon: Coins,
     summary: 'ParkDrop is free to use; credits are only required for customer SMS alerts.',
     steps: [
-      'Check your balance anytime from the Home header or under "Settings & More > SMS Credits".',
+      'Check your balance anytime under "More > SMS Credits".',
       'Owners and Managers can purchase bundles (e.g. 100, 250, 500, or 1000 credits).',
       'Payments are processed securely via Paystack or Flutterwave.',
       'Your wallet balance updates immediately upon payment verification.'
@@ -161,9 +161,9 @@ const HELP_ARTICLES: HelpArticle[] = [
     icon: WifiOff,
     summary: 'How ParkDrop keeps working when internet drops in the motor park.',
     steps: [
-      'If connectivity drops, the top bar indicates "Offline · Saved on this device".',
+      'If connectivity drops, the top bar shows "No internet".',
       'You can continue recording packages, payments, and collections without delay.',
-      'All changes are stored in encrypted local IndexedDB storage.',
+      'All changes are saved on this device and stay there until you are back online.',
       'When your connection is restored, pending changes sync automatically to the cloud.'
     ],
     tips: 'Buying SMS credits, inviting staff, and editing business details require an active internet connection.'
@@ -175,8 +175,8 @@ const HELP_ARTICLES: HelpArticle[] = [
     icon: ShieldCheck,
     summary: 'Passwordless authentication and device management.',
     steps: [
-      'ParkDrop uses passwordless authentication via email OTP codes.',
-      'You can review active devices and sessions under "Settings & More > Account & Security".',
+      'ParkDrop uses passwordless sign-in: a code sent to your phone or email, no password to remember.',
+      'You can review active devices and sessions under "More > Account & Security".',
       'Lost or stolen devices can be remotely signed out to revoke access immediately.'
     ]
   }
