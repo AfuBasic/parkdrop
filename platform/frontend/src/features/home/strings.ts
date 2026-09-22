@@ -47,14 +47,19 @@ export const HomeStrings = {
 
   // ── Stat strip ─────────────────────────────────────────────────────────
   statWaiting: 'Waiting',
-  statUnpaid: 'Unpaid',
+  statOwed: 'Owed',
   statCollected: 'Today',
   statCollectedFull: 'Collected today',
   /** Sits under the naira figure so the count is not lost. */
   statUnpaidCount: (n: number) => (n === 1 ? '1 package' : `${n} packages`),
   statWaitingHint: 'See packages waiting for pickup',
-  statUnpaidHint: 'See packages that still owe money',
+  statOwedHint: 'Total money owed across waiting packages',
   statCollectedHint: 'See packages collected today',
+
+  // ── Overdue ────────────────────────────────────────────────────────────
+  overduePackagesCount: (n: number) => (n === 1 ? '1 package overdue' : `${n} packages overdue`),
+  nothingOverdue: 'Nothing overdue',
+  nothingOverdueSubline: 'No packages waiting 24 hours or more',
 
   // ── List ───────────────────────────────────────────────────────────────
   listTitle: 'Waiting for pickup',
