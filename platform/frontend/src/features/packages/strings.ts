@@ -113,7 +113,8 @@ export const PackagesStrings = {
 
   // Info card
   infoCardTitle: 'Package info',
-  receivedDateLabel: 'Received date and time',
+  receivedDateLabel: 'Received at',
+  collectedAtLabel: 'Collected at',
   receivedByLabel: 'Received by',
   packageIdLabel: 'Package ID',
   pickupPointLabel: 'Pickup point',
@@ -124,10 +125,10 @@ export const PackagesStrings = {
   collectAndReleasePrimary: (balanceStr: string) => `Collect ${balanceStr} and release`,
   releasePackagePrimary: 'Release package',
   recordPaymentOnlyAction: 'Record payment only',
-  collectedBanner: (date: string, time: string, actor: string) => `Collected on ${date}, ${time} by ${actor}`,
+  collectedBanner: (date: string, time: string, actor: string) => `Released on ${date}, ${time} by ${actor}`,
   // The exact time is not always known (a package collected on another
   // device, or before this app tracked the time). Never guess a time.
-  collectedBannerNoTime: (actor: string) => `Collected by ${actor}`,
+  collectedBannerNoTime: (actor: string) => `Released by ${actor}`,
   owingBanner: (amountStr: string) => `Owing ${amountStr}`,
   undoReleaseAction: 'Undo release',
   returnedBanner: (date: string) => `Returned on ${date}`,
