@@ -1,5 +1,5 @@
-import { fetchApi } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/lib/api';
-import type { BusinessRole } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/permissions/business-permissions';
+import { fetchApi } from '@/lib/api';
+import type { BusinessRole } from '@/features/business/permissions/business-permissions';
 
 export interface StaffMember {
   id: number;
@@ -33,6 +33,8 @@ export interface BusinessDetailsResponse {
     public_id: string;
     name: string;
     status: string;
+    /** In kobo. Added to a package's initial fee per extra day it sits uncollected. */
+    daily_storage_fee_minor: number;
     created_at: string | null;
   };
   current_pickup_point: {
@@ -99,6 +101,14 @@ export const businessApi = {
     const res = await fetchApi('/api/v1/business/details', {
       method: 'PATCH',
       body: JSON.stringify({ name }),
+    });
+    return res.json();
+  },
+
+  async updateDailyStorageFee(dailyStorageFeeMinor: number): Promise<{ message: string }> {
+    const res = await fetchApi('/api/v1/business/details', {
+      method: 'PATCH',
+      body: JSON.stringify({ daily_storage_fee_minor: dailyStorageFeeMinor }),
     });
     return res.json();
   },
