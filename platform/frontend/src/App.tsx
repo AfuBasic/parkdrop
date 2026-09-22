@@ -9,23 +9,36 @@ import { ForgotPinFlow } from '@/features/auth/components/ForgotPinFlow';
 import { UnlockScreen } from '@/features/auth/screens/UnlockScreen';
 import { RecoveryScreen } from '@/features/recovery/RecoveryScreen';
 
-/** Shown while the app resolves who this is, and while the app chunk loads. */
+/**
+ * Shown while the app resolves who this is, and while the app chunk loads.
+ *
+ * The mark sits inside a ring that spins around it rather than a bare
+ * spinner off to the side, so the two read as one piece of motion instead
+ * of a logo that happens to be near unrelated loading chrome. A short label
+ * follows the same rule as every other wait in the app: a spinner alone
+ * does not say what is happening, so it never appears without words.
+ */
 function BootSplash() {
   return (
-    <div className="min-h-[100dvh] bg-surface-page flex flex-col items-center justify-center p-4">
-      <img
-        src="/parkdrop-icon-only.png"
-        alt=""
-        aria-hidden="true"
-        width={48}
-        height={48}
-        className="w-12 h-12 object-contain mb-4 animate-pulse drop-shadow-sm"
-      />
-      <div
-        className="w-6 h-6 border-2 border-action-primary border-t-transparent rounded-full animate-spin"
-        role="status"
-        aria-label="Loading ParkDrop"
-      />
+    <div className="min-h-[100dvh] bg-surface-page flex flex-col items-center justify-center gap-5 p-4">
+      <div className="relative flex items-center justify-center w-24 h-24">
+        <div
+          className="absolute inset-0 rounded-full border-[3px] border-action-primary/15 border-t-action-primary animate-spin motion-reduce:animate-none"
+          role="status"
+          aria-label="Loading ParkDrop"
+        />
+        <div className="w-16 h-16 rounded-[18px] bg-white shadow-md flex items-center justify-center">
+          <img
+            src="/parkdrop-icon-only.png"
+            alt=""
+            aria-hidden="true"
+            width={40}
+            height={40}
+            className="w-10 h-10 object-contain animate-pulse motion-reduce:animate-none"
+          />
+        </div>
+      </div>
+      <p className="m-0 text-[15px] font-bold text-text-secondary">Loading ParkDrop…</p>
     </div>
   );
 }
