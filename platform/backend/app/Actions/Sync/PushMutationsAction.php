@@ -113,17 +113,37 @@ class PushMutationsAction
 
     protected function recordReceipt(string $mutationId, string $deviceUuid, ?int $deviceSequence, ?int $userId, int $businessId, string $operation, string $payloadHash, string $status, array $metadata): void
     {
-        SyncMutationReceipt::create([
-            'mutation_id' => $mutationId,
-            'device_uuid' => $deviceUuid,
-            'device_sequence' => $deviceSequence,
-            'user_id' => $userId,
-            'business_id' => $businessId,
-            'operation' => $operation,
-            'payload_hash' => $payloadHash,
-            'result_status' => $status,
-            'result_metadata' => $metadata,
-            'processed_at' => now(),
-        ]);
+        try {
+            SyncMutationReceipt::create([
+                'mutation_id' => $mutationId,
+                'device_uuid' => $deviceUuid,
+                'device_sequence' => $deviceSequence,
+                'user_id' => $userId,
+                'business_id' => $businessId,
+                'operation' => $operation,
+                'payload_hash' => $payloadHash,
+                'result_status' => $status,
+                'result_metadata' => $metadata,
+                'processed_at' => now(),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // If the legacy unique constraint on device_sequence fails (migration not applied), insert with null sequence
+            if (str_contains($e->getMessage(), 'device_uuid_device_sequence_unique')) {
+                SyncMutationReceipt::create([
+                    'mutation_id' => $mutationId,
+                    'device_uuid' => $deviceUuid,
+                    'device_sequence' => null,
+                    'user_id' => $userId,
+                    'business_id' => $businessId,
+                    'operation' => $operation,
+                    'payload_hash' => $payloadHash,
+                    'result_status' => $status,
+                    'result_metadata' => $metadata,
+                    'processed_at' => now(),
+                ]);
+            } else {
+                throw $e;
+            }
+        }
     }
 }
