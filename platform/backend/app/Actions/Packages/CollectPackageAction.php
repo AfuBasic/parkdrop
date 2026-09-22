@@ -97,6 +97,7 @@ class CollectPackageAction
             // Update package status
             $lockedPackage->update([
                 'status' => 'COLLECTED',
+                'collected_at' => $clientEventAt,
                 'terminal_actor_name' => $actorName,
                 'version' => $lockedPackage->version + 1,
             ]);
