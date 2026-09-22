@@ -16,11 +16,13 @@ import { summariseSync } from './lib/syncSummary';
 import { SetupBanner } from './components/SetupBanner';
 import { ActionTiles } from './components/ActionTiles';
 import { StatStrip } from './components/StatStrip';
+import { OverdueCard } from './components/OverdueCard';
 import { WaitingList } from './components/WaitingList';
 import { FirstPackageCard } from './components/FirstPackageCard';
 import { HomeSkeleton } from './components/HomeSkeleton';
 import { HomeError } from './components/HomeError';
 import type { HomeFilter } from './components/FilterChips';
+import { isOverdue24h, formatOverdueAgeSubline } from '@/features/packages/domain/package-filters';
 
 export type HomePackageFilter = 'WAITING' | 'COLLECTED';
 
@@ -28,7 +30,7 @@ export interface HomeScreenProps {
   onNavigateToSearch?: () => void;
   onNavigateToAdd?: () => void;
   /** Opens the Packages screen, optionally on a given tab. */
-  onNavigateToPackages?: (status?: HomePackageFilter) => void;
+  onNavigateToPackages?: (status?: HomePackageFilter, age?: string) => void;
   /** Opens the screen where the pickup point and park names are set. */
   onNavigateToSetup?: () => void;
   /** Opens the list of things that need a decision. */
@@ -60,7 +62,13 @@ export function HomeScreen({
   const routerNavigate = useNavigate();
   const handleNavigateToSearch = onNavigateToSearch ?? (() => routerNavigate({ to: '/packages/search' }));
   const handleNavigateToAdd = onNavigateToAdd ?? (() => routerNavigate({ to: '/packages/new' }));
-  const handleNavigateToPackages = onNavigateToPackages ?? ((status) => routerNavigate({ to: '/packages', search: status ? { status } : undefined }));
+  const handleNavigateToPackages =
+    onNavigateToPackages ??
+    ((status, age) =>
+      routerNavigate({
+        to: '/packages',
+        search: (status || age) ? { status, age } : undefined,
+      }));
   const handleNavigateToSetup = onNavigateToSetup ?? (() => routerNavigate({ to: '/more/business' }));
   const handleNavigateToAttention = onNavigateToAttention ?? (() => routerNavigate({ to: '/more/attention' }));
   const handleSelectPackage = onSelectPackage ?? ((id: string) => routerNavigate({ to: '/packages/$packageId', params: { packageId: id } }));
@@ -83,6 +91,19 @@ export function HomeScreen({
     () => (filter === 'unpaid' ? data.waiting.filter((r) => r.balanceMinor > 0) : data.waiting),
     [data.waiting, filter]
   );
+
+  // 24-hour overdue packages calculation using the exact same shared utility
+  const overdueInfo = React.useMemo(() => {
+    const now = new Date();
+    const overdueList = data.waiting.filter((r) => isOverdue24h(r.createdAt, now));
+    const count = overdueList.length;
+    let oldestSubline: string | null = null;
+    if (count > 0) {
+      // data.waiting is already sorted oldest-first by createdAt
+      oldestSubline = formatOverdueAgeSubline(overdueList[0].createdAt, now);
+    }
+    return { count, oldestSubline };
+  }, [data.waiting]);
 
   const handleSyncChip = () => {
     // When something is genuinely stuck, the chip is a route to the fix
@@ -148,16 +169,20 @@ export function HomeScreen({
           {data.status === 'error' && <HomeError onRetry={() => setRetryKey((n) => n + 1)} />}
 
           {showStats && (
-            <StatStrip
-              stats={data.stats}
-              onOpenWaiting={() => handleNavigateToPackages('WAITING')}
-              // Unpaid is a payment state rather than a package status, and
-              // the Packages screen filters by status. Narrowing this list is
-              // the honest version of "filtered that way" until it can filter
-              // by money owed too.
-              onOpenUnpaid={() => setFilter('unpaid')}
-              onOpenCollected={() => handleNavigateToPackages('COLLECTED')}
-            />
+            <>
+              <StatStrip
+                stats={data.stats}
+                onOpenWaiting={() => handleNavigateToPackages('WAITING')}
+                onOpenUnpaid={() => setFilter('unpaid')}
+                onOpenCollected={() => handleNavigateToPackages('COLLECTED')}
+              />
+
+              <OverdueCard
+                overdueCount={overdueInfo.count}
+                oldestSubline={overdueInfo.oldestSubline}
+                onOpenOverdue={() => handleNavigateToPackages('WAITING', '24h')}
+              />
+            </>
           )}
 
           {data.status === 'ready' &&
