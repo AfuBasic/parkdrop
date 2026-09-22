@@ -21,18 +21,22 @@ export function PackageInfoCard({ pkg, pickupPointName }: PackageInfoCardProps) 
   });
 
   let collectedDateStr = null;
-  if (pkg.status === 'COLLECTED' && pkg.collected_at) {
-    const collectedDate = new Date(pkg.collected_at);
-    const cDate = collectedDate.toLocaleDateString('en-NG', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-    const cTime = collectedDate.toLocaleTimeString('en-NG', {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-    collectedDateStr = `${cDate} · ${cTime}`;
+  if (pkg.status === 'COLLECTED') {
+    if (pkg.collected_at) {
+      const collectedDate = new Date(pkg.collected_at);
+      const cDate = collectedDate.toLocaleDateString('en-NG', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+      const cTime = collectedDate.toLocaleTimeString('en-NG', {
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+      collectedDateStr = `${cDate} · ${cTime}`;
+    } else {
+      collectedDateStr = 'Unknown'; // Fallback for legacy packages without a recorded collection time
+    }
   }
 
   const realPointName = pickupPointName || pkg.pickup_point_name || null;
