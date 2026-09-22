@@ -143,6 +143,11 @@ export const PackagesStrings = {
   undoAction: (seconds: number) => `Undo (${seconds})`,
 
   // More menu actions
+  resendSmsAction: 'Resend arrival SMS',
   markAsReturnedAction: 'Mark as returned to sender',
   cancelEnteredByMistakeAction: 'Cancel this package (entered by mistake)',
+
+  // Resend SMS toasts
+  smsResentToast: 'SMS queued to resend',
+  smsResendFailedToast: 'Could not resend SMS. Try again.',
 };
