@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { HomeStrings } from './strings';
 import { currentGreeting } from './lib/greeting';
 import { useHomeData } from './hooks/useHomeData';
+import { DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import { usePickupIdentity } from './hooks/usePickupIdentity';
 import { HomeHeader } from './components/HomeHeader';
 import { SyncSheet } from './components/SyncSheet';
@@ -67,7 +68,7 @@ export function HomeScreen({
   const { user, business } = useAuth();
   const identity = usePickupIdentity();
   const syncState = useSyncState(business?.id);
-  const data = useHomeData(business?.id);
+  const data = useHomeData(business?.id, business?.daily_storage_fee_minor ?? DEFAULT_DAILY_STORAGE_FEE_MINOR);
   const keyboardOpen = useKeyboardOpen();
 
   const [filter, setFilter] = React.useState<HomeFilter>('all');
