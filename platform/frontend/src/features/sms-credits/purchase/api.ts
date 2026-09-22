@@ -20,12 +20,17 @@ export async function fetchCreditBundles(): Promise<BundlesResponse> {
   return res.json();
 }
 
-export async function initializePurchase(bundleKey: string, callbackUrl?: string): Promise<CreatePurchaseResponse> {
+export async function initializePurchase(
+  bundleKey: string,
+  callbackUrl?: string,
+  provider?: 'paystack' | 'flutterwave'
+): Promise<CreatePurchaseResponse> {
   const res = await fetchApi('/api/v1/sms-credit-purchases', {
     method: 'POST',
     body: JSON.stringify({
       bundle_key: bundleKey,
       callback_url: callbackUrl,
+      provider,
     }),
   });
   return res.json();
