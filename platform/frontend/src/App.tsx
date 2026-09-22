@@ -123,6 +123,17 @@ const ThemeDemo = import.meta.env.DEV
   ? React.lazy(() => import('@/routes/theme-demo').then((m) => ({ default: m.ThemeDemo })))
   : null;
 
+/**
+ * A harness for looking at any signed-in screen without a server or an
+ * account. Reached by adding ?preview=1 to any real path, e.g.
+ * /more/help?preview=1. Gated on import.meta.env.DEV for the same reason as
+ * HomePreview: the module and its seeder must not reach the production
+ * bundle, and it must not be a URL anyone can guess their way into.
+ */
+const ScreenPreview = import.meta.env.DEV
+  ? React.lazy(() => import('@/routes/screen-preview'))
+  : null;
+
 function App() {
   if (
     HomePreview &&
@@ -132,6 +143,19 @@ function App() {
     return (
       <React.Suspense fallback={<BootSplash />}>
         <HomePreview />
+      </React.Suspense>
+    );
+  }
+
+  if (
+    ScreenPreview &&
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('preview') === '1'
+  ) {
+    return (
+      <React.Suspense fallback={<BootSplash />}>
+        <ScreenPreview />
+        <Toaster />
       </React.Suspense>
     );
   }
