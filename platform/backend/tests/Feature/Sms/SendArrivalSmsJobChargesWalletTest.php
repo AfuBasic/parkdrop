@@ -35,7 +35,6 @@ class SendArrivalSmsJobChargesWalletTest extends TestCase
         $this->app->instance(SmsProvider::class, $this->fakeSentProvider());
 
         $job = new SendArrivalSmsJob(
-            packageId: 1,
             packageUuid: (string) Str::uuid(),
             businessId: $business->id,
             recipientPhone: '2348031234567',
@@ -78,7 +77,6 @@ class SendArrivalSmsJobChargesWalletTest extends TestCase
         $this->app->instance(SmsProvider::class, $this->fakeSentProvider());
 
         $job = new SendArrivalSmsJob(
-            packageId: 1,
             packageUuid: (string) Str::uuid(),
             businessId: $business->id,
             recipientPhone: '2348031234567',
