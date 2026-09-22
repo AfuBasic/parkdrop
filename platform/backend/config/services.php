@@ -37,7 +37,7 @@ return [
 
     'termii' => [
         'api_key' => env('TERMII_API_KEY', env('SMS_API_KEY')),
-        'sender_id' => env('TERMII_SENDER_ID', 'Kontrol'),
+        'sender_id' => env('TERMII_SENDER_ID', 'OE Alert'),
         'base_url' => env('TERMII_BASE_URL', 'https://api.ng.termii.com/api'),
         // Secret used to verify HMAC signatures on incoming Termii delivery webhooks.
         // Set this in .env to the value Termii provides in the webhook configuration.
