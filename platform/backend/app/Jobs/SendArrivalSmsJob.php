@@ -120,6 +120,19 @@ class SendArrivalSmsJob implements ShouldQueue
                 'message_id' => $result->messageId,
             ]);
 
+            // Write a SyncChange so the client's next pull sees the SENT status.
+            // No payload column here — PullChangesAction always re-fetches the
+            // live Package (with its fresh arrival_sms_status) by entity_id, it
+            // never reads a stored payload off this row.
+            DB::table('sync_changes')->insert([
+                'business_id' => $this->businessId,
+                'entity_type' => 'package',
+                'entity_id' => $this->packageUuid,
+                'operation' => 'SMS_SENT',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
             // Charged only now, after Termii has confirmed the message was
             // accepted — never before the send, so a billing failure can
             // never block or duplicate a message that already went out.
@@ -219,17 +232,13 @@ class SendArrivalSmsJob implements ShouldQueue
                 'updated_at' => now(),
             ]);
 
-        // Write a SyncChange so the client's next pull surfaces this in the Attention Center
+        // Write a SyncChange so the client's next pull surfaces this in the Attention Center.
+        // No payload column — see the SENT branch above for why.
         DB::table('sync_changes')->insert([
             'business_id' => $this->businessId,
             'entity_type' => 'package',
             'entity_id' => $this->packageUuid,
             'operation' => 'SMS_FAILED',
-            'payload' => json_encode([
-                'package_id' => $this->packageUuid,
-                'arrival_sms_status' => 'FAILED',
-                'arrival_sms_error' => $reason,
-            ]),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -258,11 +267,6 @@ class SendArrivalSmsJob implements ShouldQueue
             'entity_type' => 'package',
             'entity_id' => $this->packageUuid,
             'operation' => 'SMS_NEEDS_RECONCILIATION',
-            'payload' => json_encode([
-                'package_id' => $this->packageUuid,
-                'arrival_sms_status' => 'NEEDS_RECONCILIATION',
-                'arrival_sms_note' => $reason,
-            ]),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
