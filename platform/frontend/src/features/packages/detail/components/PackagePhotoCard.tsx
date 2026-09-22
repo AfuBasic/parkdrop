@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import type { ChangeEvent } from 'react';
 import { Camera, Image as ImageIcon, Loader2, X } from 'lucide-react';
-import { Dialog, DialogContent } from '@/design-system';
 import { db } from '@/offline/db/database';
 import type { LocalPackageMedia } from '@/offline/db/schema';
 import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
@@ -121,18 +120,18 @@ export function PackagePhotoCard({
                 />
               </button>
 
-              <div className="flex items-center justify-end gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-blue)] hover:underline active:scale-95"
+                  className="min-h-[48px] px-2 text-[15px] font-extrabold text-[var(--pd-blue)] hover:underline active:scale-95 bg-[var(--pd-tint)] rounded-xl border border-[var(--pd-line-2)] truncate"
                 >
                   {PackagesStrings.retakePhotoAction}
                 </button>
                 <button
                   type="button"
                   onClick={handleRemovePhoto}
-                  className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-bad)] hover:underline active:scale-95"
+                  className="min-h-[48px] px-2 text-[15px] font-extrabold text-[var(--pd-bad)] hover:underline active:scale-95 bg-[#FEF2F2] rounded-xl border border-[#FCA5A5] truncate"
                 >
                   {PackagesStrings.removePhotoAction}
                 </button>
@@ -142,22 +141,24 @@ export function PackagePhotoCard({
         </div>
       </Section>
 
-      {/* Tap-to-zoom modal */}
-      {photoPreview && (
-        <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
-          <DialogContent className="max-w-lg p-2 bg-black border-none rounded-2xl overflow-hidden flex flex-col items-center">
-            <div className="relative w-full max-h-[80vh] flex items-center justify-center">
-              <img src={photoPreview} alt="Package full" className="max-w-full max-h-[75vh] object-contain rounded-lg" />
-              <button
-                type="button"
-                onClick={() => setIsZoomOpen(false)}
-                className="absolute top-2 right-2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-          </DialogContent>
-        </Dialog>
+      {/* Tap-to-zoom full screen overlay (Mobile way, no Dialog modal) */}
+      {photoPreview && isZoomOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center animate-in fade-in duration-200 touch-none">
+          <button
+            type="button"
+            onClick={() => setIsZoomOpen(false)}
+            className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all z-10 cursor-pointer"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <img 
+              src={photoPreview} 
+              alt="Package full" 
+              className="max-w-full max-h-full object-contain" 
+            />
+          </div>
+        </div>
       )}
     </>
   );
