@@ -50,7 +50,7 @@ export function PackageActivitySection({ timeline }: PackageActivitySectionProps
     <button
       type="button"
       onClick={() => setShowAll(true)}
-      className="text-[14px] font-extrabold text-[var(--pd-blue)] hover:underline min-h-[44px] px-2 flex items-center"
+      className="text-[15px] font-extrabold text-[var(--pd-blue)] hover:underline min-h-[48px] px-2 flex items-center"
     >
       {PackagesStrings.seeAllActivity} ({timeline.length})
     </button>
@@ -69,7 +69,7 @@ export function PackageActivitySection({ timeline }: PackageActivitySectionProps
             : item.actorName;
 
           return (
-            <div key={item.id} className="py-2.5 flex items-start gap-3 text-[14px]">
+            <div key={item.id} className="py-2.5 flex items-start gap-3 text-[15px]">
               <div className="p-1.5 rounded-full bg-[var(--pd-page)] border border-[var(--pd-line)] mt-0.5 shrink-0">
                 {getIcon(item.type)}
               </div>
@@ -79,13 +79,13 @@ export function PackageActivitySection({ timeline }: PackageActivitySectionProps
                   <span className="font-extrabold text-[var(--pd-navy)] leading-tight">
                     {item.title}
                   </span>
-                  <span className="text-[13px] font-bold text-[var(--pd-muted)] tabular-nums shrink-0">
+                  <span className="text-[15px] font-bold text-[var(--pd-muted)] tabular-nums shrink-0">
                     {new Date(item.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                   </span>
                 </div>
 
                 {(item.description || actorDisplay) && (
-                  <span className="text-[13px] font-bold text-[var(--pd-muted)] mt-0.5">
+                  <span className="text-[15px] font-bold text-[var(--pd-muted)] mt-0.5">
                     {item.description}
                     {item.description && actorDisplay && ' · '}
                     {actorDisplay && `by ${actorDisplay}`}
