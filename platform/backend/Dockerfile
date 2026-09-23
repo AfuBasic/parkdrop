@@ -10,7 +10,13 @@
 # scheduler) — platform/compose.prod.yaml just overrides `command:` per
 # service, exactly like the dev compose file does with the Sail image.
 
-ARG PHP_VERSION=8.3
+# composer.lock was resolved against PHP 8.5 (the version local dev/Sail
+# actually runs — see vendor/laravel/sail/runtimes/8.5) even though
+# composer.json's own constraint says ^8.2: several locked package
+# versions (symfony/*, laravel/reverb) require php >=8.4.1 regardless.
+# Building on 8.3 here failed composer install outright; match the
+# version the lock file was actually generated against.
+ARG PHP_VERSION=8.5
 
 FROM php:${PHP_VERSION}-cli-alpine AS base
 
@@ -36,6 +42,12 @@ RUN apk add --no-cache \
         oniguruma-dev \
         libxml2-dev \
         imagemagick-dev \
+    # No opcache here — it's already built into php:*-cli-alpine and enabled
+    # by default (`php -m` shows "Zend OPcache" with nothing extra done).
+    # `docker-php-ext-install opcache` on this image reliably fails with
+    # "cp: can't stat 'modules/*'" (confirmed in isolation, unrelated to
+    # -j parallelism or any other extension) — it's trying to rebuild
+    # something that's already compiled in.
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j"$(nproc)" \
         pdo_mysql \
@@ -45,7 +57,7 @@ RUN apk add --no-cache \
         gd \
         exif \
         soap \
-        opcache \
+        pcntl \
     && pecl install redis imagick \
     && docker-php-ext-enable redis imagick \
     && apk del .build-deps \
