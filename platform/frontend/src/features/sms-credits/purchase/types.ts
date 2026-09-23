@@ -1,10 +1,8 @@
-export interface SmsCreditBundle {
-  key: string;
-  credits: number;
-  amount_minor: number;
+export interface SmsCreditPricing {
+  price_per_credit_minor: number;
   currency: string;
-  label: string;
-  description?: string;
+  min_credits: number;
+  max_credits: number;
 }
 
 export interface SmsCreditPurchase {
