@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import { toast } from 'sonner';
 import { UserPlus, WifiOff, AlertCircle } from 'lucide-react';
@@ -29,7 +28,6 @@ export const StaffScreen: React.FC<StaffScreenProps> = ({
   mockRole,
   mockIsOnline,
 }) => {
-  const routerNavigate = useNavigate();
   const safeBack = useSafeBack('/more');
   const handleBack = onBack ?? safeBack;
   const { user, role: contextRole } = useAuth();
