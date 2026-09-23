@@ -325,4 +325,46 @@ class BusinessStaffManagementTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_invitation_preview_is_visible_with_the_correct_token_and_no_auth()
+    {
+        $rawToken = 'a-known-raw-token';
+        $invitation = BusinessInvitation::create([
+            'business_id' => $this->business->id,
+            'email' => 'newstaff@example.com',
+            'email_normalized' => 'newstaff@example.com',
+            'role' => 'attendant',
+            'status' => 'pending',
+            'invited_by_user_id' => $this->owner->id,
+            'token_hash' => hash('sha256', $rawToken),
+            'expires_at' => now()->addDays(7),
+        ]);
+
+        $response = $this->getJson("/api/v1/business/invitations/{$invitation->id}?token={$rawToken}");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('email_normalized', 'newstaff@example.com')
+            ->assertJsonPath('business_name', $this->business->name)
+            ->assertJsonPath('role', 'attendant');
+    }
+
+    public function test_invitation_preview_rejects_a_wrong_or_missing_token()
+    {
+        $invitation = BusinessInvitation::create([
+            'business_id' => $this->business->id,
+            'email' => 'newstaff@example.com',
+            'email_normalized' => 'newstaff@example.com',
+            'role' => 'attendant',
+            'status' => 'pending',
+            'invited_by_user_id' => $this->owner->id,
+            'token_hash' => hash('sha256', 'the-real-token'),
+            'expires_at' => now()->addDays(7),
+        ]);
+
+        $this->getJson("/api/v1/business/invitations/{$invitation->id}?token=wrong-token")
+            ->assertStatus(404);
+
+        $this->getJson("/api/v1/business/invitations/{$invitation->id}")
+            ->assertStatus(404);
+    }
 }
