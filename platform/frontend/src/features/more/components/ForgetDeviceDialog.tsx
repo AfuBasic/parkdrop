@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { MoreStrings } from '@/features/more/strings';
 
 interface ForgetDeviceDialogProps {
