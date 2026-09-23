@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import { toast } from 'sonner';
-import { PackageX, ArrowLeft } from 'lucide-react';
+import { PackageX } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { usePickupIdentity } from '@/features/home/hooks/usePickupIdentity';
 import { usePackageDetail } from '@/features/packages/detail/hooks/usePackageDetail';
@@ -156,36 +155,30 @@ export function PackageDetailScreen({
     handleBack();
   };
 
-  // 4. Undo Release Handler
-  const handleUndoRelease = async () => {
-    await PackageLifecycleRepository.undoCollectionLocally({
-      businessId,
-      packageId: pkg.id,
-    });
-  };
-
-  // 5. Lifecycle Sheets Completion Handlers
-  const handleCompleteReturn = async (reason: ReturnReason, note?: string | null) => {
+  // 5. Lifecycle Action Handlers (Return & Cancel)
+  const handleConfirmReturn = async (reason: ReturnReason, note?: string | null) => {
     await PackageLifecycleRepository.returnPackageLocally({
       businessId,
       pickupPointId: pkg.pickup_point_id,
       packageId: pkg.id,
       reason,
-      notes: note,
+      reasonNote: note,
       actorName: staffName,
     });
+    setIsReturnSheetOpen(false);
     handleBack();
   };
 
-  const handleCompleteCancel = async (reason: CancelReason, note?: string | null) => {
+  const handleConfirmCancel = async (reason: CancelReason, note?: string | null) => {
     await PackageLifecycleRepository.cancelPackageLocally({
       businessId,
       pickupPointId: pkg.pickup_point_id,
       packageId: pkg.id,
       reason,
-      notes: note,
+      reasonNote: note,
       actorName: staffName,
     });
+    setIsCancelSheetOpen(false);
     handleBack();
   };
 
@@ -270,7 +263,6 @@ export function PackageDetailScreen({
         onConfirmCollectAndRelease={handleConfirmCollectAndRelease}
         onConfirmReleaseWithoutPayment={handleConfirmReleaseWithoutPayment}
         onConfirmReleasePaid={handleConfirmReleasePaid}
-        onUndoRelease={handleUndoRelease}
       />
 
       {/* Lifecycle Action Sheets */}
