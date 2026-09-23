@@ -9,6 +9,7 @@ import { usePollingSync } from '@/offline/sync/usePollingSync';
 
 import { DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import { packagesApi } from '@/features/packages/api/packages-api';
+import { ApiError } from '@/lib/api';
 import { PackageIdentityHeader } from '@/features/packages/detail/components/PackageIdentityHeader';
 import { PackageCustomerCard } from '@/features/packages/detail/components/PackageCustomerCard';
 import { PackagePickupCodeCard } from '@/features/packages/detail/components/PackagePickupCodeCard';
@@ -194,8 +195,12 @@ export function PackageDetailScreen({
       });
       
       toast.success(PackagesStrings.smsResentToast);
-    } catch {
-      toast.error(PackagesStrings.smsResendFailedToast);
+    } catch (err) {
+      // The backend rejects this for real, actionable reasons (e.g. no
+      // phone number on file) — show what it actually said instead of a
+      // blanket "try again" that hides why it won't work no matter how
+      // many times they tap it.
+      toast.error(err instanceof ApiError ? err.message : PackagesStrings.smsResendFailedToast);
     }
   };
 
