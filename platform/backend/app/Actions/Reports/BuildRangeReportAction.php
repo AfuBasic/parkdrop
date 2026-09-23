@@ -197,11 +197,11 @@ class BuildRangeReportAction
 
         // 8. Staff Breakdown (if multiple helpers exist)
         $staffBreakdown = [];
-        $usersCount = $business->businessMemberships()->count();
+        $usersCount = $business->memberships()->where('status', 'active')->count();
         if ($usersCount > 1) {
             $staffMap = [];
             foreach ($receivedPackages as $pkg) {
-                $name = $pkg->creator ? $pkg->creator->first_name : 'Owner/Admin';
+                $name = $pkg->creator?->first_name ?: 'Owner/Admin';
                 if (!isset($staffMap[$name])) $staffMap[$name] = ['name' => $name, 'received' => 0, 'released' => 0];
                 $staffMap[$name]['received']++;
             }
