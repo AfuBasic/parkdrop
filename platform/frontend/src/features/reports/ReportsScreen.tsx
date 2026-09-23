@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useOnline } from '@/features/auth/lib/useOnline';
+import { useAuth } from '@/features/auth/AuthContext';
 import { useRangeReport, type ReportPreset } from './api/useRangeReport';
 import { ReportsStrings } from './strings';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -11,13 +12,23 @@ import { Link } from '@tanstack/react-router';
 
 export function ReportsScreen() {
   const isOnline = useOnline();
+  const { business } = useAuth();
+  const businessId = business?.id;
   const [preset, setPreset] = useState<ReportPreset>('today');
   const { data: report, isLoading, isError, refetch } = useRangeReport(preset);
 
-  // Still compute overdue from Dexie directly because the logic expects the raw packages
+  // Still compute overdue from Dexie directly because the logic expects the
+  // raw packages. Missing the business_id filter here meant this counted
+  // WAITING packages across every business ever synced to this device's
+  // local database, not just the current one — which is how "Currently
+  // overdue" could show a larger number than the report's own (correctly
+  // business-scoped) "Still waiting" count.
   const waitingPackages = useLiveQuery(
-    () => db.packages.where('status').equals('WAITING').toArray(),
-    []
+    () =>
+      businessId
+        ? db.packages.where({ business_id: businessId, status: 'WAITING' }).toArray()
+        : [],
+    [businessId]
   );
 
   const currentlyOverdueCount = useMemo(() => {
