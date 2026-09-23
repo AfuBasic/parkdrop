@@ -10,8 +10,8 @@ name: 'parkdrop'
 # bundled here since nothing external was asked for it — split it out the
 # same way later if that ever needs to change.
 #
-# All four backend processes share one built image; only `command:` differs
-# per service, same pattern as compose.dev.yaml's Sail services.
+# All three backend processes share one built image; only `command:`
+# differs per service, same pattern as compose.dev.yaml's Sail services.
 
 x-backend-image: &backend-image
     build:
@@ -33,16 +33,11 @@ x-backend-env: &backend-env
     CACHE_STORE: 'redis'
     SESSION_DRIVER: 'redis'
     QUEUE_CONNECTION: 'redis'
-    BROADCAST_CONNECTION: 'reverb'
-    REVERB_APP_ID: '${REVERB_APP_ID}'
-    REVERB_APP_KEY: '${REVERB_APP_KEY}'
-    REVERB_APP_SECRET: '${REVERB_APP_SECRET}'
-    # The PUBLIC hostname/port/scheme browsers connect to (behind Coolify's
-    # proxy) — not the reverb container's own internal host:port. The
-    # reverb service itself always binds 0.0.0.0:8080 regardless of this.
-    REVERB_HOST: '${REVERB_HOST}'
-    REVERB_PORT: '${REVERB_PORT:-443}'
-    REVERB_SCHEME: '${REVERB_SCHEME:-https}'
+    # No reverb service — nothing in the app actually opens a WebSocket
+    # connection to it yet (frontend has laravel-echo/pusher-js installed
+    # but never imports them). Laravel's own default (BROADCAST_CONNECTION
+    # unset -> 'null') is correct here; the one broadcast event that exists
+    # server-side (SyncHint) just becomes a no-op instead of erroring.
 
 services:
     backend:
@@ -66,26 +61,6 @@ services:
             timeout: 5s
             retries: 3
             start_period: 30s
-
-    reverb:
-        # A separate container from redis — same private network, own
-        # process. It needs its OWN public entry point: in Coolify, give
-        # this service (or this port) its own domain — e.g.
-        # ws.parkdrop.com.ng — with WSS enabled, distinct from the
-        # backend's HTTP domain/port. Nothing routes WebSocket traffic here
-        # automatically just because it's in this compose file.
-        <<: *backend-image
-        restart: unless-stopped
-        command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
-        ports:
-            - '8081:8080'
-        environment: *backend-env
-        volumes:
-            - 'backend-storage:/var/www/html/storage/app'
-        networks:
-            - parkdrop
-        depends_on:
-            - redis
 
     horizon:
         <<: *backend-image
