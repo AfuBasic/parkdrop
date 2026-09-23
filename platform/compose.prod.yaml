@@ -67,8 +67,16 @@ services:
             RUN_MIGRATIONS: 'true'
         volumes:
             - 'backend-storage:/var/www/html/storage/app'
+        # parkdrop: talks to redis/horizon/scheduler. coolify: the shared
+        # network every Coolify resource on the server joins — needed to
+        # resolve and reach the standalone MySQL container, which is its
+        # own separate Coolify resource (own compose project, own private
+        # network) that `parkdrop` alone can never see. Without this,
+        # DB_HOST fails DNS resolution entirely ("getaddrinfo ... failed"),
+        # not just a refused/timed-out connection.
         networks:
             - parkdrop
+            - coolify
         depends_on:
             - redis
         healthcheck:
@@ -87,6 +95,7 @@ services:
             - 'backend-storage:/var/www/html/storage/app'
         networks:
             - parkdrop
+            - coolify
         depends_on:
             - redis
 
@@ -99,6 +108,7 @@ services:
             - 'backend-storage:/var/www/html/storage/app'
         networks:
             - parkdrop
+            - coolify
         depends_on:
             - redis
 
@@ -117,6 +127,15 @@ services:
 networks:
     parkdrop:
         driver: bridge
+    # Pre-existing network Coolify creates itself on the host — declared
+    # `external` so Compose attaches to it instead of trying to create it.
+    # If your server's shared network has a different name (check with
+    # `docker network ls` — look for the one every Coolify resource joins,
+    # not this project's own auto-namespaced parkdrop one), change the
+    # `name:` below to match.
+    coolify:
+        external: true
+        name: coolify
 
 volumes:
     parkdrop-redis:
