@@ -49,8 +49,15 @@ services:
     backend:
         <<: *backend-image
         restart: unless-stopped
-        ports:
-            - '8000:80'
+        # No fixed host port — a hardcoded "8000:80" collides with anything
+        # else on the shared Coolify host already bound to 8000 (exactly
+        # what broke this deploy: "port is already allocated"). Coolify's
+        # own proxy routes to this container over the internal Docker
+        # network using the FQDN configured on the resource in its UI; it
+        # doesn't need a published host port to do that. `expose` just
+        # documents which container port is reachable on that network.
+        expose:
+            - '80'
         environment:
             <<: *backend-env
             # Only this service runs migrations on boot — see entrypoint.sh.
