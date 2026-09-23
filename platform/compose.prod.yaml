@@ -33,6 +33,16 @@ x-backend-env: &backend-env
     CACHE_STORE: 'redis'
     SESSION_DRIVER: 'redis'
     QUEUE_CONNECTION: 'redis'
+    BROADCAST_CONNECTION: 'reverb'
+    REVERB_APP_ID: '${REVERB_APP_ID}'
+    REVERB_APP_KEY: '${REVERB_APP_KEY}'
+    REVERB_APP_SECRET: '${REVERB_APP_SECRET}'
+    # The PUBLIC hostname/port/scheme browsers connect to (behind Coolify's
+    # proxy) — not the reverb container's own internal host:port. The
+    # reverb service itself always binds 0.0.0.0:8080 regardless of this.
+    REVERB_HOST: '${REVERB_HOST}'
+    REVERB_PORT: '${REVERB_PORT:-443}'
+    REVERB_SCHEME: '${REVERB_SCHEME:-https}'
 
 services:
     backend:
@@ -58,6 +68,12 @@ services:
             start_period: 30s
 
     reverb:
+        # A separate container from redis — same private network, own
+        # process. It needs its OWN public entry point: in Coolify, give
+        # this service (or this port) its own domain — e.g.
+        # ws.parkdrop.com.ng — with WSS enabled, distinct from the
+        # backend's HTTP domain/port. Nothing routes WebSocket traffic here
+        # automatically just because it's in this compose file.
         <<: *backend-image
         restart: unless-stopped
         command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
