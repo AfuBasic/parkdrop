@@ -169,16 +169,13 @@ class SmsCreditPurchaseTest extends TestCase
         $this->assertGreaterThanOrEqual(35000, $amountMinor - (int) round($amountMinor * 0.015));
     }
 
-    public function test_a_flutterwave_purchase_is_grossed_up_to_cover_flutterwaves_fee(): void
+    public function test_flutterwave_is_no_longer_an_accepted_provider(): void
     {
+        // Flutterwave was removed as a selectable payment option (see
+        // SmsCreditPurchaseController's validation) — past purchases still
+        // have provider="flutterwave" on record, but nothing can create a
+        // new one.
         [$business, $user] = $this->createBusinessAndUser('OWNER');
-
-        Http::fake([
-            'api.flutterwave.com/*' => Http::response([
-                'status' => 'success',
-                'data' => ['link' => 'https://checkout.flutterwave.com/xyz'],
-            ]),
-        ]);
 
         $response = $this->actingAs($user)
             ->withHeader('X-Business-Id', (string) $business->id)
@@ -187,13 +184,8 @@ class SmsCreditPurchaseTest extends TestCase
                 'provider' => 'flutterwave',
             ]);
 
-        $response->assertStatus(201);
-        $amountMinor = $response->json('purchase.amount_minor');
-        $feeMinor = $response->json('purchase.fee_minor');
-
-        $this->assertGreaterThan(35000, $amountMinor);
-        $this->assertSame($amountMinor, 35000 + $feeMinor);
-        $this->assertGreaterThanOrEqual(35000, $amountMinor - (int) round($amountMinor * 0.02));
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('provider');
     }
 
     public function test_the_client_cannot_influence_the_charged_amount(): void
