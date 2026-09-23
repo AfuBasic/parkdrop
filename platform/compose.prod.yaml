@@ -15,7 +15,13 @@ name: 'parkdrop'
 
 x-backend-image: &backend-image
     build:
-        context: './backend'
+        # Root-relative, not relative to this file's own directory (platform/).
+        # Coolify invokes `docker compose` with `--project-directory` set to
+        # the repo root, which overrides Compose's normal behavior of
+        # resolving relative paths against the compose file's location —
+        # so `./backend` here would resolve to <repo-root>/backend (doesn't
+        # exist) instead of <repo-root>/platform/backend.
+        context: './platform/backend'
         dockerfile: Dockerfile
     image: 'parkdrop-backend:latest'
 
