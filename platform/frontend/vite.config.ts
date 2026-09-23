@@ -25,6 +25,19 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,ttf}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//], // Don't intercept API requests
+        // registerType: 'autoUpdate' alone doesn't make a new deploy take
+        // effect — Workbox's default lifecycle leaves a freshly-fetched
+        // service worker sitting "waiting" until every open tab closes,
+        // which on a PWA people leave open all day means it can sit there
+        // indefinitely, silently serving the previous deploy's JS bundle no
+        // matter how many times someone reloads. skipWaiting + clientsClaim
+        // makes a new SW activate and take control immediately; combined
+        // with autoUpdate's injected register script (which reloads once
+        // the new SW takes over), a normal reload now actually picks up
+        // the new deploy instead of needing a manual cache/SW clear.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           // Exclude API requests from generic caching
           {
