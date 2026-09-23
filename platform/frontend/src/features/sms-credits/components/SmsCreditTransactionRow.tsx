@@ -34,10 +34,13 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
   // Note: Since dexie-react-hooks sometimes returns undefined while loading,
   // we could have a flash of "Package no longer available".
   // But dexie is local and practically instantaneous, so we accept this for now.
-  const packageData = useLiveQuery(
+  const packageWithCustomer = useLiveQuery(
     async () => {
       if (!isArrivalSms || !transaction.reference_id) return undefined;
-      return await db.packages.get(transaction.reference_id);
+      const pkg = await db.packages.get(transaction.reference_id);
+      if (!pkg) return null;
+      const cust = pkg.customer_id ? await db.customers.get(pkg.customer_id) : null;
+      return { pkg, cust };
     },
     [isArrivalSms, transaction.reference_id]
   );
@@ -47,16 +50,19 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
   let isDeletedPackage = false;
 
   if (isArrivalSms) {
-    if (packageData) {
-      if (packageData.customer_name) {
-        title = packageData.customer_name;
-      } else if (packageData.customer_phone) {
-        title = formatPhone(packageData.customer_phone);
+    if (packageWithCustomer) {
+      const { cust, pkg } = packageWithCustomer;
+      if (cust?.name) {
+        title = cust.name;
+      } else if (cust?.phone_display) {
+        title = formatPhone(cust.phone_display);
+      } else if (pkg.creator_name) {
+        title = pkg.creator_name;
       } else {
         title = SmsCreditsStrings.packageSms;
       }
-    } else {
-      // If we don't have packageData, assume it's deleted or not synced down.
+    } else if (packageWithCustomer === null) {
+      // If package explicitly not found, mark as deleted
       title = SmsCreditsStrings.packageDeleted;
       isDeletedPackage = true;
     }
