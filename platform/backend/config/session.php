@@ -32,7 +32,16 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    // Defaults to 30 days (43200), not Laravel's 120-minute default. The PIN
+    // lock (deviceMeta.pin_hash, checked entirely client-side — see
+    // UnlockScreen) is what actually gates day-to-day re-entry into the app
+    // on a device already in someone's hands; this cookie session is a
+    // separate, independent clock the PIN never touches or refreshes. A
+    // short lifetime here doesn't add real security (the PIN isn't a server-
+    // recognized factor at all — auth:sanctum only ever checks this cookie),
+    // it just silently 401s a dormant tab with no way back in short of a
+    // full email-OTP re-verify, which is what happened in production.
+    'lifetime' => (int) env('SESSION_LIFETIME', 43200),
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
 
