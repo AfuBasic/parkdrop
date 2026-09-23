@@ -79,6 +79,9 @@ export class MediaUploadCoordinator {
           local_blob: undefined, // Free memory/storage
           cloudinary_asset_id: uploadResponse.asset_id,
           public_id: uploadResponse.public_id,
+          // From the authorize response, not a guessed env var — this is
+          // what actually renders the delivery URL later (usePackageDetail).
+          cloud_name: authParams.cloud_name,
         });
 
       } catch (error: any) {

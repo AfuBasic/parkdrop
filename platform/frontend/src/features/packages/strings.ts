@@ -100,6 +100,10 @@ export const PackagesStrings = {
   retakePhotoAction: 'Retake',
   removePhotoAction: 'Remove',
   photoAddedStatus: 'Photo attached',
+  photoUploadingStatus: 'Uploading…',
+  photoFailedStatus: "Couldn't upload",
+  photoRetryUploadAction: 'Retry upload',
+  photoUnavailableNotice: "Photo saved on this device — couldn't load a preview yet.",
 
   // Activity section
   activityTitle: 'Activity',

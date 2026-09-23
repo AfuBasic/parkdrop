@@ -1,7 +1,9 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { ChangeEvent } from 'react';
-import { Camera, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { Camera, Image as ImageIcon, Loader2, RefreshCw, X } from 'lucide-react';
 import { db } from '@/offline/db/database';
+import { MediaUploadCoordinator } from '@/features/package-media/upload/media-upload-coordinator';
 import type { LocalPackageMedia } from '@/offline/db/schema';
 import { processPackagePhoto } from '@/features/package-media/image-processing/process-package-photo';
 import { PackagesStrings } from '@/features/packages/strings';
@@ -14,6 +16,9 @@ export interface PackagePhotoCardProps {
   mediaPreviewUrl: string | null;
 }
 
+const UPLOADING_STATUSES = new Set(['PENDING_UPLOAD', 'AUTHORIZING', 'UPLOADING', 'VERIFYING']);
+const FAILED_STATUSES = new Set(['FAILED_RETRYABLE', 'NEEDS_ATTENTION']);
+
 export function PackagePhotoCard({
   packageId,
   businessId,
@@ -22,7 +27,51 @@ export function PackagePhotoCard({
   const [photoPreview, setPhotoPreview] = useState<string | null>(mediaPreviewUrl);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [imageFailedToLoad, setImageFailedToLoad] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Live upload status straight from IndexedDB — this card never has to
+  // guess whether MediaUploadCoordinator finished, is mid-retry, or gave
+  // up. It's purely informational: nothing here blocks the rest of the
+  // screen, since a package can be released, paid, whatever, with its
+  // photo still quietly uploading in the background.
+  const liveMedia = useLiveQuery(
+    () => db.packageMedia.where('package_id').equals(packageId).first(),
+    [packageId]
+  );
+  const uploadStatus = liveMedia?.status;
+  const isUploading = uploadStatus ? UPLOADING_STATUSES.has(uploadStatus) : false;
+  const hasFailed = uploadStatus ? FAILED_STATUSES.has(uploadStatus) : false;
+
+  // The prop only reflects what usePackageDetail computed at last render;
+  // once the coordinator finishes (SYNCED) or the local blob is freed,
+  // rebuild the preview from the live row so the card updates itself
+  // without the person needing to leave and come back.
+  useEffect(() => {
+    if (!liveMedia) return;
+    if (liveMedia.local_blob) {
+      const url = URL.createObjectURL(liveMedia.local_blob);
+      setPhotoPreview(url);
+      setImageFailedToLoad(false);
+      return () => URL.revokeObjectURL(url);
+    }
+    if (liveMedia.public_id && liveMedia.cloud_name) {
+      setPhotoPreview(
+        `https://res.cloudinary.com/${liveMedia.cloud_name}/image/upload/f_auto,q_auto,w_800/${liveMedia.public_id}`
+      );
+      setImageFailedToLoad(false);
+    }
+  }, [liveMedia]);
+
+  const handleRetryUpload = async () => {
+    setIsRetrying(true);
+    try {
+      await MediaUploadCoordinator.syncPendingMedia(businessId);
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   const handlePhotoSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,11 +117,20 @@ export function PackagePhotoCard({
     }
   };
 
-  const photoChip = photoPreview ? (
+  const photoChip = !photoPreview ? undefined : hasFailed ? (
+    <span className="inline-flex items-center gap-1 text-[15px] font-extrabold text-[var(--pd-bad)] bg-[#FEF2F2] px-2.5 py-0.5 rounded-full border border-[#FCA5A5]">
+      {PackagesStrings.photoFailedStatus}
+    </span>
+  ) : isUploading ? (
+    <span className="inline-flex items-center gap-1.5 text-[15px] font-extrabold text-[var(--pd-muted)] bg-[var(--pd-page)] px-2.5 py-0.5 rounded-full border border-[var(--pd-line)]">
+      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      {PackagesStrings.photoUploadingStatus}
+    </span>
+  ) : (
     <span className="text-[15px] font-extrabold text-[#15803D] bg-[#DCFCE7] px-2.5 py-0.5 rounded-full border border-[#86EFAC]">
       {PackagesStrings.photoAddedStatus}
     </span>
-  ) : undefined;
+  );
 
   return (
     <>
@@ -108,17 +166,45 @@ export function PackagePhotoCard({
             </button>
           ) : (
             <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => setIsZoomOpen(true)}
-                className="relative w-full h-44 rounded-xl overflow-hidden bg-[var(--pd-page)] border border-[var(--pd-line)] cursor-pointer group"
-              >
-                <img
-                  src={photoPreview}
-                  alt="Package"
-                  className="w-full h-full object-cover group-hover:scale-102 transition-transform"
-                />
-              </button>
+              {imageFailedToLoad ? (
+                <div className="w-full h-44 rounded-xl bg-[var(--pd-page)] border border-dashed border-[var(--pd-line)] flex flex-col items-center justify-center gap-1.5 px-4 text-center">
+                  <ImageIcon className="w-6 h-6 text-[var(--pd-muted)]" />
+                  <p className="text-[14px] font-semibold text-[var(--pd-muted)] m-0">
+                    {PackagesStrings.photoUnavailableNotice}
+                  </p>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsZoomOpen(true)}
+                  className="relative w-full h-44 rounded-xl overflow-hidden bg-[var(--pd-page)] border border-[var(--pd-line)] cursor-pointer group"
+                >
+                  <img
+                    src={photoPreview}
+                    alt="Package"
+                    onError={() => setImageFailedToLoad(true)}
+                    className="w-full h-full object-cover group-hover:scale-102 transition-transform"
+                  />
+                  {isUploading && (
+                    <span className="absolute bottom-2 right-2 inline-flex items-center gap-1.5 text-[13px] font-bold text-white bg-black/60 px-2 py-1 rounded-full">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      {PackagesStrings.photoUploadingStatus}
+                    </span>
+                  )}
+                </button>
+              )}
+
+              {hasFailed && (
+                <button
+                  type="button"
+                  onClick={handleRetryUpload}
+                  disabled={isRetrying}
+                  className="min-h-[48px] px-3 text-[15px] font-extrabold text-[var(--pd-bad)] active:scale-98 bg-[#FEF2F2] rounded-xl border border-[#FCA5A5] flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  <RefreshCw className={isRetrying ? 'w-4 h-4 animate-spin' : 'w-4 h-4'} />
+                  {PackagesStrings.photoRetryUploadAction}
+                </button>
+              )}
 
               <div className="grid grid-cols-2 gap-2">
                 <button

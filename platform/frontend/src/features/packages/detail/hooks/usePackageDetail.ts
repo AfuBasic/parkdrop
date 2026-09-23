@@ -43,11 +43,17 @@ export function usePackageDetail(
       let mediaPreviewUrl: string | null = null;
       if (media?.local_blob) {
         mediaPreviewUrl = URL.createObjectURL(media.local_blob);
-      } else if (media?.cloudinary_asset_id || media?.public_id) {
-        // Build safe Cloudinary public preview URL
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'parkdrop';
-        const publicId = media.public_id || media.cloudinary_asset_id;
-        mediaPreviewUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_800/${publicId}`;
+      } else if (media?.public_id) {
+        // cloud_name is stored on the row from the upload's own authorize
+        // response (see media-upload-coordinator.ts) — not a guessed env
+        // var, which previously defaulted to a placeholder that didn't
+        // match the real Cloudinary account and rendered as a broken
+        // image for every synced photo. VITE_CLOUDINARY_CLOUD_NAME is kept
+        // only as a fallback for rows synced before this field existed.
+        const cloudName = media.cloud_name || import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        if (cloudName) {
+          mediaPreviewUrl = `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto,w_800/${media.public_id}`;
+        }
       }
 
       // Load payments

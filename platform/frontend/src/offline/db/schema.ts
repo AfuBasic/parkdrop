@@ -115,6 +115,10 @@ export interface LocalPackageMedia {
   last_error_safe?: string;
   cloudinary_asset_id?: string;
   public_id?: string;
+  // Stored at upload time from the authorize response, not guessed from a
+  // build-time env var — see usePackageDetail.ts for why that guessing was
+  // producing broken image URLs.
+  cloud_name?: string;
 }
 
 export interface LocalEntityAlias {
