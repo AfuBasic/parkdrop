@@ -18,6 +18,7 @@ import {
   verifyPurchaseOnServer,
 } from '@/features/sms-credits/purchase/api';
 import { formatMoney } from '@/lib/formatters';
+import { ApiError } from '@/lib/api';
 import type {
   SmsCreditPricing,
   SmsCreditPurchase,
@@ -66,10 +67,16 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
           setCredits(data.min_credits);
           setIsLoadingPricing(false);
         }
-      } catch {
+      } catch (err) {
         if (isMounted) {
           setIsLoadingPricing(false);
-          setErrorMessage(BuySmsCreditsStrings.couldNotLoadPricing);
+          // A 401 here already triggers the global session-expired redirect
+          // (see onSessionExpired in lib/api.ts) — this message is only ever
+          // seen for a real load failure, so show what actually happened
+          // instead of always blaming the connection.
+          setErrorMessage(
+            err instanceof ApiError ? err.message : BuySmsCreditsStrings.couldNotLoadPricing
+          );
         }
       }
     }
