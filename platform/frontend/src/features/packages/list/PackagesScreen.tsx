@@ -28,6 +28,7 @@ import {
   isOverdue24h,
 } from '@/features/packages/domain/package-filters';
 import { accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
+import { formatTime } from '@/lib/formatters';
 
 export interface PackagesScreenProps {
   initialStatus?: StatusTab;
@@ -69,9 +70,12 @@ export function PackagesScreen({
   const [collectedChips, setCollectedChips] = useState<Set<CollectedFilterChip>>(new Set());
   const [otherChips, setOtherChips] = useState<Set<OtherFilterChip>>(new Set());
 
-  // Sort order: default 'oldest' for WAITING or when age=24h, 'newest' for others
+  // Latest first by default on every tab — the most recently added/updated
+  // package is what someone opening this screen almost always wants to see.
+  // The age=24h shortcut still forces oldest-first, since that filter's
+  // whole point is surfacing the longest-waiting packages.
   const [sortOrder, setSortOrder] = useState<SortOrder>(
-    (activeTab === 'WAITING' || initialAgeFilter === '24h') ? 'oldest' : 'newest'
+    initialAgeFilter === '24h' ? 'oldest' : 'newest'
   );
 
   // Live search query (cross-tab)
@@ -205,7 +209,10 @@ export function PackagesScreen({
         balanceMinor: paymentEval.balanceMinor,
         ageDays,
         ageBand: getAgeBand(ageDays),
-        ageDisplay: formatAgeDisplay(pkg.client_created_at, now),
+        // "Today" alone doesn't say enough once the list defaults to
+        // newest-first — the row needs the actual time to tell two "Today"
+        // packages apart at a glance.
+        ageDisplay: `${formatAgeDisplay(pkg.client_created_at, now)} · ${formatTime(pkg.client_created_at)}`,
       };
     });
 
