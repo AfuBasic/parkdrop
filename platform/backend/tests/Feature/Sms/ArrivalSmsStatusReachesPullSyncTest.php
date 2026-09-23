@@ -10,6 +10,7 @@ use App\Models\Business;
 use App\Models\Customer;
 use App\Models\Package;
 use App\Models\PickupPoint;
+use App\Models\SmsWallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -61,6 +62,8 @@ class ArrivalSmsStatusReachesPullSyncTest extends TestCase
             'client_created_at' => now(),
             'version' => 1,
         ]);
+
+        SmsWallet::create(['business_id' => $business->id, 'balance' => 20]);
 
         $this->app->instance(SmsProvider::class, $this->fakeSentProvider());
 
