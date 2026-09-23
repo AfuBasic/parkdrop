@@ -115,14 +115,13 @@ export function PackageStickyActionBar({
             <div className="w-full py-2 px-3 rounded-xl bg-[#DCFCE7] border border-[#86EFAC] flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-[#15803D] text-[15px] font-extrabold">
                 <CheckCircle2 className="w-5 h-5 shrink-0" />
-                <span>
+                <span className="whitespace-nowrap">
                   {pkg.collected_at
                     ? PackagesStrings.collectedBanner(
                         formatEventDay(pkg.collected_at),
-                        formatEventTime(pkg.collected_at),
-                        pkg.terminal_actor_name || 'Staff'
+                        formatEventTime(pkg.collected_at)
                       )
-                    : PackagesStrings.collectedBannerNoTime(pkg.terminal_actor_name || 'Staff')}
+                    : PackagesStrings.collectedBannerNoTime}
                 </span>
                 {hasBalance && (
                   <span className="text-[#92400E] bg-[#FEF3C7] px-2 py-0.5 rounded-full border border-[#FCD34D]">
