@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { LocalMutation, LocalSyncState, LocalConflict, LocalAuthorization, LocalPackage, LocalCustomer, LocalEntityAlias, LocalPackageMedia, LocalSmsWallet, LocalSmsCreditTransaction, LocalPayment, LocalQuarantineRecord, LocalRecoveryMeta } from './schema';
+import type { LocalMutation, LocalSyncState, LocalConflict, LocalAuthorization, LocalPackage, LocalCustomer, LocalEntityAlias, LocalPackageMedia, LocalSmsWallet, LocalSmsCreditTransaction, LocalSmsCreditPurchase, LocalPayment, LocalQuarantineRecord, LocalRecoveryMeta } from './schema';
 
 export class ParkDropDatabase extends Dexie {
   mutations!: Table<LocalMutation, number>;
@@ -12,6 +12,7 @@ export class ParkDropDatabase extends Dexie {
   packageMedia!: Table<LocalPackageMedia, string>;
   smsWallets!: Table<LocalSmsWallet, number>;
   smsCreditTransactions!: Table<LocalSmsCreditTransaction, number>;
+  smsCreditPurchases!: Table<LocalSmsCreditPurchase, string>;
   payments!: Table<LocalPayment, string>;
   quarantineRecords!: Table<LocalQuarantineRecord, string>;
   recoveryMeta!: Table<LocalRecoveryMeta, string>;
@@ -59,6 +60,10 @@ export class ParkDropDatabase extends Dexie {
     });
 
     this.version(9).stores({});
+
+    this.version(10).stores({
+      smsCreditPurchases: 'id, status'
+    });
   }
 }
 
