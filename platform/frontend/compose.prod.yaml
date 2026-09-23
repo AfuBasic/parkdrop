@@ -1,0 +1,36 @@
+name: 'parkdrop-frontend'
+
+# Production compose file for the frontend only, meant to be deployed as its
+# own Coolify resource — separate from platform/compose.prod.yaml (backend,
+# horizon, scheduler, redis, mysql). Builds the SPA and serves it with Caddy
+# (see Dockerfile / Caddyfile in this directory), which already has the
+# correct SPA fallback (`try_files {path} /index.html`) — the thing the
+# Railpack build pack wasn't doing.
+
+services:
+    frontend:
+        build:
+            # Root-relative, not relative to this file's own directory.
+            # Coolify invokes `docker compose` with `--project-directory` set
+            # to the repo root regardless of which subdirectory the compose
+            # file itself lives in.
+            context: './platform/frontend'
+            dockerfile: Dockerfile
+            # Vite bakes these into the JS bundle at build time (there's no
+            # "runtime env" for a static SPA) — must be build args, not
+            # `environment:`, which the Dockerfile's ARG/ENV lines only see
+            # at container-start, long after the bundle is already built.
+            args:
+                VITE_API_URL: '${VITE_API_URL}'
+                VITE_REVERB_HOST: '${VITE_REVERB_HOST}'
+                VITE_REVERB_PORT: '${VITE_REVERB_PORT}'
+                VITE_REVERB_SCHEME: '${VITE_REVERB_SCHEME}'
+                VITE_CLOUDINARY_CLOUD_NAME: '${VITE_CLOUDINARY_CLOUD_NAME}'
+        image: 'parkdrop-frontend:latest'
+        restart: unless-stopped
+        # Target-port-only form ("80", no "host:container" prefix): Coolify
+        # parses a compose service's `ports:` entries to know which
+        # container port to route the resource's FQDN to when generating its
+        # Traefik config — `expose:` alone leaves Coolify nothing to route to.
+        ports:
+            - '80'
