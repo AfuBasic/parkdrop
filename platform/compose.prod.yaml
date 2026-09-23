@@ -46,33 +46,6 @@ x-backend-env: &backend-env
     # server-side (SyncHint) just becomes a no-op instead of erroring.
 
 services:
-    frontend:
-        build:
-            # Root-relative — see the note on backend's build.context above;
-            # Coolify's --project-directory is the repo root, not this
-            # file's own directory.
-            context: './platform/frontend'
-            dockerfile: Dockerfile
-            # Vite bakes these into the JS bundle at build time (there's no
-            # "runtime env" for a static SPA) — must be passed as build args,
-            # not `environment:`, which the Dockerfile's own ARG/ENV lines
-            # only see at container-start, long after the bundle is built.
-            args:
-                VITE_API_URL: '${VITE_API_URL}'
-                VITE_REVERB_HOST: '${VITE_REVERB_HOST}'
-                VITE_REVERB_PORT: '${VITE_REVERB_PORT}'
-                VITE_REVERB_SCHEME: '${VITE_REVERB_SCHEME}'
-                VITE_CLOUDINARY_CLOUD_NAME: '${VITE_CLOUDINARY_CLOUD_NAME}'
-        image: 'parkdrop-frontend:latest'
-        restart: unless-stopped
-        # Target-port-only form, same reasoning as backend's `ports:` below —
-        # Coolify needs an actual `ports:` entry (not `expose:`) to know which
-        # container port to route the resource's FQDN to.
-        ports:
-            - '80'
-        networks:
-            - parkdrop
-
     backend:
         <<: *backend-image
         restart: unless-stopped
