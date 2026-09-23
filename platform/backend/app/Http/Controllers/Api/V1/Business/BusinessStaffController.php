@@ -19,6 +19,35 @@ use InvalidArgumentException;
 class BusinessStaffController extends Controller
 {
     /**
+     * Look up an invitation by id + token, without requiring membership in
+     * its business — this is how a just-invited visitor (who is not a
+     * member of anything yet) can be shown who the invite is for.
+     *
+     * Only exposes what's needed to render an invite landing screen: the
+     * business name, role, and the email the invite was sent to. Never the
+     * token itself. A wrong or missing token gets the same 404 as a
+     * nonexistent invitation, so this can't be used to enumerate invitations.
+     */
+    public function showInvitation(Request $request, string $invitationId): JsonResponse
+    {
+        $invitation = BusinessInvitation::with('business')->find($invitationId);
+
+        $token = (string) $request->query('token', '');
+        if (! $invitation || ! $invitation->token_hash || ! $token || ! hash_equals($invitation->token_hash, hash('sha256', $token))) {
+            return response()->json(['message' => 'Invitation not found.'], 404);
+        }
+
+        return response()->json([
+            'email' => $invitation->email,
+            'email_normalized' => $invitation->email_normalized,
+            'business_name' => $invitation->business?->name,
+            'role' => $invitation->role,
+            'status' => $invitation->status,
+            'expires_at' => $invitation->expires_at?->toIso8601String(),
+        ]);
+    }
+
+    /**
      * Get staff list (active members and pending invitations) for the current active business.
      */
     public function index(Request $request): JsonResponse
