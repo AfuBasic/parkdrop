@@ -48,7 +48,7 @@ export function LowCreditBanner({
     : `Only ${balance} SMS credit${balance === 1 ? '' : 's'} left`;
   const subtitle = isZero
     ? 'Customers are not being texted when their packages arrive.'
-    : 'Running low — customers may stop receiving arrival texts soon.';
+    : 'Running low. Customers may stop receiving arrival texts soon.';
 
   return (
     <>
