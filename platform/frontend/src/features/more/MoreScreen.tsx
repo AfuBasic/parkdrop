@@ -59,6 +59,14 @@ export function MoreScreen() {
 
   // Attendants never see these rows at all. A disabled row invites a tap that
   // teaches nothing; an absent row is simply not part of their job.
+  //
+  // NOTE: `role` is null until AuthContext's background session check
+  // resolves, so these rows can briefly (and wrongly) hide from an actual
+  // owner/manager on a fresh load too — same root cause fixed properly (with
+  // a loading state instead of guessing either direction) in
+  // SmsCreditsScreen.tsx. Flipping this to default-visible while unknown
+  // would trade that for briefly exposing these rows to an attendant, which
+  // is worse; left as-is until this screen gets the same loading treatment.
   const canSeeShop = role === 'owner' || role === 'manager';
 
   const balance = wallet?.balance;
