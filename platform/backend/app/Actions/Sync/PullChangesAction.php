@@ -67,6 +67,7 @@ class PullChangesAction
                                     'id' => $purchase->id,
                                     'credits' => $purchase->credits,
                                     'amount_minor' => $purchase->amount_minor,
+                                    'fee_minor' => $purchase->fee_minor,
                                     'currency' => $purchase->currency,
                                     'provider' => $purchase->provider,
                                     'status' => $purchase->status,
