@@ -13,10 +13,17 @@ import { PaystackLogo, FlutterwaveLogo } from '@/features/sms-credits/purchase/c
 import { BuySmsCreditsStrings } from '@/features/sms-credits/purchase/strings';
 import {
   fetchCreditPricing,
+  fetchPurchasePreview,
   initializePurchase,
   verifyPurchaseOnServer,
 } from '@/features/sms-credits/purchase/api';
-import type { SmsCreditPricing, SmsCreditPurchase, PurchaseFlowState } from '@/features/sms-credits/purchase/types';
+import { formatMoney } from '@/lib/formatters';
+import type {
+  SmsCreditPricing,
+  SmsCreditPurchase,
+  SmsCreditPurchasePreview,
+  PurchaseFlowState,
+} from '@/features/sms-credits/purchase/types';
 
 interface BuySmsCreditsScreenProps {
   onBack?: () => void;
@@ -74,6 +81,36 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
 
   const isValidQuantity =
     pricing !== null && credits >= pricing.min_credits && credits <= pricing.max_credits;
+
+  // The fee-inclusive total, refetched (debounced) whenever the quantity or
+  // provider changes — shown before checkout so what's charged is never a
+  // surprise. Server-computed with the same calculator that will actually
+  // charge the card, never estimated client-side.
+  const [preview, setPreview] = React.useState<SmsCreditPurchasePreview | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isValidQuantity) {
+      setPreview(null);
+      return;
+    }
+    let isMounted = true;
+    setIsLoadingPreview(true);
+    const timer = setTimeout(async () => {
+      try {
+        const data = await fetchPurchasePreview(credits, selectedProvider);
+        if (isMounted) setPreview(data);
+      } catch {
+        if (isMounted) setPreview(null);
+      } finally {
+        if (isMounted) setIsLoadingPreview(false);
+      }
+    }, 300);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [credits, selectedProvider, isValidQuantity]);
 
   const handleContinueToPayment = async () => {
     if (!isValidQuantity || flowState !== 'CHOOSING' || isOffline) return;
@@ -307,6 +344,24 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
                       {BuySmsCreditsStrings.enterAnAmount}
                     </p>
                   )}
+
+                  {isValidQuantity && preview && !isLoadingPreview && (
+                    <div className="rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] bg-white p-3.5 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between text-[15px] font-semibold text-[var(--pd-muted)]">
+                        <span>SMS credits</span>
+                        <span>{formatMoney(preview.net_amount_minor)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[15px] font-semibold text-[var(--pd-muted)]">
+                        <span>Card processing fee</span>
+                        <span>{formatMoney(preview.fee_minor)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[17px] font-extrabold text-[var(--pd-navy)] pt-1.5 border-t border-[var(--pd-line-2)]">
+                        <span>Total to pay</span>
+                        <span>{formatMoney(preview.amount_minor)}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="button"
                     disabled={!isValidQuantity || isOffline || flowState === 'INITIALIZING'}
