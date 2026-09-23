@@ -149,7 +149,7 @@ const HELP_ARTICLES: HelpArticle[] = [
     steps: [
       'Check your balance anytime under "More > SMS Credits".',
       'Owners and Managers can purchase bundles (e.g. 100, 250, 500, or 1000 credits).',
-      'Payments are processed securely via Paystack or Flutterwave.',
+      'Payments are processed securely via Paystack.',
       'Your wallet balance updates immediately upon payment verification.'
     ],
     tips: 'If you run out of credits, packages can still be intake and released without interruption.'
