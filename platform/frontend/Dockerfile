@@ -37,14 +37,7 @@ RUN npm run build
 FROM caddy:2-alpine AS runtime
 
 COPY --from=build /app/dist /srv
-
-# Configure Caddy for SPA routing, gzip, and caching
-RUN echo $':80 {\n\
-    root * /srv\n\
-    encode gzip zstd\n\
-    try_files {path} /index.html\n\
-    file_server\n\
-}' > /etc/caddy/Caddyfile
+COPY Caddyfile /etc/caddy/Caddyfile
 
 EXPOSE 80
 
