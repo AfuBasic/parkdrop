@@ -57,22 +57,19 @@ class SmsCreditPurchaseTest extends TestCase
         return [$business, $user, $wallet];
     }
 
-    public function test_can_list_server_bundles(): void
+    public function test_can_fetch_flat_pricing(): void
     {
         [$business, $user] = $this->createBusinessAndUser('OWNER');
 
         $response = $this->actingAs($user)
             ->withHeader('X-Business-Id', (string) $business->id)
-            ->getJson('/api/v1/sms-credit-purchases/bundles');
+            ->getJson('/api/v1/sms-credit-purchases/pricing');
 
         $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'bundles' => [
-                '*' => ['key', 'credits', 'amount_minor', 'currency', 'label'],
-            ],
-            'currency',
-        ]);
-        $this->assertCount(3, $response->json('bundles'));
+        $response->assertJsonPath('price_per_credit_minor', 700);
+        $response->assertJsonPath('currency', 'NGN');
+        $response->assertJsonPath('min_credits', 50);
+        $response->assertJsonPath('max_credits', 5000);
     }
 
     public function test_authorized_owner_can_initialize_purchase(): void
@@ -82,12 +79,12 @@ class SmsCreditPurchaseTest extends TestCase
         $response = $this->actingAs($user)
             ->withHeader('X-Business-Id', (string) $business->id)
             ->postJson('/api/v1/sms-credit-purchases', [
-                'bundle_key' => 'bundle_100',
+                'credits' => 100,
             ]);
 
         $response->assertStatus(201);
         $response->assertJsonPath('purchase.credits', 100);
-        $response->assertJsonPath('purchase.amount_minor', 280000);
+        $response->assertJsonPath('purchase.amount_minor', 70000); // 100 * ₦7.00
         $response->assertJsonPath('purchase.currency', 'NGN');
         $response->assertJsonPath('purchase.status', 'PENDING');
         $this->assertNotNull($response->json('purchase.checkout_url'));
@@ -95,9 +92,8 @@ class SmsCreditPurchaseTest extends TestCase
         $this->assertDatabaseHas('sms_credit_purchases', [
             'business_id' => $business->id,
             'initiated_by_user_id' => $user->id,
-            'bundle_key' => 'bundle_100',
             'credits' => 100,
-            'amount_minor' => 280000,
+            'amount_minor' => 70000,
             'status' => 'PENDING',
         ]);
     }
@@ -109,23 +105,54 @@ class SmsCreditPurchaseTest extends TestCase
         $response = $this->actingAs($user)
             ->withHeader('X-Business-Id', (string) $business->id)
             ->postJson('/api/v1/sms-credit-purchases', [
-                'bundle_key' => 'bundle_50',
+                'credits' => 100,
             ]);
 
         $response->assertStatus(403);
     }
 
-    public function test_server_rejects_invalid_bundle(): void
+    public function test_server_rejects_a_quantity_below_the_minimum(): void
     {
         [$business, $user] = $this->createBusinessAndUser('OWNER');
 
         $response = $this->actingAs($user)
             ->withHeader('X-Business-Id', (string) $business->id)
             ->postJson('/api/v1/sms-credit-purchases', [
-                'bundle_key' => 'invalid_bundle_xyz',
+                'credits' => 10,
             ]);
 
         $response->assertStatus(422);
+    }
+
+    public function test_server_rejects_a_quantity_above_the_maximum(): void
+    {
+        [$business, $user] = $this->createBusinessAndUser('OWNER');
+
+        $response = $this->actingAs($user)
+            ->withHeader('X-Business-Id', (string) $business->id)
+            ->postJson('/api/v1/sms-credit-purchases', [
+                'credits' => 10001,
+            ]);
+
+        $response->assertStatus(422);
+    }
+
+    public function test_the_client_cannot_influence_the_charged_amount(): void
+    {
+        [$business, $user] = $this->createBusinessAndUser('OWNER');
+
+        // Only "credits" is an accepted field — any attempt to also send an
+        // amount is silently ignored, since the server always derives
+        // amount_minor itself from its own configured price.
+        $response = $this->actingAs($user)
+            ->withHeader('X-Business-Id', (string) $business->id)
+            ->postJson('/api/v1/sms-credit-purchases', [
+                'credits' => 100,
+                'amount_minor' => 1,
+            ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('purchase.amount_minor', 70000);
     }
 
     public function test_server_verification_marks_paid_credits_wallet_and_records_ledger(): void
