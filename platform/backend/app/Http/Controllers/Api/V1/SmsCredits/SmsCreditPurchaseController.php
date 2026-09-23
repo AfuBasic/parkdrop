@@ -14,15 +14,17 @@ use Illuminate\Http\Request;
 class SmsCreditPurchaseController extends Controller
 {
     /**
-     * List available server-controlled SMS credit bundles.
+     * The server-controlled flat price per credit and the allowed quantity
+     * range — everything the frontend needs to build a quantity ↔ amount
+     * input, without ever being trusted to send a price itself.
      */
-    public function bundles(): JsonResponse
+    public function pricing(): JsonResponse
     {
-        $bundles = config('payments.bundles', []);
-
         return response()->json([
-            'bundles' => array_values($bundles),
+            'price_per_credit_minor' => (int) config('payments.price_per_credit_minor', 700),
             'currency' => config('payments.currency', 'NGN'),
+            'min_credits' => (int) config('payments.min_credits_per_purchase', 50),
+            'max_credits' => (int) config('payments.max_credits_per_purchase', 5000),
         ]);
     }
 
@@ -32,7 +34,7 @@ class SmsCreditPurchaseController extends Controller
     public function store(Request $request, CreateSmsCreditPurchaseAction $createAction): JsonResponse
     {
         $request->validate([
-            'bundle_key' => 'required|string',
+            'credits' => 'required|integer|min:1',
             'callback_url' => 'nullable|url',
             'provider' => 'nullable|string|in:paystack,flutterwave,fake',
         ]);
@@ -49,7 +51,7 @@ class SmsCreditPurchaseController extends Controller
         $purchase = $createAction->execute(
             business: $business,
             user: $user,
-            bundleKey: $request->input('bundle_key'),
+            credits: (int) $request->input('credits'),
             callbackUrl: $request->input('callback_url'),
             providerName: $request->input('provider')
         );
