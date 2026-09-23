@@ -6,10 +6,16 @@ return [
     | Default Payment Provider
     |--------------------------------------------------------------------------
     |
-    | Supported: "flutterwave", "paystack", "fake"
+    | Supported: "paystack", "fake"
+    |
+    | Flutterwave was removed as a selectable option (product decision) —
+    | its config and gateway class are left in place only because past
+    | purchases already have provider="flutterwave" on record, but nothing
+    | can create a new one; SmsCreditPurchaseController's validation no
+    | longer accepts it.
     |
     */
-    'default_provider' => env('PAYMENT_PROVIDER', 'flutterwave'),
+    'default_provider' => env('PAYMENT_PROVIDER', 'paystack'),
 
     /*
     |--------------------------------------------------------------------------

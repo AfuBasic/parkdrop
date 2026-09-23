@@ -1,0 +1,118 @@
+name: 'parkdrop'
+
+# Production compose file, meant to be deployed via Coolify.
+#
+# Deliberately does NOT include a mysql service — the database is a
+# separately managed Coolify resource (its own container/volume/backups,
+# outside this app's lifecycle). Point DB_HOST/DB_PORT/DB_DATABASE/
+# DB_USERNAME/DB_PASSWORD (set as env vars on this app in Coolify) at that
+# resource. Everything else the backend depends on (redis) is still
+# bundled here since nothing external was asked for it — split it out the
+# same way later if that ever needs to change.
+#
+# All four backend processes share one built image; only `command:` differs
+# per service, same pattern as compose.dev.yaml's Sail services.
+
+x-backend-image: &backend-image
+    build:
+        context: './backend'
+        dockerfile: Dockerfile
+    image: 'parkdrop-backend:latest'
+
+x-backend-env: &backend-env
+    LOG_CHANNEL: '${LOG_CHANNEL:-stack}'
+    DB_CONNECTION: '${DB_CONNECTION:-mysql}'
+    DB_HOST: '${DB_HOST}'
+    DB_PORT: '${DB_PORT:-3306}'
+    DB_DATABASE: '${DB_DATABASE}'
+    DB_USERNAME: '${DB_USERNAME}'
+    DB_PASSWORD: '${DB_PASSWORD}'
+    REDIS_HOST: 'redis'
+    REDIS_PORT: 6379
+    REDIS_PASSWORD: '${REDIS_PASSWORD:-null}'
+    CACHE_STORE: 'redis'
+    SESSION_DRIVER: 'redis'
+    QUEUE_CONNECTION: 'redis'
+
+services:
+    backend:
+        <<: *backend-image
+        restart: unless-stopped
+        ports:
+            - '8000:80'
+        environment:
+            <<: *backend-env
+            # Only this service runs migrations on boot — see entrypoint.sh.
+            RUN_MIGRATIONS: 'true'
+        volumes:
+            - 'backend-storage:/var/www/html/storage/app'
+        networks:
+            - parkdrop
+        depends_on:
+            - redis
+        healthcheck:
+            test: ['CMD', 'curl', '-f', 'http://localhost/up']
+            interval: 30s
+            timeout: 5s
+            retries: 3
+            start_period: 30s
+
+    reverb:
+        <<: *backend-image
+        restart: unless-stopped
+        command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
+        ports:
+            - '8081:8080'
+        environment: *backend-env
+        volumes:
+            - 'backend-storage:/var/www/html/storage/app'
+        networks:
+            - parkdrop
+        depends_on:
+            - redis
+
+    horizon:
+        <<: *backend-image
+        restart: unless-stopped
+        command: ['php', 'artisan', 'horizon']
+        environment: *backend-env
+        volumes:
+            - 'backend-storage:/var/www/html/storage/app'
+        networks:
+            - parkdrop
+        depends_on:
+            - redis
+
+    scheduler:
+        <<: *backend-image
+        restart: unless-stopped
+        command: ['php', 'artisan', 'schedule:work']
+        environment: *backend-env
+        volumes:
+            - 'backend-storage:/var/www/html/storage/app'
+        networks:
+            - parkdrop
+        depends_on:
+            - redis
+
+    redis:
+        image: 'redis:alpine'
+        restart: unless-stopped
+        volumes:
+            - 'parkdrop-redis:/data'
+        networks:
+            - parkdrop
+        healthcheck:
+            test: ['CMD', 'redis-cli', 'ping']
+            retries: 3
+            timeout: 5s
+
+networks:
+    parkdrop:
+        driver: bridge
+
+volumes:
+    parkdrop-redis:
+        driver: local
+    backend-storage:
+        driver: local

@@ -1,3 +1,26 @@
+/**
+ * Fired whenever any API call comes back 401. There is no other legitimate
+ * source of a 401 in this app — the unauthenticated-facing endpoints
+ * (request/verify code, onboarding) never require a session, so they return
+ * 422/400 for a bad input, never 401. A 401 only ever means "the session
+ * this request relied on doesn't exist anymore", from any screen, at any
+ * time — including a background sync request nobody is looking at.
+ *
+ * AuthContext is the sole subscriber: it flips app state to the sign-in
+ * flow the moment this fires, so a screen mid-use doesn't just sit there
+ * showing a wrong, unrelated error (e.g. "check your connection") with no
+ * way back in.
+ */
+type SessionExpiredListener = () => void;
+let sessionExpiredListeners: SessionExpiredListener[] = [];
+
+export function onSessionExpired(listener: SessionExpiredListener): () => void {
+  sessionExpiredListeners.push(listener);
+  return () => {
+    sessionExpiredListeners = sessionExpiredListeners.filter((l) => l !== listener);
+  };
+}
+
 export class ApiError extends Error {
   status: number;
   data?: any;
@@ -67,6 +90,7 @@ export async function fetchApi(endpoint: string, options: RequestInit = {}): Pro
         // Laravel's default body here is the single word "Unauthenticated.",
         // which is accurate but not something to show a person mid-shift.
         message = 'Your session ended. Sign in again to continue.';
+        sessionExpiredListeners.forEach((listener) => listener());
       } else if (data.message && typeof data.message === 'string') {
         // Guard against any accidental raw exception messages leaking in non-500s
         const raw = data.message.toLowerCase();

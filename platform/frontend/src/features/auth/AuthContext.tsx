@@ -4,7 +4,7 @@ import { db, type DeviceMeta, type RememberedIdentity } from '@/lib/db';
 import { authApi } from './api';
 import { getMostRecentRememberedIdentity, saveRememberedIdentity, clearAllRememberedIdentities } from './lib/rememberedIdentity';
 import type { AuthUser, AuthBusiness } from './types';
-import { ApiError } from '@/lib/api';
+import { ApiError, onSessionExpired } from '@/lib/api';
 import { saveOfflineAuthorization, clearOfflineAuthorization, getValidOfflineAuthorization } from '@/offline/device/device-identity';
 
 export type AuthState = 
@@ -41,6 +41,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = React.useState<string | null>(null);
   const [deviceMeta, setDeviceMeta] = React.useState<DeviceMeta | null>(null);
   const [rememberedIdentity, setRememberedIdentity] = React.useState<RememberedIdentity | null>(null);
+
+  /**
+   * The session ended somewhere — mid-boot check, or a 401 from any request
+   * anywhere in the app (see onSessionExpired in lib/api.ts). An expired
+   * session is an ordinary thing that happens to everyone, not a fault, so
+   * this just moves the user to the right sign-in screen quietly rather
+   * than leaving whatever screen they were on stuck showing a stale error.
+   */
+  const handleSessionExpired = React.useCallback(async () => {
+    setUser(null);
+    setBusiness(null);
+    setRole(null);
+    await clearOfflineAuthorization();
+    const recent = await getMostRecentRememberedIdentity();
+    setRememberedIdentity(recent);
+    setState(recent ? 'remembered_expired' : 'unknown');
+  }, []);
+
+  React.useEffect(() => onSessionExpired(() => { void handleSessionExpired(); }), [handleSessionExpired]);
 
   const initAuth = React.useCallback(async () => {
     setState('booting');
@@ -118,8 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // An expired session is an ordinary thing that happens to everyone,
           // not a fault. Revoke the offline authorization and move the user to
           // the right screen without writing anything to the console.
-          await clearOfflineAuthorization();
-          setState(recentIdentity ? 'remembered_expired' : 'unknown');
+          await handleSessionExpired();
           return;
         }
 

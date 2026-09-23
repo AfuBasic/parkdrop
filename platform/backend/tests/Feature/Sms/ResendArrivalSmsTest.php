@@ -8,6 +8,7 @@ use App\Models\BusinessMembership;
 use App\Models\Customer;
 use App\Models\Package;
 use App\Models\PickupPoint;
+use App\Models\SmsWallet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -53,6 +54,8 @@ class ResendArrivalSmsTest extends TestCase
             'phone_display' => '0802 345 6789',
             'phone_normalized' => '2348023456789',
         ]);
+
+        SmsWallet::create(['business_id' => $this->business->id, 'balance' => 20]);
 
         $this->package = Package::create([
             'id' => (string) Str::uuid(),

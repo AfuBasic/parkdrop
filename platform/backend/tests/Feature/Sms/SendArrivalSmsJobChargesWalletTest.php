@@ -69,31 +69,49 @@ class SendArrivalSmsJobChargesWalletTest extends TestCase
         ]);
     }
 
-    public function test_sending_with_zero_credits_still_sends_and_does_not_fail_the_job(): void
+    public function test_sending_with_zero_credits_is_skipped_and_never_calls_the_provider(): void
     {
         $business = Business::create(['name' => 'Chima Parcel Services', 'status' => 'active']);
         SmsWallet::create(['business_id' => $business->id, 'balance' => 0]);
 
-        $this->app->instance(SmsProvider::class, $this->fakeSentProvider());
+        // A provider that fails the test if it's ever actually called — the
+        // hard credit check must stop the job before send() is attempted.
+        $this->app->instance(SmsProvider::class, new class implements SmsProvider
+        {
+            public function send(string $to, string $message): SmsResult
+            {
+                throw new \RuntimeException('SmsProvider::send() must not be called when the wallet has no credits.');
+            }
+        });
+
+        $packageUuid = (string) Str::uuid();
+
+        $outboxEventId = \DB::table('outbox_events')->insertGetId([
+            'business_id' => $business->id,
+            'type' => 'ARRIVAL_SMS_REQUESTED',
+            'payload' => json_encode(['package_id' => $packageUuid]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         $job = new SendArrivalSmsJob(
-            packageUuid: (string) Str::uuid(),
+            packageUuid: $packageUuid,
             businessId: $business->id,
             recipientPhone: '2348031234567',
             message: 'Your package is at Peace Park.',
             idempotencyKey: 'test-key-2',
-            outboxEventId: 1000,
+            outboxEventId: $outboxEventId,
         );
 
-        // Must not throw — a billing failure can never block a message that
-        // Termii has already accepted, and running out of credits must never
-        // interrupt operations.
+        // Must not throw — an empty wallet is an expected, handled state.
         $this->app->call([$job, 'handle']);
 
-        $smsRecord = SmsMessage::where('outbox_event_id', 1000)->first();
-        $this->assertSame(SmsMessage::STATUS_SENT, $smsRecord->status);
+        $smsRecord = SmsMessage::where('outbox_event_id', $outboxEventId)->first();
+        $this->assertNotNull($smsRecord);
+        $this->assertSame(SmsMessage::STATUS_SKIPPED_NO_CREDITS, $smsRecord->status);
 
-        // Balance stays at 0 — never goes negative.
+        // Balance stays at 0 — never goes negative, and nothing was charged
+        // for a message that was never actually sent.
         $this->assertDatabaseHas('sms_wallets', [
             'business_id' => $business->id,
             'balance' => 0,
@@ -102,6 +120,20 @@ class SendArrivalSmsJobChargesWalletTest extends TestCase
         $this->assertDatabaseMissing('sms_credit_transactions', [
             'type' => 'DEBIT',
             'reference_type' => 'ARRIVAL_SMS',
+        ]);
+
+        $this->assertDatabaseHas('outbox_events', [
+            'id' => $outboxEventId,
+            'sms_status' => 'SKIPPED_NO_CREDITS',
+        ]);
+
+        // The package timeline needs to actually reflect this, not silently
+        // look like nothing happened.
+        $this->assertDatabaseHas('sync_changes', [
+            'business_id' => $business->id,
+            'entity_type' => 'package',
+            'entity_id' => $packageUuid,
+            'operation' => 'SMS_SKIPPED_NO_CREDITS',
         ]);
     }
 }

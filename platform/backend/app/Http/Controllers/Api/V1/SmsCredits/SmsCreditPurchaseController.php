@@ -39,7 +39,7 @@ class SmsCreditPurchaseController extends Controller
     {
         $request->validate([
             'credits' => 'required|integer|min:1',
-            'provider' => 'required|string|in:paystack,flutterwave,fake',
+            'provider' => 'required|string|in:paystack,fake',
         ]);
 
         $credits = (int) $request->input('credits');
@@ -64,7 +64,7 @@ class SmsCreditPurchaseController extends Controller
         $request->validate([
             'credits' => 'required|integer|min:1',
             'callback_url' => 'nullable|url',
-            'provider' => 'nullable|string|in:paystack,flutterwave,fake',
+            'provider' => 'nullable|string|in:paystack,fake',
         ]);
 
         $user = $request->user();

@@ -17,7 +17,7 @@ export async function fetchCreditPricing(): Promise<SmsCreditPricing> {
 
 export async function fetchPurchasePreview(
   credits: number,
-  provider: 'paystack' | 'flutterwave'
+  provider: 'paystack'
 ): Promise<SmsCreditPurchasePreview> {
   const res = await fetchApi(
     `/api/v1/sms-credit-purchases/preview?credits=${credits}&provider=${provider}`
@@ -28,7 +28,7 @@ export async function fetchPurchasePreview(
 export async function initializePurchase(
   credits: number,
   callbackUrl?: string,
-  provider?: 'paystack' | 'flutterwave'
+  provider?: 'paystack'
 ): Promise<CreatePurchaseResponse> {
   const res = await fetchApi('/api/v1/sms-credit-purchases', {
     method: 'POST',
