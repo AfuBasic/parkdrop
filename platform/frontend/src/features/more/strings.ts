@@ -42,8 +42,8 @@ export const MoreStrings = {
   thingsToCheckBadgeLabel: (n: number) =>
     n === 1 ? '1 thing needs you' : `${n} things need you`,
 
-  yourDay: 'Your day',
-  yourDaySub: 'What happened today',
+  yourDay: 'Reports',
+  yourDaySub: 'Packages, revenue and how your team is doing',
 
   smsCredits: 'SMS credits',
   smsCreditsSub: 'How many SMS you have left',
