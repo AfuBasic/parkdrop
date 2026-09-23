@@ -198,3 +198,16 @@ export interface LocalRecoveryMeta {
   updated_at: string;
 }
 
+/**
+ * Generic stale-while-revalidate cache for data that isn't already backed by
+ * its own Dexie table (e.g. Reports, which fetches directly from the API
+ * rather than reading synced rows) — see lib/useCachedFetch.ts. Keyed by
+ * whatever the caller considers this value's identity (e.g.
+ * "reports:range:today:business-42").
+ */
+export interface LocalQueryCacheEntry {
+  key: string;
+  value: unknown;
+  fetched_at: string;
+}
+
