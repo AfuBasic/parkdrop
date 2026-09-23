@@ -52,7 +52,12 @@ export function PurchaseReturnScreen() {
         setState('PENDING');
       }
     } catch {
-      setState('FAILED');
+      // A failed *check* is not a failed *payment* — the money may well have
+      // gone through at the provider and this was just a network blip or a
+      // transient server error. Claiming FAILED here would be a false
+      // negative that could tell someone their payment failed when it
+      // didn't. PENDING is the honest state: unconfirmed, safe to retry.
+      setState('PENDING');
     }
   }, [reference, businessId]);
 
