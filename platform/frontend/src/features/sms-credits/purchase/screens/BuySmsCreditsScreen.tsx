@@ -282,7 +282,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
                             : 'border-[var(--pd-line-2)] bg-white text-[var(--pd-navy)]'
                         }`}
                       >
-                        <PaystackLogo className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-[13px]" />
+                        <PaystackLogo className="w-6 h-6 shrink-0 object-contain" />
                         <span>Paystack</span>
                       </button>
                       <button
@@ -294,7 +294,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
                             : 'border-[var(--pd-line-2)] bg-white text-[var(--pd-navy)]'
                         }`}
                       >
-                        <FlutterwaveLogo className="w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-[13px]" />
+                        <FlutterwaveLogo className="w-6 h-6 shrink-0 object-contain" />
                         <span>Flutterwave</span>
                       </button>
                     </div>
