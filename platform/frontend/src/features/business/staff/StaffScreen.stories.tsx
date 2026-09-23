@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { StaffScreen } from './StaffScreen';
-import type { StaffMember, PendingInvitation } from '../api/business-api';
+import { StaffScreen } from '@/features/business/staff/StaffScreen';
+import type { StaffMember, PendingInvitation } from '@/features/business/api/business-api';
 
 const mockMembers: StaffMember[] = [
   {

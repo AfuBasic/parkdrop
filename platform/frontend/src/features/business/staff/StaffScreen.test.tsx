@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { StaffScreen } from './StaffScreen';
-import { businessApi, type StaffMember, type PendingInvitation } from '../api/business-api';
+import { StaffScreen } from '@/features/business/staff/StaffScreen';
+import { businessApi, type StaffMember, type PendingInvitation } from '@/features/business/api/business-api';
 
 vi.mock('@/features/auth/AuthContext', () => ({
   useAuth: () => ({
