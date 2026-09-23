@@ -11,6 +11,7 @@ import { SmsCreditsStrings } from '@/features/sms-credits/strings';
 import { SmsCreditBalance } from '@/features/sms-credits/components/SmsCreditBalance';
 import { SmsCreditWarning } from '@/features/sms-credits/components/SmsCreditWarning';
 import { SmsCreditActivityList } from '@/features/sms-credits/components/SmsCreditActivityList';
+import { SkeletonLine, SkeletonBlock } from '@/design-system/components/SkeletonPrimitives';
 
 interface SmsCreditsScreenProps {
   onBack?: () => void;
@@ -70,6 +71,12 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
     }
   };
 
+  // `wallet` is undefined until Dexie's first query result comes back —
+  // collapsing that "we don't know yet" moment into `?? 0` is the exact bug
+  // reported: the real "you have no SMS left" warning banner (not a
+  // placeholder) rendered against a fake zero, before the real balance
+  // (say, 162) had loaded. Never treat "unknown" as "confirmed zero".
+  const balanceKnown = wallet !== undefined;
   const balance = wallet?.balance ?? 0;
   const isOffline =
     syncState.connectivity === 'UNREACHABLE' || syncState.connectivity === 'DEGRADED';
@@ -103,18 +110,26 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
           </div>
         )}
 
-        {/* The number */}
-        <SmsCreditBalance balance={balance} />
+        {/* The number — a skeleton shaped like the real figure + two lines
+            below it, never a "0" that could be mistaken for a real answer. */}
+        {balanceKnown ? (
+          <SmsCreditBalance balance={balance} />
+        ) : (
+          <div className="flex flex-col items-center gap-3 py-2" aria-busy="true">
+            <SkeletonLine width="w-28" height="h-16" className="rounded-2xl" />
+            <SkeletonLine width="w-20" height="h-5" />
+            <SkeletonLine width="w-56" height="h-4" />
+          </div>
+        )}
 
-        {/* What the number means, when it needs saying */}
-        <SmsCreditWarning balance={balance} />
+        {/* What the number means, when it needs saying — NEVER from an
+            unconfirmed balance. This is the exact false-alarm bug: the
+            warning must only ever assert a real, server-confirmed zero. */}
+        {balanceKnown && <SmsCreditWarning balance={balance} />}
 
         {/* Getting more */}
         {!roleKnown ? (
-          <div
-            className="w-full h-[60px] rounded-[var(--pd-field-radius)] bg-[var(--pd-line-2)]/50 animate-pulse"
-            aria-hidden="true"
-          />
+          <SkeletonBlock height="h-[60px]" className="rounded-[var(--pd-field-radius)]" />
         ) : canBuy ? (
           <button
             type="button"
