@@ -30,13 +30,17 @@ export function SmsCreditQuantityInput({
 }: SmsCreditQuantityInputProps) {
   const [mode, setMode] = React.useState<SmsCreditInputMode>('credits');
   const [creditsText, setCreditsText] = React.useState(String(credits));
-  const [amountText, setAmountText] = React.useState(String((credits * pricePerCreditMinor) / 100));
+  // Digits only, no decimals — the flat rate is always a whole-naira amount
+  // per credit, so an amount typed here is always a whole naira figure too.
+  const [amountDigits, setAmountDigits] = React.useState(
+    String(Math.round((credits * pricePerCreditMinor) / 100))
+  );
 
   // Re-sync the inactive field's text whenever credits changes from outside
   // (mode switch, or the parent adjusting an out-of-range value).
   React.useEffect(() => {
     if (mode === 'credits') {
-      setAmountText(String((credits * pricePerCreditMinor) / 100));
+      setAmountDigits(String(Math.round((credits * pricePerCreditMinor) / 100)));
     } else {
       setCreditsText(String(credits));
     }
@@ -50,14 +54,15 @@ export function SmsCreditQuantityInput({
     }
   };
 
-  const handleAmountChange = (text: string) => {
-    setAmountText(text);
-    const parsedNaira = parseFloat(text);
-    if (Number.isFinite(parsedNaira) && parsedNaira >= 0) {
-      const impliedCredits = Math.floor((parsedNaira * 100) / pricePerCreditMinor);
-      onChangeCredits(impliedCredits);
-    }
+  const handleAmountChange = (rawInput: string) => {
+    const digits = rawInput.replace(/\D/g, '').slice(0, 9);
+    setAmountDigits(digits);
+    const nairaAmount = digits === '' ? 0 : parseInt(digits, 10);
+    const impliedCredits = Math.floor((nairaAmount * 100) / pricePerCreditMinor);
+    onChangeCredits(impliedCredits);
   };
+
+  const amountDisplay = amountDigits === '' ? '' : Number(amountDigits).toLocaleString('en-US');
 
   const outOfRange = credits > 0 && (credits < minCredits || credits > maxCredits);
 
@@ -109,12 +114,14 @@ export function SmsCreditQuantityInput({
         <div className="flex items-center gap-3 rounded-[var(--pd-card-radius)] border-2 border-[var(--pd-line-2)] bg-white px-4 py-3 focus-within:border-[var(--pd-blue)]">
           <span className="text-[28px] font-extrabold text-[var(--pd-navy)] shrink-0">₦</span>
           <input
-            type="number"
-            inputMode="decimal"
-            value={amountText}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            value={amountDisplay}
             disabled={disabled}
+            placeholder="0"
             onChange={(e) => handleAmountChange(e.target.value)}
-            className="flex-1 min-w-0 text-[28px] font-extrabold text-[var(--pd-navy)] outline-none tabular-nums"
+            className="flex-1 min-w-0 text-[28px] font-extrabold text-[var(--pd-navy)] outline-none tabular-nums placeholder:text-[#94A3B8]"
             aria-label="Amount to pay in naira"
           />
         </div>
