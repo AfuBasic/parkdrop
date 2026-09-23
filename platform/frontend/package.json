@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "start": "serve -s dist -l ${PORT:-3000}",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -32,6 +33,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.88.0",
+    "serve": "^14.2.6",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
     "zod": "^3.25.76"
