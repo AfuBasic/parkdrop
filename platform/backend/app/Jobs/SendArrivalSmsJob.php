@@ -74,23 +74,77 @@ class SendArrivalSmsJob implements ShouldQueue
             return;
         }
 
+        // ── Hard credit check ─────────────────────────────────────────────────
+        // Never send if balance is 0. We check with a lock-free read here; the
+        // real atomic deduction happens in ChargeForSmsAction after the send.
+        // A race between two simultaneous sends at balance=1 is acceptable —
+        // one will succeed and one will catch InsufficientSmsCreditsException.
+        // But balance=0 is an explicit hard stop: the operator must top up first.
+        $wallet = \App\Models\SmsWallet::where('business_id', $this->businessId)->first();
+
+        if (! $wallet || $wallet->balance <= 0) {
+            Log::warning('[SendArrivalSmsJob] Skipping SMS — no credits available.', [
+                'package_id'  => $this->packageUuid,
+                'business_id' => $this->businessId,
+                'balance'     => $wallet?->balance ?? 0,
+            ]);
+
+            // Record the skipped send so it appears on the package timeline.
+            $smsRecord = SmsMessage::firstOrCreate(
+                ['outbox_event_id' => $this->outboxEventId],
+                [
+                    'business_id'    => $this->businessId,
+                    'package_id'     => $this->packageUuid,
+                    'recipient_phone' => $this->recipientPhone,
+                    'message_body'   => $this->message,
+                    'status'         => SmsMessage::STATUS_SKIPPED_NO_CREDITS,
+                ]
+            );
+
+            // If the row already existed with a different status, update it.
+            if ($smsRecord->status !== SmsMessage::STATUS_SKIPPED_NO_CREDITS) {
+                $smsRecord->update(['status' => SmsMessage::STATUS_SKIPPED_NO_CREDITS]);
+            }
+
+            DB::table('outbox_events')
+                ->where('id', $this->outboxEventId)
+                ->update([
+                    'dispatched_at' => now(),
+                    'sms_status'    => 'SKIPPED_NO_CREDITS',
+                    'updated_at'    => now(),
+                ]);
+
+            // Push a sync change so the client picks up the updated package status.
+            DB::table('sync_changes')->insert([
+                'business_id' => $this->businessId,
+                'entity_type' => 'package',
+                'entity_id'   => $this->packageUuid,
+                'operation'   => 'SMS_SKIPPED_NO_CREDITS',
+                'created_at'  => now(),
+                'updated_at'  => now(),
+            ]);
+
+            return;
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         // Create or find the sms_messages row for this attempt.
         // We use firstOrCreate so that a retry (after ambiguous/reconciliation)
         // reuses the same row rather than creating duplicates.
         $smsRecord = SmsMessage::firstOrCreate(
             ['outbox_event_id' => $this->outboxEventId],
             [
-                'business_id' => $this->businessId,
-                'package_id' => $this->packageUuid,
+                'business_id'    => $this->businessId,
+                'package_id'     => $this->packageUuid,
                 'recipient_phone' => $this->recipientPhone,
-                'message_body' => $this->message,
-                'status' => SmsMessage::STATUS_PENDING,
+                'message_body'   => $this->message,
+                'status'         => SmsMessage::STATUS_PENDING,
             ]
         );
 
         Log::info('[SendArrivalSmsJob] Attempting arrival SMS dispatch.', [
-            'package_id' => $this->packageUuid,
-            'attempt' => $this->attempts(),
+            'package_id'     => $this->packageUuid,
+            'attempt'        => $this->attempts(),
             'sms_message_id' => $smsRecord->id,
         ]);
 
@@ -99,10 +153,10 @@ class SendArrivalSmsJob implements ShouldQueue
         if ($result->isSent()) {
             // Update both the sms_messages row and the outbox event atomically.
             $smsRecord->update([
-                'status' => SmsMessage::STATUS_SENT,
+                'status'           => SmsMessage::STATUS_SENT,
                 'termii_message_id' => $result->messageId,
-                'sent_at' => now(),
-                'error_message' => null,
+                'sent_at'          => now(),
+                'error_message'    => null,
             ]);
 
             // Scoped by this event's own id, not whereNull('dispatched_at') — the
@@ -113,8 +167,8 @@ class SendArrivalSmsJob implements ShouldQueue
                 ->where('id', $this->outboxEventId)
                 ->update([
                     'dispatched_at' => now(),
-                    'sms_status' => 'SENT',
-                    'updated_at' => now(),
+                    'sms_status'    => 'SENT',
+                    'updated_at'    => now(),
                 ]);
 
             Log::info('[SendArrivalSmsJob] Arrival SMS sent successfully.', [
@@ -129,18 +183,16 @@ class SendArrivalSmsJob implements ShouldQueue
             DB::table('sync_changes')->insert([
                 'business_id' => $this->businessId,
                 'entity_type' => 'package',
-                'entity_id' => $this->packageUuid,
-                'operation' => 'SMS_SENT',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'entity_id'   => $this->packageUuid,
+                'operation'   => 'SMS_SENT',
+                'created_at'  => now(),
+                'updated_at'  => now(),
             ]);
 
-            // Charged only now, after Termii has confirmed the message was
-            // accepted — never before the send, so a billing failure can
-            // never block or duplicate a message that already went out.
-            // A business with no credits left still gets its SMS sent (per
-            // the app's own promise that running out never interrupts
-            // operations); we simply cannot bill for this one.
+            // Charge after confirmed send. InsufficientSmsCreditsException is no
+            // longer swallowed silently — if we somehow reach here with balance=0
+            // (a race at balance=1), we log it as an error since the pre-check
+            // should have prevented reaching this point.
             try {
                 app(ChargeForSmsAction::class)->execute(
                     businessId: $this->businessId,
@@ -149,10 +201,10 @@ class SendArrivalSmsJob implements ShouldQueue
                     referenceId: (string) $this->packageUuid,
                 );
             } catch (InsufficientSmsCreditsException $e) {
-                Log::warning('[SendArrivalSmsJob] Sent with no SMS credits left to charge.', [
-                    'package_id' => $this->packageUuid,
+                Log::error('[SendArrivalSmsJob] Credit deduction failed after send — balance may be out of sync.', [
+                    'package_id'  => $this->packageUuid,
                     'business_id' => $this->businessId,
-                    'balance' => $e->balance,
+                    'balance'     => $e->balance,
                 ]);
             }
 
