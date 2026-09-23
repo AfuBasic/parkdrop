@@ -216,6 +216,57 @@ class SmsCreditPurchaseTest extends TestCase
             'entity_type' => 'sms_credit_transaction',
             'operation' => 'CREATED',
         ]);
+
+        $this->assertDatabaseHas('sync_changes', [
+            'business_id' => $business->id,
+            'entity_type' => 'sms_credit_purchase',
+            'entity_id' => (string) $purchase->id,
+        ]);
+    }
+
+    public function test_a_paid_purchase_reaches_the_device_via_pull_sync(): void
+    {
+        [$business, $user] = $this->createBusinessAndUser('OWNER');
+
+        $purchase = SmsCreditPurchase::create([
+            'business_id' => $business->id,
+            'initiated_by_user_id' => $user->id,
+            'bundle_key' => 'custom_100',
+            'credits' => 100,
+            'amount_minor' => 70000,
+            'currency' => 'NGN',
+            'status' => 'PENDING',
+            'reference' => 'PDR-PULLTEST',
+            'provider' => 'paystack',
+        ]);
+
+        $this->fakeGateway
+            ->simulateStatus('PAID')
+            ->simulateAmount(70000)
+            ->simulateCurrency('NGN')
+            ->simulateTxId('TX-PULLTEST');
+
+        $this->actingAs($user)
+            ->withHeader('X-Business-Id', (string) $business->id)
+            ->postJson("/api/v1/sms-credit-purchases/{$purchase->id}/verify")
+            ->assertStatus(200);
+
+        $pullResponse = $this->actingAs($user)
+            ->withHeader('X-Business-Id', (string) $business->id)
+            ->getJson('/api/v1/sync/pull?cursor=0');
+
+        $pullResponse->assertStatus(200);
+
+        $purchaseChange = collect($pullResponse->json('changes'))
+            ->first(fn ($change) => $change['entity_type'] === 'sms_credit_purchase');
+
+        $this->assertNotNull($purchaseChange, 'Expected a sms_credit_purchase change in the pull response.');
+        $this->assertSame($purchase->id, $purchaseChange['payload']['id']);
+        $this->assertSame(100, $purchaseChange['payload']['credits']);
+        $this->assertSame(70000, $purchaseChange['payload']['amount_minor']);
+        $this->assertSame('paystack', $purchaseChange['payload']['provider']);
+        $this->assertSame('PAID', $purchaseChange['payload']['status']);
+        $this->assertNotNull($purchaseChange['payload']['paid_at']);
     }
 
     public function test_calling_verify_repeatedly_is_strictly_idempotent(): void
