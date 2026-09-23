@@ -83,7 +83,7 @@ export function PackageStickyActionBar({
 
   return (
     <>
-      <footer className="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-[var(--pd-line-2)] px-4 py-3 min-h-[84px] flex items-center justify-center shadow-lg">
+      <footer className="fixed bottom-[calc(var(--pd-nav-h)+env(safe-area-inset-bottom,0px))] sm:bottom-0 inset-x-0 z-30 bg-white border-t border-[var(--pd-line-2)] px-4 py-3 min-h-[84px] flex items-center justify-center shadow-lg">
         <div className="w-full max-w-lg mx-auto flex flex-col gap-1.5">
           {/* WAITING State */}
           {isWaiting && (
