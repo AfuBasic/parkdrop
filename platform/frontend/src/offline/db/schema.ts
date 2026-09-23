@@ -145,6 +145,7 @@ export interface LocalSmsCreditPurchase {
   id: string;
   credits: number;
   amount_minor: number;
+  fee_minor: number;
   currency: string;
   provider: string;
   status: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'CANCELLED';
