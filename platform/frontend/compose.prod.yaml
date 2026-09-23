@@ -10,11 +10,14 @@ name: 'parkdrop-frontend'
 services:
     frontend:
         build:
-            # Root-relative, not relative to this file's own directory.
-            # Coolify invokes `docker compose` with `--project-directory` set
-            # to the repo root regardless of which subdirectory the compose
-            # file itself lives in.
-            context: './platform/frontend'
+            # Relative to this file's own directory, NOT root-relative — for
+            # this resource, Coolify's `--project-directory` is this
+            # resource's own Base Directory setting (platform/frontend),
+            # not the repo root. That's the opposite of the backend compose
+            # resource, whose Base Directory is the repo root itself — so
+            # unlike that one, `./platform/frontend` here would resolve to
+            # platform/frontend/platform/frontend (doesn't exist).
+            context: '.'
             dockerfile: Dockerfile
             # Vite bakes these into the JS bundle at build time (there's no
             # "runtime env" for a static SPA) — must be build args, not
