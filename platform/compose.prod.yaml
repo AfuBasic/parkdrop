@@ -49,14 +49,17 @@ services:
     backend:
         <<: *backend-image
         restart: unless-stopped
-        # No fixed host port — a hardcoded "8000:80" collides with anything
-        # else on the shared Coolify host already bound to 8000 (exactly
-        # what broke this deploy: "port is already allocated"). Coolify's
-        # own proxy routes to this container over the internal Docker
-        # network using the FQDN configured on the resource in its UI; it
-        # doesn't need a published host port to do that. `expose` just
-        # documents which container port is reachable on that network.
-        expose:
+        # Target-port-only form ("80", no "host:container" prefix): Coolify
+        # parses a compose service's `ports:` entries to know which
+        # container port to route the resource's FQDN to when generating
+        # its Traefik config — using `expose:` instead (tried first) left
+        # Coolify with no port to route to at all, which is exactly what
+        # produced "no available server" on the domain. This form still
+        # avoids a fixed host-port collision (that's what "8000:80"
+        # originally broke on) since Compose publishes it to an ephemeral
+        # host port rather than a hardcoded one, while keeping the port
+        # visible to Coolify's own routing logic.
+        ports:
             - '80'
         environment:
             <<: *backend-env
