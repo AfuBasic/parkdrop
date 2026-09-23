@@ -11,6 +11,7 @@ use App\Models\SmsWallet;
 use App\Models\User;
 use App\Services\Payments\FakePaymentGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -135,6 +136,64 @@ class SmsCreditPurchaseTest extends TestCase
             ]);
 
         $response->assertStatus(422);
+    }
+
+    public function test_a_paystack_purchase_is_grossed_up_to_cover_paystacks_fee(): void
+    {
+        [$business, $user] = $this->createBusinessAndUser('OWNER');
+
+        Http::fake([
+            'api.paystack.co/*' => Http::response([
+                'status' => true,
+                'data' => ['authorization_url' => 'https://checkout.paystack.com/xyz', 'reference' => 'PDR-X'],
+            ]),
+        ]);
+
+        // 50 credits at ₦7 = ₦350 net (35000 kobo). Paystack: 1.5%, no fixed
+        // fee since the gross stays under the ₦2,500 waiver threshold.
+        $response = $this->actingAs($user)
+            ->withHeader('X-Business-Id', (string) $business->id)
+            ->postJson('/api/v1/sms-credit-purchases', [
+                'credits' => 50,
+                'provider' => 'paystack',
+            ]);
+
+        $response->assertStatus(201);
+        $response->assertJsonPath('purchase.credits', 50);
+        $amountMinor = $response->json('purchase.amount_minor');
+        $feeMinor = $response->json('purchase.fee_minor');
+
+        $this->assertGreaterThan(35000, $amountMinor, 'The customer should be charged more than the flat 50 * ₦7 to cover the fee.');
+        $this->assertSame($amountMinor, 35000 + $feeMinor);
+        // ParkDrop must never net less than intended after Paystack's cut.
+        $this->assertGreaterThanOrEqual(35000, $amountMinor - (int) round($amountMinor * 0.015));
+    }
+
+    public function test_a_flutterwave_purchase_is_grossed_up_to_cover_flutterwaves_fee(): void
+    {
+        [$business, $user] = $this->createBusinessAndUser('OWNER');
+
+        Http::fake([
+            'api.flutterwave.com/*' => Http::response([
+                'status' => 'success',
+                'data' => ['link' => 'https://checkout.flutterwave.com/xyz'],
+            ]),
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withHeader('X-Business-Id', (string) $business->id)
+            ->postJson('/api/v1/sms-credit-purchases', [
+                'credits' => 50,
+                'provider' => 'flutterwave',
+            ]);
+
+        $response->assertStatus(201);
+        $amountMinor = $response->json('purchase.amount_minor');
+        $feeMinor = $response->json('purchase.fee_minor');
+
+        $this->assertGreaterThan(35000, $amountMinor);
+        $this->assertSame($amountMinor, 35000 + $feeMinor);
+        $this->assertGreaterThanOrEqual(35000, $amountMinor - (int) round($amountMinor * 0.02));
     }
 
     public function test_the_client_cannot_influence_the_charged_amount(): void
