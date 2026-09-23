@@ -191,7 +191,7 @@ export function MoreScreen() {
         <button
           type="button"
           onClick={() => setConfirming('forget')}
-          className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/30 bg-[var(--pd-bad-bg)] text-[18px] font-extrabold text-[var(--pd-bad)] hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
+          className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/30 bg-[var(--pd-bad-bg)] text-[18px] font-extrabold text-[var(--pd-bad)] whitespace-nowrap hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
         >
           {MoreStrings.forgetMe}
         </button>
