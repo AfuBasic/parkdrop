@@ -127,6 +127,11 @@ export function usePackageDetail(
             title: 'SMS status unknown',
             description: 'Could not confirm if the message was sent',
           },
+          SKIPPED_NO_CREDITS: {
+            type: 'ARRIVAL_SMS_FAILED',
+            title: 'SMS not sent: no credits',
+            description: 'Your SMS credits ran out. Top up to notify this customer.',
+          },
         };
         const smsEntry = smsStatusMap[pkg.arrival_sms_status];
         if (smsEntry) {
