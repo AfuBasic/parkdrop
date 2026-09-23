@@ -7,6 +7,7 @@ import type { AuthUser, AuthBusiness } from './types';
 import { ApiError, onSessionExpired } from '@/lib/api';
 import { saveOfflineAuthorization, clearOfflineAuthorization, getValidOfflineAuthorization } from '@/offline/device/device-identity';
 import { consumePendingPaymentReturnIfValid } from '@/features/sms-credits/purchase/payment-return-guard';
+import { recordActivity, isWithinIdleWindow, clearActivity } from './lib/idle-lock';
 
 export type AuthState = 
   | 'booting'              // Initial state while resolving session/storage
@@ -88,9 +89,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // security boundary being (re)crossed.
       const skipPinForPaymentReturn = consumePendingPaymentReturnIfValid(window.location.pathname);
 
+      // A reload seconds (or minutes) after the last tap isn't a new person
+      // walking up to the device — re-locking on every single reload was
+      // just noise. Only actual idleness (see IDLE_TIMEOUT_MS) is worth
+      // re-locking on; see lib/idle-lock.ts.
+      const skipPinForRecentActivity = isWithinIdleWindow();
+      const skipPin = skipPinForPaymentReturn || skipPinForRecentActivity;
+      if (skipPin) recordActivity(); // extend the window since we're back
+
       // Determine local-only state and render immediately
       let localState: typeof state;
-      if (meta?.pin_hash && !skipPinForPaymentReturn) {
+      if (meta?.pin_hash && !skipPin) {
         localState = 'locked';
       } else if (offlineAuth) {
         localState = 'authenticated';
@@ -135,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Server confirms session is live
-        if (meta?.pin_hash && !skipPinForPaymentReturn) {
+        if (meta?.pin_hash && !skipPin) {
           setState('locked');
         } else {
           setState('authenticated');
@@ -192,6 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const unlock = () => {
+    recordActivity();
     setState('authenticated');
   };
 
@@ -208,7 +218,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setBusiness(null);
     setRole(null);
     await clearOfflineAuthorization();
-    
+    clearActivity();
+
     const recent = await getMostRecentRememberedIdentity();
     if (recent) {
       setState('remembered_expired');
@@ -221,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await clearAllRememberedIdentities();
     await db.deviceMeta.clear();
     await clearOfflineAuthorization();
+    clearActivity();
     setRememberedIdentity(null);
     setDeviceMeta(null);
     setUser(null);
@@ -228,6 +240,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRole(null);
     setState('unknown');
   };
+
+  // While unlocked, keep the idle window alive on real interaction, and
+  // re-lock automatically once the device has actually gone idle for
+  // IDLE_TIMEOUT_MS — otherwise leaving the tab open indefinitely would
+  // never re-lock at all, which defeats the point of a device PIN.
+  React.useEffect(() => {
+    if (state !== 'authenticated' || !deviceMeta?.pin_hash) return;
+
+    const onActivity = () => recordActivity();
+    const events = ['pointerdown', 'keydown', 'touchstart'] as const;
+    events.forEach((event) => window.addEventListener(event, onActivity, { passive: true }));
+    recordActivity();
+
+    const checkIdle = window.setInterval(() => {
+      if (!isWithinIdleWindow()) {
+        clearActivity();
+        setState('locked');
+      }
+    }, 30_000);
+
+    return () => {
+      events.forEach((event) => window.removeEventListener(event, onActivity));
+      window.clearInterval(checkIdle);
+    };
+  }, [state, deviceMeta?.pin_hash]);
 
   const refreshSession = async () => {
     await initAuth();
