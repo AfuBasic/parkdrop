@@ -1,5 +1,3 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import { toast } from 'sonner';
 import { Check, AlertTriangle } from 'lucide-react';
@@ -22,7 +20,6 @@ interface AccountSecurityScreenProps {
 }
 
 export const AccountSecurityScreen: React.FC<AccountSecurityScreenProps> = ({ onBack }) => {
-  const routerNavigate = useNavigate();
   const safeBack = useSafeBack('/more');
   const handleBack = onBack ?? safeBack;
   const { logout, user: authUser, business } = useAuth();
