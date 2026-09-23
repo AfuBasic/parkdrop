@@ -29,6 +29,7 @@ import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetai
 import { AccountSecurityScreen } from '@/features/account/AccountSecurityScreen';
 import { HelpScreen } from '@/features/help/HelpScreen';
 import { AboutScreen } from '@/features/about/AboutScreen';
+import { InviteScreen } from '@/features/auth/screens/InviteScreen';
 import { ThemeDemo } from '@/routes/theme-demo';
 
 // Gated dev-only HomePreview route
@@ -286,6 +287,32 @@ const themeDemoRoute = createRoute({
   component: ThemeDemo,
 });
 
+// Staff Invitation Link
+//
+// This route only ever mounts for someone already signed in — App.tsx
+// renders the plain sign-in flow directly (ignoring the URL) for anyone
+// unauthenticated, and invitations are accepted automatically the moment
+// the invited email verifies a sign-in code, with no separate accept step.
+// So the one thing to resolve here is: the wrong account is signed in on
+// this device.
+const inviteRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invite/$invitationId',
+  component: () => {
+    const { logout } = useAuth();
+    const [busy, setBusy] = React.useState(false);
+    return (
+      <InviteScreen
+        busy={busy}
+        onSignOutAndContinue={async () => {
+          setBusy(true);
+          await logout();
+        }}
+      />
+    );
+  },
+});
+
 // 3. Route Tree
 const routeTree = rootRoute.addChildren([
   bleedShellRoute.addChildren([indexRoute]),
@@ -309,6 +336,7 @@ const routeTree = rootRoute.addChildren([
   ]),
   homePreviewRoute,
   themeDemoRoute,
+  inviteRoute,
 ]);
 
 // 4. Create Router Instance with native View Transitions
