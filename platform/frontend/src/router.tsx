@@ -80,12 +80,12 @@ const bleedShellRoute = createRoute({
   ),
 });
 
-// Task Layout with AppShell variant="task" (hides bottom nav)
+// Task Layout using AppShell variant="default" so bottom nav is accessible on all screens
 const taskShellRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'task-shell',
   component: () => (
-    <AppShell variant="task">
+    <AppShell variant="default">
       <Outlet />
     </AppShell>
   ),
