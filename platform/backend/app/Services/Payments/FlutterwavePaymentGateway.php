@@ -41,23 +41,26 @@ class FlutterwavePaymentGateway implements PaymentGateway
         $amountMajor = $purchase->amount_minor / 100;
 
         $payload = [
-            'tx_ref' => $purchase->reference,
-            'amount' => $amountMajor,
-            'currency' => $purchase->currency,
-            'redirect_url' => $callbackUrl,
-            'customer' => [
+            'tx_ref'          => $purchase->reference,
+            'amount'          => $amountMajor,
+            'currency'        => $purchase->currency,
+            'redirect_url'    => $callbackUrl,
+            // Explicitly list all desired payment channels. Without this field
+            // Flutterwave defaults to card-only. Comma-separated, no spaces.
+            'payment_options' => 'card,banktransfer,ussd,account',
+            'customer'        => [
                 'email' => $payerEmail,
             ],
-            'customizations' => [
-                'title' => 'ParkDrop SMS Credits',
+            'customizations'  => [
+                'title'       => 'ParkDrop SMS Credits',
                 'description' => "{$purchase->credits} SMS credits",
-                'logo' => 'https://app.parkdrop.com.ng/parkdrop-icon-only.png',
+                'logo'        => 'https://app.parkdrop.com.ng/parkdrop-icon-only.png',
             ],
-            'meta' => [
+            'meta'            => [
                 'purchase_id' => $purchase->id,
                 'business_id' => $purchase->business_id,
-                'bundle_key' => $purchase->bundle_key,
-                'credits' => $purchase->credits,
+                'bundle_key'  => $purchase->bundle_key,
+                'credits'     => $purchase->credits,
             ],
         ];
 
