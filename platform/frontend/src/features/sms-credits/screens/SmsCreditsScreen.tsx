@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { RefreshCw, WifiOff } from 'lucide-react';
