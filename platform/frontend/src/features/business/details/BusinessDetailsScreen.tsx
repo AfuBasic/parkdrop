@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from '@tanstack/react-router';
 import { useSafeBack } from '@/hooks/useSafeBack';
 import { Building2, MapPin, Phone, Shield, Pencil, Check, X, AlertCircle, Lock, Coins } from 'lucide-react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -33,7 +32,6 @@ export const BusinessDetailsScreen: React.FC<BusinessDetailsScreenProps> = ({
   mockData,
   mockRole,
 }) => {
-  const routerNavigate = useNavigate();
   const safeBack = useSafeBack('/more');
   const handleBack = onBack ?? safeBack;
   const { role: contextRole, deviceMeta: contextDeviceMeta } = useAuth();
