@@ -4,6 +4,7 @@ import { BigButton } from '@/features/auth/components/BigButton';
 
 export interface InviteScreenProps {
   onSignOutAndContinue: () => void;
+  businessName?: string;
   busy?: boolean;
 }
 
@@ -18,7 +19,7 @@ export interface InviteScreenProps {
  * signed in on this device, so this screen's one job is getting them signed
  * out cleanly and back to the sign-in screen to enter the invited address.
  */
-export function InviteScreen({ onSignOutAndContinue, busy = false }: InviteScreenProps) {
+export function InviteScreen({ onSignOutAndContinue, businessName, busy = false }: InviteScreenProps) {
   return (
     <AuthShell
       size="medium"
@@ -38,8 +39,9 @@ export function InviteScreen({ onSignOutAndContinue, busy = false }: InviteScree
             You're signed in with a different account
           </h1>
           <p className="m-0 text-[15px] font-semibold leading-[1.45] text-[var(--pd-muted)] max-w-xs">
-            To join this business, sign out here first, then sign in again using the email
-            address this invitation was sent to.
+            {businessName
+              ? `To join ${businessName}, sign out here first, then sign in again using the email address this invitation was sent to.`
+              : 'To join this business, sign out here first, then sign in again using the email address this invitation was sent to.'}
           </p>
         </div>
       </div>
