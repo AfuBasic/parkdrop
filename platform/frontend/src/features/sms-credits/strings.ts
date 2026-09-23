@@ -43,6 +43,8 @@ export const SmsCreditsStrings = {
   smsCount: (n: number) => `${n} SMS`,
   smsAdded: (n: number) => `+${n} SMS`,
   boughtCredits: 'You bought credits',
+  /** Once the purchase itself has synced down, e.g. "You bought 100 SMS". */
+  boughtCreditsCount: (n: number) => `You bought ${n} SMS`,
   packageSms: "A customer's package",
   packageDeleted: 'Package no longer available',
   welcomeCredits: 'ParkDrop gave you a welcome gift',
