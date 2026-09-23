@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { CloudOff } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useKeyboardOpen } from '@/features/auth/lib/useKeyboardOpen';
 import { useSyncState } from '@/offline/hooks/useSyncState';
+import { db } from '@/offline/db/database';
 import { cn } from '@/lib/utils';
 import { HomeStrings } from './strings';
 import { currentGreeting } from './lib/greeting';
@@ -22,6 +24,7 @@ import { FirstPackageCard } from './components/FirstPackageCard';
 import { HomeSkeleton } from './components/HomeSkeleton';
 import { HomeError } from './components/HomeError';
 import { isOverdue24h, formatOverdueAgeSubline } from '@/features/packages/domain/package-filters';
+import { LowCreditBanner } from '@/features/sms-credits/components/LowCreditBanner';
 
 export type HomePackageFilter = 'WAITING' | 'COLLECTED';
 
@@ -77,6 +80,24 @@ export function HomeScreen({
   const syncState = useSyncState(business?.id);
   const data = useHomeData(business?.id, business?.daily_storage_fee_minor ?? DEFAULT_DAILY_STORAGE_FEE_MINOR);
   const keyboardOpen = useKeyboardOpen();
+
+  // SMS wallet balance (live from local DB)
+  const wallet = useLiveQuery(
+    () => business?.id ? db.smsWallets.where('business_id').equals(business.id).first() : undefined,
+    [business?.id]
+  );
+  const creditBalance = wallet?.balance;
+  const showCreditBanner = creditBalance !== undefined && creditBalance < 5;
+
+  // Dismissed for this session only — banner reappears on next page load
+  const SESSION_KEY = `pd-credit-banner-dismissed-${business?.id}`;
+  const [creditBannerDismissed, setCreditBannerDismissed] = React.useState(
+    () => typeof sessionStorage !== 'undefined' && sessionStorage.getItem(SESSION_KEY) === '1'
+  );
+  const handleDismissCreditBanner = React.useCallback(() => {
+    setCreditBannerDismissed(true);
+    sessionStorage.setItem(SESSION_KEY, '1');
+  }, [SESSION_KEY]);
 
   const [syncSheetOpen, setSyncSheetOpen] = React.useState(false);
   // Bumped to make the live query re-run after a failed read.
@@ -149,6 +170,14 @@ export function HomeScreen({
             <SetupBanner
               missing={identity.missing}
               onFinishSetup={handleNavigateToSetup}
+            />
+          )}
+
+          {showCreditBanner && !creditBannerDismissed && (
+            <LowCreditBanner
+              balance={creditBalance!}
+              onBuyCredits={() => routerNavigate({ to: '/more/sms-credits' })}
+              onDismiss={handleDismissCreditBanner}
             />
           )}
 
