@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
 import type { LocalSmsCreditTransaction } from '@/offline/db/schema';
 import { SmsCreditsStrings } from '@/features/sms-credits/strings';
@@ -5,6 +6,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/offline/db/database';
 import { formatPhone, formatMoney } from '@/lib/formatters';
 import { Link } from '@tanstack/react-router';
+import { SmsCreditPurchaseDetailSheet } from './SmsCreditPurchaseDetailSheet';
 
 const PROVIDER_LABEL: Record<string, string> = {
   paystack: 'Paystack',
@@ -106,7 +108,11 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
     ? `${formatMoney(purchase.amount_minor)} via ${PROVIDER_LABEL[purchase.provider] ?? purchase.provider} · ${formattedDate}`
     : formattedDate;
 
-  const isTappable = isArrivalSms && !isDeletedPackage && packageWithCustomer?.pkg != null;
+  const [showPurchaseDetail, setShowPurchaseDetail] = useState(false);
+
+  const isTappablePackage = isArrivalSms && !isDeletedPackage && packageWithCustomer?.pkg != null;
+  const isTappablePurchase = purchase != null;
+  const isTappable = isTappablePackage || isTappablePurchase;
 
   const innerContent = (
     <>
@@ -146,7 +152,7 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
 
   const containerClasses = "flex items-center justify-between gap-3 py-3.5 px-4 border-b border-[var(--pd-line-2)] last:border-b-0 w-full text-left";
 
-  if (isTappable && transaction.reference_id) {
+  if (isTappablePackage && transaction.reference_id) {
     return (
       <Link
         to="/packages/$packageId"
@@ -155,6 +161,23 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
       >
         {innerContent}
       </Link>
+    );
+  }
+
+  if (isTappablePurchase && purchase) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setShowPurchaseDetail(true)}
+          className={`${containerClasses} active:bg-[var(--pd-page-2)] transition-colors cursor-pointer`}
+        >
+          {innerContent}
+        </button>
+        {showPurchaseDetail && (
+          <SmsCreditPurchaseDetailSheet purchase={purchase} onClose={() => setShowPurchaseDetail(false)} />
+        )}
+      </>
     );
   }
 
