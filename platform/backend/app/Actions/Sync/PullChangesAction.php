@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Package;
 use App\Models\PackageMedia;
 use App\Models\Payment;
+use App\Models\SmsCreditPurchase;
 use App\Models\SmsCreditTransaction;
 use App\Models\SmsMessage;
 use App\Models\SmsWallet;
@@ -56,6 +57,22 @@ class PullChangesAction
                                     'reference_type' => $tx->reference_type,
                                     'reference_id' => $tx->reference_id,
                                     'created_at' => $tx->created_at?->toISOString() ?? now()->toISOString(),
+                                ];
+                            }
+                            break;
+                        case 'sms_credit_purchase':
+                            $purchase = SmsCreditPurchase::find($change->entity_id);
+                            if ($purchase) {
+                                $payload = [
+                                    'id' => $purchase->id,
+                                    'credits' => $purchase->credits,
+                                    'amount_minor' => $purchase->amount_minor,
+                                    'currency' => $purchase->currency,
+                                    'provider' => $purchase->provider,
+                                    'status' => $purchase->status,
+                                    'reference' => $purchase->reference,
+                                    'paid_at' => $purchase->paid_at?->toISOString(),
+                                    'created_at' => $purchase->created_at?->toISOString() ?? now()->toISOString(),
                                 ];
                             }
                             break;
