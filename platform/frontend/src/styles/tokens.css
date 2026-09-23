@@ -132,3 +132,24 @@
     --pd-motion-slow: 260ms;
   }
 }
+
+/* Skeleton loading placeholders (SkeletonLine/SkeletonBlock/SkeletonCircle in
+   design-system/components/SkeletonPrimitives.tsx). A gentle opacity pulse —
+   never a spinner substituting for shaped content, see that file's header
+   comment for why. */
+@keyframes pd-skeleton-pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+.pd-skeleton {
+  background-color: var(--pd-tint-2);
+  animation: pd-skeleton-pulse 1.35s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pd-skeleton {
+    animation: none;
+    opacity: 0.75;
+  }
+}
