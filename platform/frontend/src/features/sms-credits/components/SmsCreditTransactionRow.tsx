@@ -82,7 +82,7 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
     ? SmsCreditsStrings.smsAdded(transaction.amount)
     : SmsCreditsStrings.smsCount(transaction.amount);
 
-  const isTappable = isArrivalSms && !isDeletedPackage && packageData != null;
+  const isTappable = isArrivalSms && !isDeletedPackage && packageWithCustomer?.pkg != null;
 
   const innerContent = (
     <>
