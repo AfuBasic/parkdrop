@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { StaffScreen } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/staff/StaffScreen';
-import type { StaffMember, PendingInvitation } from '/Library/WebServer/Documents/projects/parkdrop/platform/frontend/src/features/business/api/business-api';
+import { StaffScreen } from '@/features/business/staff/StaffScreen';
+import type { StaffMember, PendingInvitation } from '@/features/business/api/business-api';
 
 const mockMembers: StaffMember[] = [
   {
