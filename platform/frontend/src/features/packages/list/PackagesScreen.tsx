@@ -11,6 +11,7 @@ import { PackagesTabsAndChips } from '@/features/packages/list/components/Packag
 import { PackagesSortSheet } from '@/features/packages/list/components/PackagesSortSheet';
 import { PackageListRow } from '@/features/packages/list/components/PackageListRow';
 import { PackageListEmptyState } from '@/features/packages/list/components/PackageListEmptyState';
+import { SkeletonBlock } from '@/design-system/components/SkeletonPrimitives';
 import { PackagesStrings } from '@/features/packages/strings';
 import {
   type StatusTab,
@@ -229,6 +230,11 @@ export function PackagesScreen({
     });
   }, [businessId, debouncedQuery]);
 
+  // liveData is undefined only until Dexie's first query result comes back —
+  // collapsing that into `|| []` made a business with 200 packages briefly
+  // show the "You have no packages yet, add one" empty state on every fresh
+  // load, before the real rows arrived. See isInitialLoad below.
+  const isInitialLoad = liveData === undefined;
   const allItems = useMemo(() => liveData || [], [liveData]);
 
   // 3. Tab and Chip Counts Calculation
@@ -490,7 +496,14 @@ export function PackagesScreen({
         ) : (
           /* State B: Regular Filtered / Grouped List */
           <div>
-            {filteredAndSortedItems.length === 0 ? (
+            {isInitialLoad ? (
+              <div className="flex flex-col gap-2.5" aria-busy="true">
+                <span className="sr-only" role="status">Loading packages…</span>
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <SkeletonBlock key={i} height="h-[84px]" />
+                ))}
+              </div>
+            ) : filteredAndSortedItems.length === 0 ? (
               <PackageListEmptyState
                 isPositiveFilterEmpty={isPositiveEmpty}
                 filterType={positiveEmptyType}
