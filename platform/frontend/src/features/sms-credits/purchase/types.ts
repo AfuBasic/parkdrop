@@ -5,11 +5,20 @@ export interface SmsCreditPricing {
   max_credits: number;
 }
 
+export interface SmsCreditPurchasePreview {
+  credits: number;
+  net_amount_minor: number;
+  fee_minor: number;
+  amount_minor: number;
+  currency: string;
+}
+
 export interface SmsCreditPurchase {
   id: string;
   bundle_key: string;
   credits: number;
   amount_minor: number;
+  fee_minor: number;
   currency: string;
   status: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'CANCELLED';
   reference: string;

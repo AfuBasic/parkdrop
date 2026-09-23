@@ -1,5 +1,5 @@
 import { fetchApi } from '@/lib/api';
-import type { SmsCreditPricing, SmsCreditPurchase } from './types';
+import type { SmsCreditPricing, SmsCreditPurchase, SmsCreditPurchasePreview } from './types';
 
 export interface CreatePurchaseResponse {
   purchase: SmsCreditPurchase;
@@ -12,6 +12,16 @@ export interface PurchaseStatusResponse {
 
 export async function fetchCreditPricing(): Promise<SmsCreditPricing> {
   const res = await fetchApi('/api/v1/sms-credit-purchases/pricing');
+  return res.json();
+}
+
+export async function fetchPurchasePreview(
+  credits: number,
+  provider: 'paystack' | 'flutterwave'
+): Promise<SmsCreditPurchasePreview> {
+  const res = await fetchApi(
+    `/api/v1/sms-credit-purchases/preview?credits=${credits}&provider=${provider}`
+  );
   return res.json();
 }
 
