@@ -1,0 +1,134 @@
+/**
+ * ParkDrop design tokens.
+ *
+ * Single source of truth for the sign-in / first-run redesign and the Home
+ * dashboard redesign. Plain CSS custom properties on :root so they can be read
+ * from raw CSS, inline styles and Tailwind arbitrary values alike.
+ *
+ * The Tailwind @theme block in index.css maps its semantic colour names onto
+ * these same hex values; change a value here and there together.
+ */
+
+:root {
+  /* ── Brand blue ─────────────────────────────────────────────────────── */
+  --pd-blue: #2563eb;
+  --pd-blue-hover: #1d4ed8;
+  --pd-blue-dark: #163b8c;
+
+  /* ── Ink ────────────────────────────────────────────────────────────── */
+  --pd-navy: #0d1b2a;
+  --pd-muted: #475569;
+
+  /* ── Tints & lines ──────────────────────────────────────────────────── */
+  --pd-tint: #eff6ff;
+  --pd-tint-2: #dbeafe;
+  --pd-line: #cbd5e1;
+  --pd-line-2: #e2e8f0;
+  --pd-page: #e8eef7;
+  /* The signed-in surface. Cooler and lighter than the sign-in backdrop so a
+     white card still reads as a card against it. */
+  --pd-page-2: #f8fafc;
+
+  /* ── Status (never colour alone: always icon + words) ───────────────── */
+  --pd-ok: #15803d;
+  --pd-ok-bg: #f0fdf4;
+  --pd-bad: #b91c1c;
+  --pd-bad-bg: #fef2f2;
+  --pd-warn: #92400e;
+  --pd-warn-bg: #fffbeb;
+
+  /* ── Kraft (illustration only — never text or UI chrome) ────────────── */
+  --pd-kraft-1: #e2b46e;
+  --pd-kraft-2: #cf9a4d;
+  --pd-kraft-3: #d9a45a;
+  --pd-kraft-4: #f4e4bf;
+
+  /* ── Type ───────────────────────────────────────────────────────────── */
+  --pd-font: "Manrope", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --pd-size-title: 30px;
+  --pd-size-title-short: 28px;
+  --pd-size-body: 18px;
+  --pd-size-field: 25px;
+  --pd-size-button: 20px;
+  --pd-size-chip: 16px;
+  --pd-size-helper: 16px;
+  /* Nothing in the auth flow may go below this. */
+  --pd-size-min: 15px;
+
+  /* ── Home dashboard type ────────────────────────────────────────────── */
+  /* Named for the thing they size, so a row and a tile cannot drift apart. */
+  --pd-size-point: 22px; /* pickup point name in the header */
+  --pd-size-tile: 20px; /* action tile label */
+  --pd-size-row-name: 18px; /* customer name in a parcel row */
+  --pd-size-section: 18px; /* section header */
+  --pd-size-meta: 16px; /* phone, amount, sublines */
+  --pd-size-small: 15px; /* chips, nav labels — the floor */
+
+  /* ── Home metrics ───────────────────────────────────────────────────── */
+  --pd-tile-h: 112px;
+  --pd-row-h: 84px;
+  --pd-nav-h: 64px;
+  --pd-card-radius: 20px;
+  --pd-tile-radius: 20px;
+  --pd-chip-radius: 12px;
+  /* How far the action tiles climb into the blue header. */
+  --pd-tile-overlap: 28px;
+
+  --pd-weight-body: 600;
+  --pd-weight-field: 700;
+  --pd-weight-title: 800;
+
+  /* ── Tap targets & metrics ──────────────────────────────────────────── */
+  --pd-tap-min: 48px;
+  --pd-field-h: 68px;
+  --pd-button-h: 60px;
+  --pd-code-slot-h: 70px;
+  --pd-pin-key-h: 64px;
+  --pd-pin-key-h-short: 50px;
+
+  --pd-sheet-radius: 28px;
+  --pd-field-radius: 16px;
+
+  /* ── Header sizing ──────────────────────────────────────────────────── */
+  --pd-header-big: clamp(176px, 32vh, 262px);
+  --pd-header-mid: clamp(150px, 25vh, 206px);
+}
+
+/* Short screens: step the title, PIN keys and header down rather than
+   clipping. The header minimums matter most here — a fixed 150px band on a
+   640px phone is a fifth of the screen, and on a landscape or split-screen
+   viewport it swallows the content entirely. */
+@media (max-height: 700px) {
+  :root {
+    --pd-size-title: var(--pd-size-title-short);
+    --pd-pin-key-h: var(--pd-pin-key-h-short);
+    --pd-header-big: clamp(140px, 26vh, 200px);
+    --pd-header-mid: clamp(112px, 20vh, 156px);
+  }
+}
+
+/* Very short: landscape, split screen, or a large text size on a small
+   phone. The header becomes a title bar and the content takes the rest. */
+@media (max-height: 460px) {
+  :root {
+    --pd-header-big: 0px;
+    --pd-header-mid: 0px;
+    --pd-pin-key-h: var(--pd-pin-key-h-short);
+  }
+}
+
+/* Motion is only ever an answer to a tap — and never for these users. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --pd-motion-fast: 0ms;
+    --pd-motion-slow: 0ms;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --pd-motion-fast: 120ms;
+    --pd-motion-slow: 260ms;
+  }
+}

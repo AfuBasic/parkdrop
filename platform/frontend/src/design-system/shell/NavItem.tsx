@@ -1,0 +1,113 @@
+import * as React from "react"
+import { Link } from "@tanstack/react-router"
+import { Slot } from "@radix-ui/react-slot"
+import { cn } from "@/lib/utils"
+
+export interface NavItemProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  icon: React.ReactNode
+  label: string
+  to?: string
+  isActive?: boolean
+  asChild?: boolean
+}
+
+/**
+ * One destination in the bottom bar or the desktop sidebar.
+ *
+ * Icon and label, always both. An icon-only bar asks a first-time user to
+ * guess, and the guess is made with a customer waiting. The label sits at
+ * 15px — the floor for this app — rather than the 12px caption size, and the
+ * active item is marked by a tinted pill behind the icon as well as by
+ * colour, so the current tab is not carried by hue alone.
+ *
+ * The emphasized floating variant is gone: there is exactly one Add control
+ * in the app, and it is the tile on Home.
+ */
+export const NavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
+  ({ icon, label, to, href, isActive, asChild, className, ...props }, ref) => {
+    const targetUrl = to || href
+
+    const renderInner = (active: boolean) => (
+      <>
+        <span
+          className={cn(
+            "flex h-7 w-11 sm:h-6 sm:w-6 items-center justify-center rounded-full sm:rounded-none",
+            active && "bg-[var(--pd-tint-2)] sm:bg-transparent"
+          )}
+        >
+          {icon}
+        </span>
+        <span className="leading-none">{label}</span>
+      </>
+    )
+
+    const baseClass = cn(
+      "flex flex-1 sm:flex-none flex-col sm:flex-row sm:justify-start items-center",
+      "gap-1 sm:gap-3 min-h-[var(--pd-tap-min)] rounded-[var(--radius-md)]",
+      "px-1 py-1.5 sm:px-4 sm:py-3",
+      "text-[var(--pd-size-small)] font-bold sm:text-[var(--text-body-md)] sm:font-medium",
+      "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus cursor-pointer"
+    )
+
+    if (asChild) {
+      return (
+        <Slot
+          ref={ref}
+          aria-current={isActive ? "page" : undefined}
+          className={cn(
+            baseClass,
+            isActive
+              ? "text-[var(--pd-blue-hover)] sm:bg-surface-selected sm:text-action-primary"
+              : "text-[var(--pd-muted)] hover:text-text-primary sm:hover:bg-surface-subtle",
+            className
+          )}
+          {...props}
+        >
+          {renderInner(Boolean(isActive))}
+        </Slot>
+      )
+    }
+
+    if (targetUrl && !props.onClick) {
+      return (
+        <Link
+          ref={ref}
+          to={targetUrl}
+          activeOptions={{ exact: targetUrl === "/" }}
+          className={cn(
+            baseClass,
+            isActive
+              ? "text-[var(--pd-blue-hover)] sm:bg-surface-selected sm:text-action-primary"
+              : "text-[var(--pd-muted)] hover:text-text-primary sm:hover:bg-surface-subtle",
+            className
+          )}
+          activeProps={{
+            className: "!text-[var(--pd-blue-hover)] sm:!bg-surface-selected sm:!text-action-primary",
+          }}
+        >
+          {({ isActive: linkIsActive }) => renderInner(isActive !== undefined ? isActive : linkIsActive)}
+        </Link>
+      )
+    }
+
+    return (
+      <a
+        ref={ref}
+        href={targetUrl}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          baseClass,
+          isActive
+            ? "text-[var(--pd-blue-hover)] sm:bg-surface-selected sm:text-action-primary"
+            : "text-[var(--pd-muted)] hover:text-text-primary sm:hover:bg-surface-subtle",
+          className
+        )}
+        {...props}
+      >
+        {renderInner(Boolean(isActive))}
+      </a>
+    )
+  }
+)
+NavItem.displayName = "NavItem"
+

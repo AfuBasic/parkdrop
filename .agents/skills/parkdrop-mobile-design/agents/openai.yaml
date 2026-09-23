@@ -1,0 +1,40 @@
+id: parkdrop-mobile-design
+name: ParkDrop Mobile Design
+description: >
+  Repository-level mobile-first product design skill for ParkDrop.
+  Apply to all screen design, component styling, navigation, and
+  state design tasks in this repository.
+version: "1.0"
+skill_ref: "../SKILL.md"
+references:
+  - "../references/mobile-ui-rules.md"
+  - "../references/parkdrop-mobile-patterns.md"
+supplemental_docs:
+  - "docs/PARKDROP_MASTER_CONTEXT.md"
+  - "docs/design-system.md"
+triggers:
+  keywords:
+    - mobile ui
+    - mobile design
+    - screen design
+    - auth screen
+    - package list
+    - package creation
+    - package detail
+    - navigation
+    - bottom nav
+    - touch target
+    - offline state
+    - empty state
+    - error state
+    - loading state
+    - toast
+    - bottom sheet
+    - form design
+    - PWA
+    - responsive
+    - 360px
+    - thumb reach
+    - safe area
+    - mobile qa
+priority: high

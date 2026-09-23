@@ -28,3 +28,11 @@ coverage/
 *.sln
 *.sw?
 *~
+
+# Agent tooling worktrees — checkouts of this repo, never part of a commit
+.claude/worktrees/
+
+# Screenshots taken while checking a screen — evidence for a review, never source
+.screenshots/
+*.screenshot.png
+platform/.claude
