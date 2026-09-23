@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Business;
 use App\Models\SmsCreditPurchase;
 use App\Models\SmsWallet;
+use App\Services\Payments\PaymentFeeCalculator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -25,6 +26,33 @@ class SmsCreditPurchaseController extends Controller
             'currency' => config('payments.currency', 'NGN'),
             'min_credits' => (int) config('payments.min_credits_per_purchase', 50),
             'max_credits' => (int) config('payments.max_credits_per_purchase', 5000),
+        ]);
+    }
+
+    /**
+     * What a purchase of this many credits will actually cost on checkout,
+     * including the payment provider's own transaction fee — computed with
+     * the exact same PaymentFeeCalculator that store() uses, so the total
+     * shown here is never a guess the real charge could later disagree with.
+     */
+    public function preview(Request $request, PaymentFeeCalculator $feeCalculator): JsonResponse
+    {
+        $request->validate([
+            'credits' => 'required|integer|min:1',
+            'provider' => 'required|string|in:paystack,flutterwave,fake',
+        ]);
+
+        $credits = (int) $request->input('credits');
+        $pricePerCreditMinor = (int) config('payments.price_per_credit_minor', 700);
+        $netAmountMinor = $credits * $pricePerCreditMinor;
+        $amountMinor = $feeCalculator->grossUpForNetAmount($netAmountMinor, (string) $request->input('provider'));
+
+        return response()->json([
+            'credits' => $credits,
+            'net_amount_minor' => $netAmountMinor,
+            'fee_minor' => $amountMinor - $netAmountMinor,
+            'amount_minor' => $amountMinor,
+            'currency' => config('payments.currency', 'NGN'),
         ]);
     }
 
@@ -62,6 +90,7 @@ class SmsCreditPurchaseController extends Controller
                 'bundle_key' => $purchase->bundle_key,
                 'credits' => $purchase->credits,
                 'amount_minor' => $purchase->amount_minor,
+                'fee_minor' => $purchase->fee_minor,
                 'currency' => $purchase->currency,
                 'status' => $purchase->status,
                 'reference' => $purchase->reference,
@@ -91,6 +120,7 @@ class SmsCreditPurchaseController extends Controller
                 'bundle_key' => $purchase->bundle_key,
                 'credits' => $purchase->credits,
                 'amount_minor' => $purchase->amount_minor,
+                'fee_minor' => $purchase->fee_minor,
                 'currency' => $purchase->currency,
                 'status' => $purchase->status,
                 'reference' => $purchase->reference,
@@ -130,6 +160,7 @@ class SmsCreditPurchaseController extends Controller
                 'status' => $verifiedPurchase->status,
                 'credits' => $verifiedPurchase->credits,
                 'amount_minor' => $verifiedPurchase->amount_minor,
+                'fee_minor' => $verifiedPurchase->fee_minor,
                 'currency' => $verifiedPurchase->currency,
                 'reference' => $verifiedPurchase->reference,
                 'paid_at' => $verifiedPurchase->paid_at?->toISOString(),
