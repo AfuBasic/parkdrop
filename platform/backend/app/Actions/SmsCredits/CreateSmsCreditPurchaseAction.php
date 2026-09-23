@@ -14,7 +14,8 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 class CreateSmsCreditPurchaseAction
 {
     public function __construct(
-        protected PaymentGateway $paymentGateway
+        protected PaymentGateway $paymentGateway,
+        protected \App\Services\Payments\PaymentFeeCalculator $feeCalculator
     ) {}
 
     /**
@@ -44,7 +45,7 @@ class CreateSmsCreditPurchaseAction
         }
 
         $pricePerCreditMinor = (int) config('payments.price_per_credit_minor', 700);
-        $amountMinor = $credits * $pricePerCreditMinor;
+        $netAmountMinor = $credits * $pricePerCreditMinor;
         $currency = (string) config('payments.currency', 'NGN');
 
         // 3. Generate unique, random ParkDrop reference (PDR-XXXXXXXX)
@@ -64,6 +65,13 @@ class CreateSmsCreditPurchaseAction
             default => $this->paymentGateway,
         };
 
+        // Credits carry no margin, so the customer's card is charged the
+        // provider's own transaction fee on top of the credit cost — the
+        // business always nets exactly $netAmountMinor either way, rather
+        // than losing the fee out of a zero-margin sale.
+        $amountMinor = $this->feeCalculator->grossUpForNetAmount($netAmountMinor, $gateway->getName());
+        $feeMinor = $amountMinor - $netAmountMinor;
+
         // 5. Create immutable commercial purchase record in PENDING status
         $purchase = SmsCreditPurchase::create([
             'business_id' => $business->id,
@@ -73,6 +81,7 @@ class CreateSmsCreditPurchaseAction
             'bundle_key' => "custom_{$credits}",
             'credits' => $credits,
             'amount_minor' => $amountMinor,
+            'fee_minor' => $feeMinor,
             'currency' => $currency,
             'status' => 'PENDING',
             'reference' => $reference,
