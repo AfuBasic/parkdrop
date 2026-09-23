@@ -36,17 +36,20 @@ class CreateUploadAuthorizationAction
             ->update(['status' => 'EXPIRED']);
 
         $expectedPublicId = (string) Str::uuid();
+        $folder = 'parkdrop/packages/'.md5((string) $businessId).'/'.$package->id;
 
+        // Cloudinary's upload response returns public_id as the full
+        // asset path (folder/public_id), not just the leaf id we pass in
+        // — store the same full path here so CompleteUploadAction's match
+        // check actually matches, instead of rejecting every real upload.
         $intent = PackageMediaUploadIntent::create([
             'package_id' => $package->id,
             'media_id' => $mediaId,
-            'expected_public_id' => $expectedPublicId,
+            'expected_public_id' => $folder.'/'.$expectedPublicId,
             'status' => 'PENDING',
             'created_by' => $userId,
             'expires_at' => now()->addMinutes(30),
         ]);
-
-        $folder = 'parkdrop/packages/'.md5((string) $businessId).'/'.$package->id;
 
         return $this->cloudinary->generateUploadSignature($expectedPublicId, $folder);
     }

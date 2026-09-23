@@ -6,9 +6,10 @@ use App\Models\Package;
 use App\Models\PackageMedia;
 use App\Models\PackageMediaUploadIntent;
 use App\Models\SyncChange;
-use Cloudinary\Api\Utils;
+use Cloudinary\Utils\SignatureVerifier;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 class CompleteUploadAction
@@ -39,18 +40,28 @@ class CompleteUploadAction
             throw new InvalidArgumentException('Public ID mismatch.');
         }
 
-        // Cloudinary response verification would typically check the signature here if using the SDK verification properly.
-        // For simplicity and since we trust the signed public_id matching the intent, we proceed.
-        // We'd use \Cloudinary\Api\Utils::api_sign_request and compare if the signature is included in $cloudinaryResponse.
-        $expectedSignature = Utils::api_sign_request([
-            'public_id' => $providerPublicId,
-            'version' => $cloudinaryResponse['version'] ?? '',
-        ], config('cloudinary.api_secret'));
+        // Best-effort verification that the Cloudinary response wasn't
+        // tampered with in transit — we still trust the intent (expiring,
+        // single-use, public_id already matched above) as the primary
+        // guard, so a missing/mismatched signature only gets logged, not
+        // rejected. (This previously called a v1-SDK class —
+        // `Cloudinary\Api\Utils::api_sign_request` — that no longer exists
+        // in the installed v3 SDK, so every completeUpload() call threw an
+        // uncaught fatal `Error` here, on top of authorizeUpload() already
+        // failing the same way — see CloudinaryMediaService.)
+        if (isset($cloudinaryResponse['signature'], $cloudinaryResponse['version'])) {
+            $signatureValid = SignatureVerifier::verifyApiResponseSignature(
+                $providerPublicId,
+                $cloudinaryResponse['version'],
+                $cloudinaryResponse['signature']
+            );
 
-        if (isset($cloudinaryResponse['signature']) && $cloudinaryResponse['signature'] !== $expectedSignature) {
-            // Note: Cloudinary's response signature signs specific fields (public_id, version).
-            // In a real strict environment we check this, but we'll accept it if signature isn't passed for mock testing,
-            // relying on the intent state instead.
+            if (! $signatureValid) {
+                Log::warning('Cloudinary upload response signature mismatch.', [
+                    'media_id' => $mediaId,
+                    'package_id' => $packageId,
+                ]);
+            }
         }
 
         return DB::transaction(function () use ($intent, $packageId, $mediaId, $cloudinaryResponse, $businessId, $userId) {
@@ -63,7 +74,7 @@ class CompleteUploadAction
                     'business_id' => $businessId,
                     'package_id' => $packageId,
                     'cloudinary_asset_id' => $cloudinaryResponse['asset_id'] ?? null,
-                    'public_id' => $providerPublicId,
+                    'public_id' => $cloudinaryResponse['public_id'] ?? null,
                     'status' => 'SYNCED',
                     'resource_type' => $cloudinaryResponse['resource_type'] ?? 'image',
                     'format' => $cloudinaryResponse['format'] ?? null,
