@@ -2,13 +2,13 @@ name: 'parkdrop'
 
 # Production compose file, meant to be deployed via Coolify.
 #
-# Deliberately does NOT include a mysql service — the database is a
-# separately managed Coolify resource (its own container/volume/backups,
-# outside this app's lifecycle). Point DB_HOST/DB_PORT/DB_DATABASE/
-# DB_USERNAME/DB_PASSWORD (set as env vars on this app in Coolify) at that
-# resource. Everything else the backend depends on (redis) is still
-# bundled here since nothing external was asked for it — split it out the
-# same way later if that ever needs to change.
+# mysql IS bundled here (this reverses an earlier decision to run it as a
+# separate, independently-managed Coolify resource — that split it onto a
+# different Docker network than this app's own containers, which needed a
+# second shared network just to let the two talk to each other. Keeping it
+# in this compose file means the DB is reachable over the same `parkdrop`
+# network as everything else, by the plain service name `mysql`, no
+# extra networking required).
 #
 # All three backend processes share one built image; only `command:`
 # differs per service, same pattern as compose.dev.yaml's Sail services.
@@ -27,9 +27,9 @@ x-backend-image: &backend-image
 
 x-backend-env: &backend-env
     LOG_CHANNEL: '${LOG_CHANNEL:-stack}'
-    DB_CONNECTION: '${DB_CONNECTION:-mysql}'
-    DB_HOST: '${DB_HOST}'
-    DB_PORT: '${DB_PORT:-3306}'
+    DB_CONNECTION: 'mysql'
+    DB_HOST: 'mysql'
+    DB_PORT: 3306
     DB_DATABASE: '${DB_DATABASE}'
     DB_USERNAME: '${DB_USERNAME}'
     DB_PASSWORD: '${DB_PASSWORD}'
@@ -67,18 +67,13 @@ services:
             RUN_MIGRATIONS: 'true'
         volumes:
             - 'backend-storage:/var/www/html/storage/app'
-        # parkdrop: talks to redis/horizon/scheduler. coolify: the shared
-        # network every Coolify resource on the server joins — needed to
-        # resolve and reach the standalone MySQL container, which is its
-        # own separate Coolify resource (own compose project, own private
-        # network) that `parkdrop` alone can never see. Without this,
-        # DB_HOST fails DNS resolution entirely ("getaddrinfo ... failed"),
-        # not just a refused/timed-out connection.
         networks:
             - parkdrop
-            - coolify
         depends_on:
-            - redis
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_started
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost/up']
             interval: 30s
@@ -95,9 +90,11 @@ services:
             - 'backend-storage:/var/www/html/storage/app'
         networks:
             - parkdrop
-            - coolify
         depends_on:
-            - redis
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_started
 
     scheduler:
         <<: *backend-image
@@ -108,9 +105,11 @@ services:
             - 'backend-storage:/var/www/html/storage/app'
         networks:
             - parkdrop
-            - coolify
         depends_on:
-            - redis
+            mysql:
+                condition: service_healthy
+            redis:
+                condition: service_started
 
     redis:
         image: 'redis:alpine'
@@ -124,21 +123,47 @@ services:
             retries: 3
             timeout: 5s
 
+    mysql:
+        image: 'mysql:8.4'
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+        volumes:
+            # Named volume — survives container restarts/redeploys/image
+            # updates. It's only destroyed by an explicit `docker volume rm`
+            # or removing the resource in Coolify, never by a normal
+            # redeploy. This is what makes the data actually persist.
+            - 'parkdrop-mysql:/var/lib/mysql'
+        # Bound to the host's loopback only (127.0.0.1), not 0.0.0.0 —
+        # reachable from Sequel Ace via an SSH tunnel to the server, but
+        # never exposed to the public internet. Publishing 3306 openly on
+        # a VPS gets it hit by credential-stuffing bots within minutes; an
+        # SSH tunnel costs one extra step in Sequel Ace's connection setup
+        # (its "SSH" tab: SSH host = your server, SSH user = your login,
+        # then MySQL host = 127.0.0.1, port = 3306, same DB credentials)
+        # and closes that whole attack surface.
+        ports:
+            - '127.0.0.1:3306:3306'
+        networks:
+            - parkdrop
+        healthcheck:
+            test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
+
 networks:
     parkdrop:
         driver: bridge
-    # Pre-existing network Coolify creates itself on the host — declared
-    # `external` so Compose attaches to it instead of trying to create it.
-    # If your server's shared network has a different name (check with
-    # `docker network ls` — look for the one every Coolify resource joins,
-    # not this project's own auto-namespaced parkdrop one), change the
-    # `name:` below to match.
-    coolify:
-        external: true
-        name: coolify
 
 volumes:
     parkdrop-redis:
         driver: local
     backend-storage:
+        driver: local
+    parkdrop-mysql:
         driver: local
