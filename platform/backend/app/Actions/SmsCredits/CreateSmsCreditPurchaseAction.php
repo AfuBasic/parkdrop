@@ -20,7 +20,7 @@ class CreateSmsCreditPurchaseAction
     /**
      * Authorizes and initiates an SMS credit purchase for a business.
      */
-    public function execute(Business $business, User $user, string $bundleKey, ?string $callbackUrl = null, ?string $providerName = null): SmsCreditPurchase
+    public function execute(Business $business, User $user, int $credits, ?string $callbackUrl = null, ?string $providerName = null): SmsCreditPurchase
     {
         // 1. Authorize: Only Owner and Manager can buy SMS credits.
         $membership = BusinessMembership::where('business_id', $business->id)
@@ -31,15 +31,21 @@ class CreateSmsCreditPurchaseAction
             throw new AccessDeniedHttpException('Only business owners and managers are authorized to purchase SMS credits.');
         }
 
-        // 2. Resolve server-controlled bundle authority
-        $bundleConfig = config("payments.bundles.{$bundleKey}");
-        if (! $bundleConfig) {
-            throw new UnprocessableEntityHttpException("Invalid credit bundle selected: {$bundleKey}");
+        // 2. Validate the requested quantity and price it authoritatively —
+        // the server always computes amount_minor itself, from its own
+        // per-credit price, never from anything the client sends.
+        $minCredits = (int) config('payments.min_credits_per_purchase', 50);
+        $maxCredits = (int) config('payments.max_credits_per_purchase', 5000);
+
+        if ($credits < $minCredits || $credits > $maxCredits) {
+            throw new UnprocessableEntityHttpException(
+                "Credits must be between {$minCredits} and {$maxCredits}."
+            );
         }
 
-        $credits = (int) $bundleConfig['credits'];
-        $amountMinor = (int) $bundleConfig['amount_minor'];
-        $currency = (string) ($bundleConfig['currency'] ?? config('payments.currency', 'NGN'));
+        $pricePerCreditMinor = (int) config('payments.price_per_credit_minor', 700);
+        $amountMinor = $credits * $pricePerCreditMinor;
+        $currency = (string) config('payments.currency', 'NGN');
 
         // 3. Generate unique, random ParkDrop reference (PDR-XXXXXXXX)
         $reference = 'PDR-'.strtoupper(Str::random(8));
@@ -62,7 +68,9 @@ class CreateSmsCreditPurchaseAction
         $purchase = SmsCreditPurchase::create([
             'business_id' => $business->id,
             'initiated_by_user_id' => $user->id,
-            'bundle_key' => $bundleKey,
+            // No fixed bundles anymore — this column just keeps a readable
+            // label for the provider metadata and admin/audit views.
+            'bundle_key' => "custom_{$credits}",
             'credits' => $credits,
             'amount_minor' => $amountMinor,
             'currency' => $currency,
