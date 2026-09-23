@@ -32,7 +32,6 @@ function describeAge(iso: string | null | undefined): string | null {
   return `${days} ${days === 1 ? 'day' : 'days'} ago`;
 }
 
-console.log("SmsCreditsScreen render");
 export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenProps) {
   const routerNavigate = useNavigate();
   const safeBack = useSafeBack('/more');
@@ -74,6 +73,11 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
   const balance = wallet?.balance ?? 0;
   const isOffline =
     syncState.connectivity === 'UNREACHABLE' || syncState.connectivity === 'DEGRADED';
+  // `role` starts null and only resolves once AuthContext's background
+  // session check returns — treating that transient null as "not owner"
+  // flashed the wrong "ask your manager" message at the actual owner on
+  // every fresh load. Wait until we actually know before asserting either way.
+  const roleKnown = role != null;
   const canBuy = role === 'owner' || role === 'manager';
   const age = describeAge(wallet?.updated_at);
 
@@ -106,7 +110,12 @@ export function SmsCreditsScreen({ onBack, onNavigateToBuy }: SmsCreditsScreenPr
         <SmsCreditWarning balance={balance} />
 
         {/* Getting more */}
-        {canBuy ? (
+        {!roleKnown ? (
+          <div
+            className="w-full h-[60px] rounded-[var(--pd-field-radius)] bg-[var(--pd-line-2)]/50 animate-pulse"
+            aria-hidden="true"
+          />
+        ) : canBuy ? (
           <button
             type="button"
             onClick={handleNavigateToBuy}
