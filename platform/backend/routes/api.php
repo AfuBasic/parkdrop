@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // SMS Credit Purchases
     Route::prefix('v1/sms-credit-purchases')->group(function () {
         Route::get('pricing', [SmsCreditPurchaseController::class, 'pricing']);
+        Route::get('preview', [SmsCreditPurchaseController::class, 'preview']);
         Route::post('', [SmsCreditPurchaseController::class, 'store']);
         Route::get('{purchase}', [SmsCreditPurchaseController::class, 'show']);
         Route::post('{purchase}/verify', [SmsCreditPurchaseController::class, 'verify']);
