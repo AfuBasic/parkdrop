@@ -151,6 +151,18 @@ class CreditSmsWalletForPurchaseAction
                 'paid_at' => now(),
             ]);
 
+            // Sync the purchase itself down to the device — without this the
+            // owner has no way to see what they actually paid or which
+            // provider they used once they leave the post-purchase screen,
+            // only the generic credit-ledger entry.
+            SyncChange::create([
+                'business_id' => $lockedPurchase->business_id,
+                'entity_type' => 'sms_credit_purchase',
+                'entity_id' => (string) $lockedPurchase->id,
+                'operation' => 'UPDATED',
+                'entity_version' => 1,
+            ]);
+
             return $lockedPurchase->fresh();
         });
     }

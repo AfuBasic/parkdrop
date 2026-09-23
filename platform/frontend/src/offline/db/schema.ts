@@ -141,6 +141,19 @@ export interface LocalSmsCreditTransaction {
   created_at: string;
 }
 
+export interface LocalSmsCreditPurchase {
+  id: string;
+  credits: number;
+  amount_minor: number;
+  fee_minor: number;
+  currency: string;
+  provider: string;
+  status: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'CANCELLED';
+  reference: string;
+  paid_at: string | null;
+  created_at: string;
+}
+
 export type PaymentMethod = 'CASH' | 'TRANSFER' | 'POS' | 'OTHER';
 export type PaymentStatus = 'COMPLETED' | 'REVERSED';
 export type PaymentSyncStatus = 'SYNCED' | 'PENDING_CREATE' | 'NEEDS_ATTENTION';

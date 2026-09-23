@@ -16,13 +16,11 @@ export const BuySmsCreditsStrings = {
   title: 'Buy SMS credits',
   currentBalance: (n: number) => `You have ${n} ${n === 1 ? 'SMS' : 'SMS'} now`,
 
-  chooseHeading: 'Choose an amount',
-  /** e.g. "Enough for about 200 packages" — one SMS per package (P10). */
-  enoughFor: (packages: number) => `Enough for about ${packages} packages`,
+  chooseHeading: 'How many SMS credits?',
 
   continueToPayment: 'Continue to payment',
   payNote: 'You pay on the next screen. ParkDrop never sees your card.',
-  pickABundle: 'Pick a bundle to continue.',
+  enterAnAmount: 'Enter how many SMS credits, or how much to pay.',
 
   // ── Offline ────────────────────────────────────────────────────────────
   offlineTitle: 'You need internet to buy SMS credits.',
@@ -55,5 +53,5 @@ export const BuySmsCreditsStrings = {
   paidUnconfirmedBody: 'This can take a few minutes.',
   callUs: 'Call us',
 
-  couldNotLoadBundles: 'Could not load SMS bundles. Check your connection.',
+  couldNotLoadPricing: 'Could not load SMS pricing. Check your connection.',
 } as const;

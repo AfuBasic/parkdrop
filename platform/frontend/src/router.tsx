@@ -29,6 +29,7 @@ import { BusinessDetailsScreen } from '@/features/business/details/BusinessDetai
 import { AccountSecurityScreen } from '@/features/account/AccountSecurityScreen';
 import { HelpScreen } from '@/features/help/HelpScreen';
 import { AboutScreen } from '@/features/about/AboutScreen';
+import { InvitationGate } from '@/features/auth/screens/InvitationGate';
 import { ThemeDemo } from '@/routes/theme-demo';
 
 // Gated dev-only HomePreview route
@@ -286,6 +287,30 @@ const themeDemoRoute = createRoute({
   component: ThemeDemo,
 });
 
+// Staff Invitation Link
+//
+// This route only ever mounts for someone already signed in — App.tsx
+// renders the plain sign-in flow directly (ignoring the URL) for anyone
+// unauthenticated. InvitationGate figures out whether the signed-in account
+// is actually the invited one (invitations auto-accept on sign-in code
+// verify, so it very often already is) or a different, stale session.
+interface InviteSearch {
+  token?: string;
+}
+
+const inviteRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/invite/$invitationId',
+  validateSearch: (search: Record<string, unknown>): InviteSearch => ({
+    token: (search.token as string) || undefined,
+  }),
+  component: () => {
+    const { invitationId } = inviteRoute.useParams();
+    const { token } = inviteRoute.useSearch();
+    return <InvitationGate invitationId={invitationId} token={token ?? ''} />;
+  },
+});
+
 // 3. Route Tree
 const routeTree = rootRoute.addChildren([
   bleedShellRoute.addChildren([indexRoute]),
@@ -309,6 +334,7 @@ const routeTree = rootRoute.addChildren([
   ]),
   homePreviewRoute,
   themeDemoRoute,
+  inviteRoute,
 ]);
 
 // 4. Create Router Instance with native View Transitions

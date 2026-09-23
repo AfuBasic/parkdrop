@@ -8,22 +8,27 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { SyncEngine } from '@/offline/sync/sync-engine';
 import { TaskHeader } from '@/design-system/shell/TaskHeader';
 import { HelpSheet } from '@/features/auth/components/HelpSheet';
-import { SmsCreditBundleOption } from '@/features/sms-credits/purchase/components/SmsCreditBundleOption';
+import { SmsCreditQuantityInput } from '@/features/sms-credits/purchase/components/SmsCreditQuantityInput';
+import { PaystackLogo, FlutterwaveLogo } from '@/features/sms-credits/purchase/components/PaymentProviderLogo';
 import { BuySmsCreditsStrings } from '@/features/sms-credits/purchase/strings';
 import {
-  fetchCreditBundles,
+  fetchCreditPricing,
+  fetchPurchasePreview,
   initializePurchase,
   verifyPurchaseOnServer,
 } from '@/features/sms-credits/purchase/api';
-import type { SmsCreditBundle, SmsCreditPurchase, PurchaseFlowState } from '@/features/sms-credits/purchase/types';
+import { formatMoney } from '@/lib/formatters';
+import type {
+  SmsCreditPricing,
+  SmsCreditPurchase,
+  SmsCreditPurchasePreview,
+  PurchaseFlowState,
+} from '@/features/sms-credits/purchase/types';
 
 interface BuySmsCreditsScreenProps {
   onBack?: () => void;
   onSuccessDone?: () => void;
 }
-
-/** One SMS per package (design plan §3.3.29/§3.3.30 assumption). */
-const PACKAGES_PER_SMS = 1;
 
 export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScreenProps) {
   const routerNavigate = useNavigate();
@@ -43,44 +48,78 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
 
   const [flowState, setFlowState] = React.useState<PurchaseFlowState>('CHOOSING');
   const [selectedProvider, setSelectedProvider] = React.useState<'paystack' | 'flutterwave'>('paystack');
-  const [bundles, setBundles] = React.useState<SmsCreditBundle[]>([]);
-  const [selectedBundle, setSelectedBundle] = React.useState<SmsCreditBundle | null>(null);
-  const [isLoadingBundles, setIsLoadingBundles] = React.useState(true);
+  const [pricing, setPricing] = React.useState<SmsCreditPricing | null>(null);
+  const [credits, setCredits] = React.useState(0);
+  const [isLoadingPricing, setIsLoadingPricing] = React.useState(true);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [activePurchase, setActivePurchase] = React.useState<SmsCreditPurchase | null>(null);
   const [verifiedBalance, setVerifiedBalance] = React.useState<number | null>(null);
 
   React.useEffect(() => {
     let isMounted = true;
-    async function loadBundles() {
+    async function loadPricing() {
       try {
-        setIsLoadingBundles(true);
-        const data = await fetchCreditBundles();
+        setIsLoadingPricing(true);
+        const data = await fetchCreditPricing();
         if (isMounted) {
-          setBundles(data.bundles);
-          setIsLoadingBundles(false);
+          setPricing(data);
+          setCredits(data.min_credits);
+          setIsLoadingPricing(false);
         }
       } catch {
         if (isMounted) {
-          setIsLoadingBundles(false);
-          setErrorMessage(BuySmsCreditsStrings.couldNotLoadBundles);
+          setIsLoadingPricing(false);
+          setErrorMessage(BuySmsCreditsStrings.couldNotLoadPricing);
         }
       }
     }
-    loadBundles();
+    loadPricing();
     return () => {
       isMounted = false;
     };
   }, []);
 
+  const isValidQuantity =
+    pricing !== null && credits >= pricing.min_credits && credits <= pricing.max_credits;
+
+  // The fee-inclusive total, refetched (debounced) whenever the quantity or
+  // provider changes — shown before checkout so what's charged is never a
+  // surprise. Server-computed with the same calculator that will actually
+  // charge the card, never estimated client-side.
+  const [preview, setPreview] = React.useState<SmsCreditPurchasePreview | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isValidQuantity) {
+      setPreview(null);
+      return;
+    }
+    let isMounted = true;
+    setIsLoadingPreview(true);
+    const timer = setTimeout(async () => {
+      try {
+        const data = await fetchPurchasePreview(credits, selectedProvider);
+        if (isMounted) setPreview(data);
+      } catch {
+        if (isMounted) setPreview(null);
+      } finally {
+        if (isMounted) setIsLoadingPreview(false);
+      }
+    }, 300);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [credits, selectedProvider, isValidQuantity]);
+
   const handleContinueToPayment = async () => {
-    if (!selectedBundle || flowState !== 'CHOOSING' || isOffline) return;
+    if (!isValidQuantity || flowState !== 'CHOOSING' || isOffline) return;
 
     try {
       setFlowState('INITIALIZING');
       setErrorMessage(null);
 
-      const res = await initializePurchase(selectedBundle.key, undefined, selectedProvider);
+      const res = await initializePurchase(credits, undefined, selectedProvider);
       const purchase = res.purchase;
       setActivePurchase(purchase);
 
@@ -250,29 +289,18 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
                     {BuySmsCreditsStrings.chooseHeading}
                   </h2>
 
-                  {isLoadingBundles ? (
-                    <div className="flex flex-col gap-3 mt-2.5">
-                      {[1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className="h-24 rounded-[var(--pd-card-radius)] bg-[var(--pd-line-2)] animate-pulse"
-                        />
-                      ))}
-                    </div>
+                  {isLoadingPricing || !pricing ? (
+                    <div className="h-32 rounded-[var(--pd-card-radius)] bg-[var(--pd-line-2)] animate-pulse mt-2.5" />
                   ) : (
-                    <div className="flex flex-col gap-3 mt-2.5" role="radiogroup" aria-label={BuySmsCreditsStrings.chooseHeading}>
-                      {bundles.map((bundle) => (
-                        <SmsCreditBundleOption
-                          key={bundle.key}
-                          bundle={bundle}
-                          selected={selectedBundle?.key === bundle.key}
-                          disabled={isOffline || flowState === 'INITIALIZING'}
-                          onSelect={(b) => setSelectedBundle(b)}
-                          enoughForLabel={BuySmsCreditsStrings.enoughFor(
-                            Math.round(bundle.credits * PACKAGES_PER_SMS)
-                          )}
-                        />
-                      ))}
+                    <div className="mt-2.5">
+                      <SmsCreditQuantityInput
+                        pricePerCreditMinor={pricing.price_per_credit_minor}
+                        minCredits={pricing.min_credits}
+                        maxCredits={pricing.max_credits}
+                        credits={credits}
+                        onChangeCredits={setCredits}
+                        disabled={isOffline || flowState === 'INITIALIZING'}
+                      />
                     </div>
                   )}
 
@@ -285,23 +313,25 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
                       <button
                         type="button"
                         onClick={() => setSelectedProvider('paystack')}
-                        className={`min-h-[50px] px-3 py-2 rounded-[var(--pd-card-radius)] border-2 font-bold text-[15px] flex items-center justify-center transition-all cursor-pointer ${
+                        className={`min-h-[50px] px-3 py-2 rounded-[var(--pd-card-radius)] border-2 font-bold text-[15px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
                           selectedProvider === 'paystack'
                             ? 'border-[var(--pd-blue)] bg-[var(--pd-tint)] text-[var(--pd-blue)]'
                             : 'border-[var(--pd-line-2)] bg-white text-[var(--pd-navy)]'
                         }`}
                       >
+                        <PaystackLogo className="w-6 h-6 shrink-0 object-contain" />
                         <span>Paystack</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setSelectedProvider('flutterwave')}
-                        className={`min-h-[50px] px-3 py-2 rounded-[var(--pd-card-radius)] border-2 font-bold text-[15px] flex items-center justify-center transition-all cursor-pointer ${
+                        className={`min-h-[50px] px-3 py-2 rounded-[var(--pd-card-radius)] border-2 font-bold text-[15px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
                           selectedProvider === 'flutterwave'
                             ? 'border-[var(--pd-blue)] bg-[var(--pd-tint)] text-[var(--pd-blue)]'
                             : 'border-[var(--pd-line-2)] bg-white text-[var(--pd-navy)]'
                         }`}
                       >
+                        <FlutterwaveLogo className="w-6 h-6 shrink-0 object-contain" />
                         <span>Flutterwave</span>
                       </button>
                     </div>
@@ -309,14 +339,32 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
                 </div>
 
                 <div className="pt-6 pb-2 flex flex-col gap-3">
-                  {!selectedBundle && !isLoadingBundles && (
+                  {!isValidQuantity && !isLoadingPricing && (
                     <p className="text-[15px] font-semibold text-[var(--pd-muted)] text-center m-0">
-                      {BuySmsCreditsStrings.pickABundle}
+                      {BuySmsCreditsStrings.enterAnAmount}
                     </p>
                   )}
+
+                  {isValidQuantity && preview && !isLoadingPreview && (
+                    <div className="rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] bg-white p-3.5 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between text-[15px] font-semibold text-[var(--pd-muted)]">
+                        <span>SMS credits</span>
+                        <span>{formatMoney(preview.net_amount_minor)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[15px] font-semibold text-[var(--pd-muted)]">
+                        <span>Card processing fee</span>
+                        <span>{formatMoney(preview.fee_minor)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-[17px] font-extrabold text-[var(--pd-navy)] pt-1.5 border-t border-[var(--pd-line-2)]">
+                        <span>Total to pay</span>
+                        <span>{formatMoney(preview.amount_minor)}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="button"
-                    disabled={!selectedBundle || isOffline || flowState === 'INITIALIZING'}
+                    disabled={!isValidQuantity || isOffline || flowState === 'INITIALIZING'}
                     onClick={handleContinueToPayment}
                     className="w-full min-h-[60px] rounded-[var(--pd-field-radius)] bg-[var(--pd-blue)] hover:bg-[var(--pd-blue-hover)] disabled:bg-[var(--pd-line)] disabled:text-[var(--pd-muted)] disabled:cursor-not-allowed text-white text-[20px] font-extrabold transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer"
                   >

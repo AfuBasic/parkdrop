@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *   NEEDS_RECONCILIATION — Request timed out after connection established.
  *                          The message may or may not have been sent.
  *                          Never automatically re-send — must reconcile manually.
+ *   SKIPPED_NO_CREDITS   — Business had zero SMS credits at dispatch time.
+ *                          Message was never sent. Top up and resend manually.
  */
 class SmsMessage extends Model
 {
@@ -38,11 +40,14 @@ class SmsMessage extends Model
 
     public const STATUS_NEEDS_RECONCILIATION = 'NEEDS_RECONCILIATION';
 
+    public const STATUS_SKIPPED_NO_CREDITS = 'SKIPPED_NO_CREDITS';
+
     /** Statuses that are considered "terminal" — no further updates expected. */
     public const TERMINAL_STATUSES = [
         self::STATUS_DELIVERED,
         self::STATUS_FAILED,
         self::STATUS_UNDELIVERED,
+        self::STATUS_SKIPPED_NO_CREDITS,
     ];
 
     // ──────────────────────────────────────────────────────────────────────────

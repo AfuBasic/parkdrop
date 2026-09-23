@@ -17,6 +17,7 @@ class SmsCreditPurchase extends Model
         'bundle_key',
         'credits',
         'amount_minor',
+        'fee_minor',
         'currency',
         'status',
         'reference',
@@ -33,6 +34,7 @@ class SmsCreditPurchase extends Model
     protected $casts = [
         'credits' => 'integer',
         'amount_minor' => 'integer',
+        'fee_minor' => 'integer',
         'paid_at' => 'datetime',
         'failed_at' => 'datetime',
         'cancelled_at' => 'datetime',

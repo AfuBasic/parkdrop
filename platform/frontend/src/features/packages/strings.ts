@@ -126,10 +126,13 @@ export const PackagesStrings = {
   collectAndReleasePrimary: (_balanceStr?: string) => `Mark as paid and release...`,
   releasePackagePrimary: 'Release package',
   recordPaymentOnlyAction: 'Record payment only',
-  collectedBanner: (date: string, time: string, actor: string) => `Released on ${date}, ${time} by ${actor}`,
+  // Who released it is never repeated here — it's already the "Released by"
+  // row in the Package info card just below this banner, and adding it here
+  // too was long enough to wrap the banner onto two lines.
+  collectedBanner: (date: string, time: string) => `Released ${date}, ${time}`,
   // The exact time is not always known (a package collected on another
   // device, or before this app tracked the time). Never guess a time.
-  collectedBannerNoTime: (actor: string) => `Released by ${actor}`,
+  collectedBannerNoTime: 'Released',
   owingBanner: (amountStr: string) => `Owing ${amountStr}`,
   undoReleaseAction: 'Undo release',
   returnedBanner: (date: string) => `Returned on ${date}`,

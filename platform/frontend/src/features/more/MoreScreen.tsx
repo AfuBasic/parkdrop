@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { useAuth } from '@/features/auth/AuthContext';
 import { db } from '@/offline/db/database';
 import { useLiveQuery } from 'dexie-react-hooks';
@@ -7,6 +8,7 @@ import { useOnline } from '@/features/auth/lib/useOnline';
 import { Page } from '@/design-system/shell/Page';
 import { SettingsGroup, SettingsRow } from '@/design-system/patterns/SettingsRow';
 import { ForgetDeviceDialog } from './components/ForgetDeviceDialog';
+import { LowCreditBanner } from '@/features/sms-credits/components/LowCreditBanner';
 
 import { MoreStrings } from '@/features/more/strings';
 import {
@@ -38,6 +40,7 @@ function roleSentence(role: string | null | undefined): string {
 
 export function MoreScreen() {
   const { user, business, role, logout, forgetRememberedIdentity } = useAuth();
+  const routerNavigate = useNavigate();
   const isOnline = useOnline();
   const [confirming, setConfirming] = React.useState<null | 'signOut' | 'forget'>(null);
 
@@ -65,6 +68,15 @@ export function MoreScreen() {
   return (
     <Page title={MoreStrings.title} showLogo className="pb-10">
       <div className="flex flex-col gap-6">
+      {/* Low credit banner — always visible on More when credits are running out */}
+      {canSeeShop && balance !== undefined && balance < 5 && (
+        <LowCreditBanner
+          balance={balance}
+          onBuyCredits={() => routerNavigate({ to: '/more/sms-credits' })}
+          noDismiss
+        />
+      )}
+
       {/* Who you are */}
       <section className="bg-white rounded-[var(--pd-card-radius)] border border-[var(--pd-line-2)] shadow-xs p-4 flex flex-col gap-1">
         <p className="text-[16px] font-semibold text-[var(--pd-muted)] m-0">
@@ -191,7 +203,7 @@ export function MoreScreen() {
         <button
           type="button"
           onClick={() => setConfirming('forget')}
-          className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/30 bg-[var(--pd-bad-bg)] text-[18px] font-extrabold text-[var(--pd-bad)] hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
+          className="w-full min-h-[56px] px-4 rounded-[var(--pd-field-radius)] border border-[var(--pd-bad)]/30 bg-[var(--pd-bad-bg)] text-[18px] font-extrabold text-[var(--pd-bad)] whitespace-nowrap hover:opacity-90 active:scale-[0.99] transition-all cursor-pointer"
         >
           {MoreStrings.forgetMe}
         </button>

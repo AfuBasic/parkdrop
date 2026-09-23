@@ -71,8 +71,13 @@ export const MoreStrings = {
 
   // ── Leaving ────────────────────────────────────────────────────────────
   signOut: 'Sign out',
-  /** Replaces "Reset Device Identity", which explained nothing. */
-  forgetMe: 'Sign out and forget me on this phone',
+  /**
+   * Replaces "Reset Device Identity", which explained nothing. Short enough
+   * to fit one line at the button's largest text size — the confirmation
+   * dialog (see ForgetDeviceDialog) already spells out that this also signs
+   * you out, so the button itself doesn't need to repeat it.
+   */
+  forgetMe: 'Forget this phone',
 
   // ── Leaving confirmations ──────────────────────────────────────────────
   /**

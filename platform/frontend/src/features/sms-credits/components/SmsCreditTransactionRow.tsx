@@ -1,10 +1,23 @@
+import { useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, ChevronRight } from 'lucide-react';
 import type { LocalSmsCreditTransaction } from '@/offline/db/schema';
 import { SmsCreditsStrings } from '@/features/sms-credits/strings';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/offline/db/database';
-import { formatPhone } from '@/lib/formatters';
+import { formatPhone, formatMoney } from '@/lib/formatters';
 import { Link } from '@tanstack/react-router';
+import { SmsCreditPurchaseDetailSheet } from './SmsCreditPurchaseDetailSheet';
+
+const PROVIDER_LABEL: Record<string, string> = {
+  paystack: 'Paystack',
+  flutterwave: 'Flutterwave',
+};
+
+/** "purchase:01a0..." -> "01a0..." */
+function purchaseIdFromReference(referenceId: string | null): string | null {
+  if (!referenceId?.startsWith('purchase:')) return null;
+  return referenceId.slice('purchase:'.length);
+}
 
 interface SmsCreditTransactionRowProps {
   transaction: LocalSmsCreditTransaction;
@@ -29,6 +42,12 @@ function describeTransaction(transaction: LocalSmsCreditTransaction): string {
 export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRowProps) {
   const isCredit = transaction.type === 'CREDIT';
   const isArrivalSms = transaction.reference_type === 'ARRIVAL_SMS' && transaction.reference_id != null;
+  const purchaseId = transaction.reference_type === 'PURCHASE' ? purchaseIdFromReference(transaction.reference_id) : null;
+
+  const purchase = useLiveQuery(
+    () => (purchaseId ? db.smsCreditPurchases.get(purchaseId) : undefined),
+    [purchaseId]
+  );
 
   // We only fetch the package if it's an arrival SMS and we have a reference ID.
   // Note: Since dexie-react-hooks sometimes returns undefined while loading,
@@ -46,7 +65,7 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
   );
 
   // Determine title text
-  let title = describeTransaction(transaction);
+  let title = purchase ? SmsCreditsStrings.boughtCreditsCount(purchase.credits) : describeTransaction(transaction);
   let isDeletedPackage = false;
 
   if (isArrivalSms) {
@@ -82,7 +101,18 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
     ? SmsCreditsStrings.smsAdded(transaction.amount)
     : SmsCreditsStrings.smsCount(transaction.amount);
 
-  const isTappable = isArrivalSms && !isDeletedPackage && packageWithCustomer?.pkg != null;
+  // "₦700 via Paystack · Sep 23, 01:52 AM" once the purchase itself has
+  // synced down — falls back to just the date for older purchases made
+  // before purchases were synced, or while the payload is still arriving.
+  const subtitle = purchase
+    ? `${formatMoney(purchase.amount_minor)} via ${PROVIDER_LABEL[purchase.provider] ?? purchase.provider} · ${formattedDate}`
+    : formattedDate;
+
+  const [showPurchaseDetail, setShowPurchaseDetail] = useState(false);
+
+  const isTappablePackage = isArrivalSms && !isDeletedPackage && packageWithCustomer?.pkg != null;
+  const isTappablePurchase = purchase != null;
+  const isTappable = isTappablePackage || isTappablePurchase;
 
   const innerContent = (
     <>
@@ -101,7 +131,7 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
           <p className="text-[16px] font-semibold text-[var(--pd-navy)] leading-snug m-0 truncate">
             {title}
           </p>
-          <p className="text-[15px] text-[var(--pd-muted)] m-0 mt-0.5">{formattedDate}</p>
+          <p className="text-[15px] text-[var(--pd-muted)] m-0 mt-0.5">{subtitle}</p>
         </div>
       </div>
 
@@ -122,7 +152,7 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
 
   const containerClasses = "flex items-center justify-between gap-3 py-3.5 px-4 border-b border-[var(--pd-line-2)] last:border-b-0 w-full text-left";
 
-  if (isTappable && transaction.reference_id) {
+  if (isTappablePackage && transaction.reference_id) {
     return (
       <Link
         to="/packages/$packageId"
@@ -131,6 +161,23 @@ export function SmsCreditTransactionRow({ transaction }: SmsCreditTransactionRow
       >
         {innerContent}
       </Link>
+    );
+  }
+
+  if (isTappablePurchase && purchase) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setShowPurchaseDetail(true)}
+          className={`${containerClasses} active:bg-[var(--pd-page-2)] transition-colors cursor-pointer`}
+        >
+          {innerContent}
+        </button>
+        {showPurchaseDetail && (
+          <SmsCreditPurchaseDetailSheet purchase={purchase} onClose={() => setShowPurchaseDetail(false)} />
+        )}
+      </>
     );
   }
 

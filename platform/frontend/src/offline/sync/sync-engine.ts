@@ -251,6 +251,8 @@ export class SyncEngine {
             await db.smsWallets.put(change.payload);
           } else if (change.entity_type === 'sms_credit_transaction' && change.payload) {
             await db.smsCreditTransactions.put(change.payload);
+          } else if (change.entity_type === 'sms_credit_purchase' && change.payload) {
+            await db.smsCreditPurchases.put(change.payload);
           } else if (change.entity_type === 'package' && change.payload) {
             await db.packages.put({
               ...change.payload,

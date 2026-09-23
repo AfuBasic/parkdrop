@@ -30,6 +30,12 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// Public invitation preview (requires the emailed token; no membership needed).
+// Deliberately outside auth:sanctum — a brand-new invitee has no session yet,
+// and an already-signed-in visitor on the wrong account needs this to know
+// it's the wrong account before being asked to sign out.
+Route::get('/v1/business/invitations/{invitationId}', [BusinessStaffController::class, 'showInvitation']);
+
 Route::prefix('v1/auth')->group(function () {
     // Universal OTP endpoints
     Route::post('/code', [AuthChallengeController::class, 'requestChallenge']);
@@ -67,7 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // SMS Credit Purchases
     Route::prefix('v1/sms-credit-purchases')->group(function () {
-        Route::get('bundles', [SmsCreditPurchaseController::class, 'bundles']);
+        Route::get('pricing', [SmsCreditPurchaseController::class, 'pricing']);
+        Route::get('preview', [SmsCreditPurchaseController::class, 'preview']);
         Route::post('', [SmsCreditPurchaseController::class, 'store']);
         Route::get('{purchase}', [SmsCreditPurchaseController::class, 'show']);
         Route::post('{purchase}/verify', [SmsCreditPurchaseController::class, 'verify']);

@@ -1,10 +1,16 @@
-export interface SmsCreditBundle {
-  key: string;
+export interface SmsCreditPricing {
+  price_per_credit_minor: number;
+  currency: string;
+  min_credits: number;
+  max_credits: number;
+}
+
+export interface SmsCreditPurchasePreview {
   credits: number;
+  net_amount_minor: number;
+  fee_minor: number;
   amount_minor: number;
   currency: string;
-  label: string;
-  description?: string;
 }
 
 export interface SmsCreditPurchase {
@@ -12,6 +18,7 @@ export interface SmsCreditPurchase {
   bundle_key: string;
   credits: number;
   amount_minor: number;
+  fee_minor: number;
   currency: string;
   status: 'PENDING' | 'PROCESSING' | 'PAID' | 'FAILED' | 'CANCELLED';
   reference: string;

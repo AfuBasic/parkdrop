@@ -10,6 +10,8 @@ import { AddPackageStrings } from '@/features/packages/add/strings';
 import { UNDO_WINDOW_SECONDS } from '@/features/packages/add/config';
 import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 import { usePollingSync } from '@/offline/sync/usePollingSync';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { LowCreditBanner } from '@/features/sms-credits/components/LowCreditBanner';
 
 
 export interface PackageSavedScreenProps {
@@ -52,6 +54,14 @@ export function PackageSavedScreen({
 
   // Actively poll while waiting on this screen to catch quick incoming SMS webhook updates
   usePollingSync(15_000);
+
+  // Live wallet balance for this business
+  const wallet = useLiveQuery(
+    () => db.smsWallets.where('business_id').equals(businessId).first(),
+    [businessId]
+  );
+  const creditBalance = wallet?.balance;
+  const showCreditBanner = creditBalance !== undefined && creditBalance < 5;
 
   // 10s Undo countdown
   const [undoSeconds, setUndoSeconds] = useState(UNDO_WINDOW_SECONDS);
@@ -219,6 +229,14 @@ export function PackageSavedScreen({
               {AddPackageStrings.smsSent(customerPhone)}
             </span>
           </div>
+
+          {/* Low credit warning — shown after each package add when credits are running low */}
+          {showCreditBanner && (
+            <LowCreditBanner
+              balance={creditBalance!}
+              noDismiss
+            />
+          )}
 
           {/* Primary Action: Next Package */}
           <BigButton
