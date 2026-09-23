@@ -48,37 +48,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Server-Controlled SMS Credit Bundles
+    | SMS Credit Pricing
     |--------------------------------------------------------------------------
     |
-    | Authoritative commercial packages. Amounts are stored in integer minor
-    | units (kobo for NGN). The frontend sends bundle_key ONLY.
+    | Flat, server-controlled price per credit — no volume tiers, no margin.
+    | Amounts in integer minor units (kobo for NGN). The frontend sends a
+    | quantity (credits) and the server is always the one that computes the
+    | amount; it never trusts a client-supplied price.
     |
     */
-    'bundles' => [
-        'bundle_50' => [
-            'key' => 'bundle_50',
-            'credits' => 50,
-            'amount_minor' => 150000, // ₦1,500
-            'currency' => 'NGN',
-            'label' => '50 SMS credits',
-            'description' => 'For smaller parcel volumes',
-        ],
-        'bundle_100' => [
-            'key' => 'bundle_100',
-            'credits' => 100,
-            'amount_minor' => 280000, // ₦2,800
-            'currency' => 'NGN',
-            'label' => '100 SMS credits',
-            'description' => 'Popular for active pickup points',
-        ],
-        'bundle_250' => [
-            'key' => 'bundle_250',
-            'credits' => 250,
-            'amount_minor' => 650000, // ₦6,500
-            'currency' => 'NGN',
-            'label' => '250 SMS credits',
-            'description' => 'Best value for high-volume hubs',
-        ],
-    ],
+    'price_per_credit_minor' => (int) env('SMS_CREDIT_PRICE_MINOR', 700), // ₦7.00
+    'min_credits_per_purchase' => (int) env('SMS_CREDIT_MIN_PER_PURCHASE', 50),
+    'max_credits_per_purchase' => (int) env('SMS_CREDIT_MAX_PER_PURCHASE', 5000),
 ];
