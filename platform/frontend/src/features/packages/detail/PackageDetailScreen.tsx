@@ -207,7 +207,7 @@ export function PackageDetailScreen({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--pd-page)] max-w-lg mx-auto pb-28">
+    <div className="flex flex-col min-h-screen bg-[var(--pd-page)] max-w-lg mx-auto pb-52 sm:pb-32">
       {/* 1. Compact Blue Header with More Sheet */}
       <PackageIdentityHeader
         pkg={pkg}
