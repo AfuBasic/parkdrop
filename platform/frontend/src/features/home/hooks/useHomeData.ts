@@ -130,9 +130,11 @@ function buildSnapshot(
     });
   }
 
-  // Oldest first: the package that has been sitting longest is the one that
-  // needs a decision, and it is the one the attendant is asked about.
-  waiting.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  // Latest first: the package that just arrived is what the attendant
+  // expects to see at the top of a live feed. Packages waiting long enough
+  // to need a decision are still visible below and called out separately
+  // by the "Nothing overdue" / overdue card above this list.
+  waiting.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   return {
     waiting,

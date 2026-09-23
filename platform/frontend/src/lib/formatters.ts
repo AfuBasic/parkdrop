@@ -9,6 +9,13 @@ export function formatMoney(amountInMinorUnits: number): string {
   }).format(amount);
 }
 
+/** "2:45 PM" — local device time, no seconds. */
+export function formatTime(isoDate: string): string {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
 export function formatPhone(phone: string): string {
   // Simple format for Nigerian phones if it's 11 digits starting with 0
   if (phone.length === 11 && phone.startsWith('0')) {

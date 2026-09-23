@@ -10,8 +10,8 @@ name: 'parkdrop'
 # bundled here since nothing external was asked for it — split it out the
 # same way later if that ever needs to change.
 #
-# All four backend processes share one built image; only `command:` differs
-# per service, same pattern as compose.dev.yaml's Sail services.
+# All three backend processes share one built image; only `command:`
+# differs per service, same pattern as compose.dev.yaml's Sail services.
 
 x-backend-image: &backend-image
     build:
@@ -33,6 +33,11 @@ x-backend-env: &backend-env
     CACHE_STORE: 'redis'
     SESSION_DRIVER: 'redis'
     QUEUE_CONNECTION: 'redis'
+    # No reverb service — nothing in the app actually opens a WebSocket
+    # connection to it yet (frontend has laravel-echo/pusher-js installed
+    # but never imports them). Laravel's own default (BROADCAST_CONNECTION
+    # unset -> 'null') is correct here; the one broadcast event that exists
+    # server-side (SyncHint) just becomes a no-op instead of erroring.
 
 services:
     backend:
@@ -56,20 +61,6 @@ services:
             timeout: 5s
             retries: 3
             start_period: 30s
-
-    reverb:
-        <<: *backend-image
-        restart: unless-stopped
-        command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
-        ports:
-            - '8081:8080'
-        environment: *backend-env
-        volumes:
-            - 'backend-storage:/var/www/html/storage/app'
-        networks:
-            - parkdrop
-        depends_on:
-            - redis
 
     horizon:
         <<: *backend-image

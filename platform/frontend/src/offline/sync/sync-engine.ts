@@ -1,5 +1,6 @@
 import { db } from '@/offline/db/database';
 import { MutationQueue } from '@/offline/mutations/mutation-queue';
+import { MediaUploadCoordinator } from '@/features/package-media/upload/media-upload-coordinator';
 import { connectivityManager } from './connectivity-manager';
 import { getDeviceUuid } from '@/offline/device/device-identity';
 import type { LocalPackage } from '@/offline/db/schema';
@@ -31,6 +32,17 @@ export class SyncEngine {
 
       // 2. PULL
       await this.pullChanges(businessId);
+
+      // 3. UPLOAD PENDING PHOTOS
+      // Package sync only moves rows through push/pull — a package's photo
+      // is a local blob that still has to make it to Cloudinary separately.
+      // This used to only run when someone manually opened the Attention
+      // screen and tapped retry, so a photo taken while offline could sit
+      // in IndexedDB indefinitely if nobody happened to visit that screen.
+      // syncPendingMedia() catches per-item errors itself (marks the item
+      // FAILED_RETRYABLE/NEEDS_ATTENTION) rather than throwing, so one bad
+      // upload can't take down push/pull or the backoff tracker below.
+      await MediaUploadCoordinator.syncPendingMedia(businessId);
 
       // Successful sync — reset backoff tracker
       this.backoffTracker.recordSuccess();

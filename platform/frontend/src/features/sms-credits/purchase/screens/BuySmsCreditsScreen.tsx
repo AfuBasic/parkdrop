@@ -18,6 +18,7 @@ import {
 } from '@/features/sms-credits/purchase/api';
 import { formatMoney } from '@/lib/formatters';
 import { ApiError } from '@/lib/api';
+import { markPendingPaymentReturn } from '@/features/sms-credits/purchase/payment-return-guard';
 import type {
   SmsCreditPricing,
   SmsCreditPurchase,
@@ -143,6 +144,7 @@ export function BuySmsCreditsScreen({ onBack, onSuccessDone }: BuySmsCreditsScre
             setFlowState(verifyRes.purchase.status as PurchaseFlowState);
           }
         } else {
+          markPendingPaymentReturn();
           window.location.href = purchase.checkout_url;
         }
       } else {

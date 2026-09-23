@@ -42,7 +42,7 @@ export class MediaUploadCoordinator {
         // 2. Request Authorization
         await db.packageMedia.update(media.id, { status: 'AUTHORIZING' });
         
-        const authRes = await fetchApi(`/packages/${pkg.id}/media/authorize`, {
+        const authRes = await fetchApi(`/api/v1/packages/${pkg.id}/media/authorize`, {
           method: 'POST',
           body: JSON.stringify({
             business_id: businessId,
@@ -50,18 +50,21 @@ export class MediaUploadCoordinator {
           }),
         });
 
-        const authData = await authRes.json();
-        const authParams = authData.data as CloudinaryUploadParams;
+        // authorizeUpload() returns the signature payload directly, not
+        // wrapped in a `data` envelope — reading `.data` here silently
+        // handed uploadToCloudinary() `undefined` params, so every upload
+        // failed as soon as it tried to build the Cloudinary form body.
+        const authParams = (await authRes.json()) as CloudinaryUploadParams;
 
         // 3. Upload to Cloudinary
         await db.packageMedia.update(media.id, { status: 'UPLOADING', attempt_count: media.attempt_count + 1, last_attempt_at: new Date().toISOString() });
-        
+
         const uploadResponse = await uploadToCloudinary(media.local_blob, authParams);
 
         // 4. Complete Upload Verification
         await db.packageMedia.update(media.id, { status: 'VERIFYING' });
-        
-        await fetchApi(`/packages/${pkg.id}/media/complete`, {
+
+        await fetchApi(`/api/v1/packages/${pkg.id}/media/complete`, {
           method: 'POST',
           body: JSON.stringify({
             business_id: businessId,
@@ -76,6 +79,9 @@ export class MediaUploadCoordinator {
           local_blob: undefined, // Free memory/storage
           cloudinary_asset_id: uploadResponse.asset_id,
           public_id: uploadResponse.public_id,
+          // From the authorize response, not a guessed env var — this is
+          // what actually renders the delivery URL later (usePackageDetail).
+          cloud_name: authParams.cloud_name,
         });
 
       } catch (error: any) {

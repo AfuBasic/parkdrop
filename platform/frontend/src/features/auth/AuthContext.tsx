@@ -6,6 +6,7 @@ import { getMostRecentRememberedIdentity, saveRememberedIdentity, clearAllRememb
 import type { AuthUser, AuthBusiness } from './types';
 import { ApiError, onSessionExpired } from '@/lib/api';
 import { saveOfflineAuthorization, clearOfflineAuthorization, getValidOfflineAuthorization } from '@/offline/device/device-identity';
+import { consumePendingPaymentReturnIfValid } from '@/features/sms-credits/purchase/payment-return-guard';
 
 export type AuthState = 
   | 'booting'              // Initial state while resolving session/storage
@@ -80,9 +81,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const offlineAuth = await getValidOfflineAuthorization();
 
+      // Landing back from a Paystack redirect is a full page reload, which
+      // wipes this state and would otherwise force the PIN screen before
+      // the person can even see whether their payment went through — see
+      // payment-return-guard.ts for why that's a false re-lock, not a real
+      // security boundary being (re)crossed.
+      const skipPinForPaymentReturn = consumePendingPaymentReturnIfValid(window.location.pathname);
+
       // Determine local-only state and render immediately
       let localState: typeof state;
-      if (meta?.pin_hash) {
+      if (meta?.pin_hash && !skipPinForPaymentReturn) {
         localState = 'locked';
       } else if (offlineAuth) {
         localState = 'authenticated';
@@ -127,7 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Server confirms session is live
-        if (meta?.pin_hash) {
+        if (meta?.pin_hash && !skipPinForPaymentReturn) {
           setState('locked');
         } else {
           setState('authenticated');

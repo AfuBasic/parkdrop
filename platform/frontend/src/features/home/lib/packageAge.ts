@@ -1,4 +1,5 @@
 import { HomeStrings } from '../strings';
+import { formatTime } from '@/lib/formatters';
 
 /**
  * How long a package has been sitting, in the only terms that matter to an
@@ -39,12 +40,13 @@ export function daysWaiting(isoCreatedAt: string, now: Date = new Date()): numbe
 
 export function describeAge(isoCreatedAt: string, now: Date = new Date()): PackageAge {
   const days = daysWaiting(isoCreatedAt, now);
+  const time = formatTime(isoCreatedAt);
 
-  if (days === 0) return { days, label: HomeStrings.ageToday, tone: 'normal' };
-  if (days === 1) return { days, label: HomeStrings.ageYesterday, tone: 'normal' };
+  if (days === 0) return { days, label: `${HomeStrings.ageToday} · ${time}`, tone: 'normal' };
+  if (days === 1) return { days, label: `${HomeStrings.ageYesterday} · ${time}`, tone: 'normal' };
 
   const tone: AgeTone =
     days >= AGE_BAD_DAYS ? 'bad' : days >= AGE_WARN_DAYS ? 'warn' : 'normal';
 
-  return { days, label: HomeStrings.ageDays(days), tone };
+  return { days, label: `${HomeStrings.ageDays(days)} · ${time}`, tone };
 }
