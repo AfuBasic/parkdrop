@@ -173,6 +173,7 @@ button {
   font-weight: 700;
   font-size: 1rem;
   text-align: center;
+  white-space: nowrap;
   transition: transform var(--transition-fast), background-color var(--transition-fast);
   text-decoration: none;
 }
@@ -302,6 +303,51 @@ button {
   color: var(--c-text-main);
 }
 
+/* The logo lockup is a wide horizontal image (~5:1) — at the height="72"
+   set in HTML (sized for the roomy desktop header) it renders around
+   367px wide, which alone exceeds a phone's available header width.
+   That was squeezing "Use ParkDrop" into wrapping onto two lines and
+   pushing the hamburger button out of view. Header-scoped only — the
+   footer logo uses a fixed width, not height, and isn't affected. */
+.header-inner .logo img {
+  height: 32px;
+  width: auto;
+}
+
+@media (min-width: 480px) {
+  .header-inner .logo img {
+    height: 40px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-inner .logo img {
+    height: 72px;
+  }
+}
+
+.header-actions .btn-primary {
+  height: 40px;
+  padding-inline: 14px;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 480px) {
+  .header-actions .btn-primary {
+    height: 44px;
+    padding-inline: 18px;
+    font-size: 0.9375rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-actions .btn-primary {
+    height: 52px;
+    padding-inline: 24px;
+    font-size: 1rem;
+  }
+}
+
 
 .nav-links {
   display: none;
@@ -328,7 +374,13 @@ button {
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+}
+
+@media (min-width: 480px) {
+  .header-actions {
+    gap: 16px;
+  }
 }
 
 .menu-btn {
@@ -366,6 +418,16 @@ button {
   font-weight: 600;
   font-size: 1.125rem;
   display: block;
+}
+
+@media (min-width: 1024px) {
+  /* Nothing closes .is-open on resize (e.g. rotating a tablet, or a window
+     resize) — without this, an opened mobile menu keeps covering the
+     desktop nav links underneath it once the viewport crosses back over
+     the breakpoint where the hamburger itself disappears. */
+  .mobile-menu.is-open {
+    display: none;
+  }
 }
 
 /* Hero Section */
