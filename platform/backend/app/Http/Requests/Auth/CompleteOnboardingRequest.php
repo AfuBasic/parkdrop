@@ -50,12 +50,13 @@ class CompleteOnboardingRequest extends FormRequest
             }
 
             $place = $park !== '' ? ($point !== '' ? "{$point}, {$park}" : $park) : $point;
-            // Test with longest pickup code (7 chars)
+            // Test with longest pickup code (7 chars) and no customer name (setup-time preview)
             $sampleCode = 'ABCDEFG';
-            $preview = "Your package is at {$place}.\nShow code {$sampleCode} at pickup.\nCall: {$digits}\nParkDrop";
+            $greeting = 'Dear Customer,';
+            $preview = "{$greeting}\nYour package is at {$place}.\nShow code {$sampleCode} at pickup.\nCall: {$digits}\nParkDrop";
 
-            if (mb_strlen($preview) > 130) {
-                $validator->errors()->add('pickup_point_name', 'The pickup point name, park name, and phone exceed the 130-character customer SMS limit.');
+            if (mb_strlen($preview) > 155) {
+                $validator->errors()->add('pickup_point_name', 'The pickup point name, park name, and phone exceed the 155-character customer SMS limit.');
             }
         });
     }
