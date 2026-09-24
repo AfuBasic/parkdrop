@@ -136,22 +136,26 @@ export function ReportsScreen() {
             {/* Primary Metrics Grid */}
             <div className="grid grid-cols-2 gap-3">
               <MetricCard
-                icon={<Inbox className="w-5 h-5 text-blue-500" />}
+                icon={<Inbox className="w-4.5 h-4.5 text-blue-600" />}
+                iconBg="bg-blue-50"
                 label={ReportsStrings.received}
                 value={report.metrics.received_count}
               />
               <MetricCard
-                icon={<Package className="w-5 h-5 text-green-600" />}
+                icon={<Package className="w-4.5 h-4.5 text-green-600" />}
+                iconBg="bg-green-50"
                 label={ReportsStrings.collected}
                 value={report.metrics.collected_count}
               />
               <MetricCard
-                icon={<DollarSign className="w-5 h-5 text-emerald-600" />}
+                icon={<DollarSign className="w-4.5 h-4.5 text-emerald-600" />}
+                iconBg="bg-emerald-50"
                 label={ReportsStrings.revenue}
                 value={`₦${(report.metrics.revenue_collected_minor / 100).toLocaleString()}`}
               />
               <MetricCard
-                icon={<Clock className="w-5 h-5 text-amber-500" />}
+                icon={<Clock className="w-4.5 h-4.5 text-amber-600" />}
+                iconBg="bg-amber-50"
                 label={ReportsStrings.waitingNow}
                 value={report.metrics.waiting_now_count}
               />
@@ -238,14 +242,26 @@ export function ReportsScreen() {
   );
 }
 
-function MetricCard({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
+function MetricCard({
+  label,
+  value,
+  icon,
+  iconBg,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+  iconBg: string;
+}) {
   return (
-    <div className="bg-white border border-[var(--pd-line)] rounded-[var(--pd-card-radius)] p-3 flex flex-col gap-2 shadow-xs">
+    <div className="bg-white border border-[var(--pd-line)] rounded-[var(--pd-card-radius)] p-3.5 flex flex-col gap-3 shadow-xs">
       <div className="flex items-center gap-2">
-        {icon}
-        <span className="text-[13px] font-extrabold text-[var(--pd-muted)] leading-tight">{label}</span>
+        <span className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${iconBg}`}>
+          {icon}
+        </span>
+        <span className="text-[13px] font-bold text-[var(--pd-muted)] leading-tight">{label}</span>
       </div>
-      <span className="text-[24px] font-black text-[var(--pd-navy)] tabular-nums">{value}</span>
+      <span className="text-[26px] font-black text-[var(--pd-navy)] tabular-nums leading-none">{value}</span>
     </div>
   );
 }
