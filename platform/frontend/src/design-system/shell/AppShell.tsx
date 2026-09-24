@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useRouterState } from "@tanstack/react-router"
 import { Home, Package, Users, Menu } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HomeStrings } from "@/features/home/strings"
@@ -53,7 +54,21 @@ export function AppShell({
 }: AppShellProps) {
   const isTask = fullScreenTask || variant === "task"
 
+  // router.tsx mounts AppShell without currentPath/onNavigate, so this is
+  // the actual source of truth for "which tab is active" rather than the
+  // optional prop below (kept for callers/stories that do pass it in).
+  const routerPathname = useRouterState({ select: (state) => state.location.pathname })
+  const activePath = currentPath !== undefined ? currentPath : routerPathname
+
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    // Tapping the tab you're already on used to still fire a full route
+    // navigation — no content changed, but the view-transition slide
+    // animation played anyway, which reads as a glitch. Nothing to
+    // navigate to, so nothing should happen at all.
+    if (path === activePath) {
+      e.preventDefault()
+      return
+    }
     if (onNavigate) {
       e.preventDefault()
       onNavigate(path)
@@ -77,7 +92,7 @@ export function AppShell({
                 href={item.path}
                 icon={item.icon}
                 label={item.label}
-                isActive={currentPath !== undefined ? currentPath === item.path : undefined}
+                isActive={item.path === activePath}
                 onClick={onNavigate ? (e) => handleNav(e, item.path) : undefined}
               />
             ))}
@@ -110,7 +125,7 @@ export function AppShell({
               href={item.path}
               icon={item.icon}
               label={item.label}
-              isActive={currentPath !== undefined ? currentPath === item.path : undefined}
+              isActive={item.path === activePath}
               onClick={onNavigate ? (e) => handleNav(e, item.path) : undefined}
             />
           ))}

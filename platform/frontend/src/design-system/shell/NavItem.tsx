@@ -74,6 +74,12 @@ export const NavItem = React.forwardRef<HTMLAnchorElement, NavItemProps>(
           ref={ref}
           to={targetUrl}
           activeOptions={{ exact: targetUrl === "/" }}
+          onClick={(e) => {
+            // Tapping the tab you're already on has nothing to navigate to —
+            // without this, TanStack Router still ran the route transition
+            // (the slide animation) for a route that never actually changed.
+            if (isActive) e.preventDefault()
+          }}
           className={cn(
             baseClass,
             isActive
