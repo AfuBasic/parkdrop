@@ -169,21 +169,22 @@ export function renderArrivalSms(parts: {
  * Realistic worst-case stand-ins used for computing preview limits.
  */
 export const SMS_PREVIEW_SAMPLE = {
-  pickupCode: '4821',
+  pickupCode: 'ABCDEF',
   phone: '08031234567',
 } as const;
 
 /**
  * How many characters the pickup point and park names may use between them
- * before the arrival SMS exceeds SMS_MAX_CHARS (130 chars).
+ * before the arrival SMS exceeds SMS_MAX_CHARS (155 chars).
  *
  * Computed against the longest possible code length (PICKUP_CODE_LENGTH)
- * and an 11-digit phone number so the user never exceeds 130 characters.
+ * and an 11-digit phone number so the user never exceeds 155 characters.
  */
 export function combinedNameBudget(): number {
   const worstCaseCode = 'A'.repeat(PICKUP_CODE_LENGTH); // 7 chars
   const worstCasePhone = '08031234567'; // 11 chars
   const emptyRender = renderCustomerSms({
+    customerName: undefined,
     pickupPointName: '',
     parkName: '',
     phone: worstCasePhone,
