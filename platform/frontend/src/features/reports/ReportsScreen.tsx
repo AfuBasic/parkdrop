@@ -190,7 +190,10 @@ export function ReportsScreen() {
                     
                     return (
                       <div key={day.date} className="flex-1 flex flex-col items-center justify-end gap-1 h-full group">
-                        <div 
+                        <span className="text-[11px] font-bold text-[var(--pd-navy)] tabular-nums">
+                          {day.received_count}
+                        </span>
+                        <div
                           className="w-full bg-[var(--pd-blue)] rounded-t-sm opacity-90 group-hover:opacity-100 transition-opacity min-h-[4px]"
                           style={{ height: `${hPercent}%` }}
                         />
