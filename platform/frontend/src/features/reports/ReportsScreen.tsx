@@ -191,11 +191,16 @@ export function ReportsScreen() {
                     const hPercent = maxChartVal > 0 ? (day.received_count / maxChartVal) * 100 : 0;
                     // Only label min/max for 30 days, or all for 7 days
                     const showLabel = report.daily_chart.length <= 7 || idx === 0 || idx === report.daily_chart.length - 1 || day.received_count === maxChartVal;
-                    
+                    // 30 narrow columns leaves no room for a number over
+                    // every bar — the "0" labels ran into each other. Most
+                    // days in that view are 0 anyway, so only label the
+                    // ones with something to say.
+                    const showValueLabel = report.daily_chart.length <= 7 || day.received_count > 0;
+
                     return (
                       <div key={day.date} className="flex-1 flex flex-col items-center justify-end gap-1 h-full group">
-                        <span className="text-[11px] font-bold text-[var(--pd-navy)] tabular-nums">
-                          {day.received_count}
+                        <span className="text-[11px] font-bold text-[var(--pd-navy)] tabular-nums h-3.5">
+                          {showValueLabel && day.received_count}
                         </span>
                         <div
                           className="w-full bg-[var(--pd-blue)] rounded-t-sm opacity-90 group-hover:opacity-100 transition-opacity min-h-[4px]"
