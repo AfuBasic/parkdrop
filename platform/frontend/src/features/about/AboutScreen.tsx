@@ -49,7 +49,7 @@ export function AboutScreen({ onBack }: AboutScreenProps) {
         <div className="p-6 bg-surface-default rounded-2xl border border-border-subtle shadow-xs flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-4 shadow-xs">
             <img 
-              src="/parkdrop-icon-only.png" 
+              src="/parkdrop-icon.svg"
               alt="ParkDrop" 
               className="w-10 h-10 object-contain"
             />

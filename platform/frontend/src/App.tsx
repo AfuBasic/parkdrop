@@ -30,7 +30,7 @@ function BootSplash() {
         />
         <div className="w-16 h-16 rounded-[18px] bg-white shadow-md flex items-center justify-center">
           <img
-            src="/parkdrop-icon-only.png"
+            src="/parkdrop-icon.svg"
             alt=""
             aria-hidden="true"
             width={40}

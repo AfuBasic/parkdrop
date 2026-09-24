@@ -56,9 +56,10 @@ export default defineConfig({
         start_url: '/',
         icons: [
           {
-            src: '/favicon.png',
+            src: '/favicon-192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: '/apple-touch-icon.png',
@@ -68,7 +69,18 @@ export default defineConfig({
           {
             src: '/parkdrop-icon-only.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            // Content is inset within the center 80% safe zone, so Android's
+            // circular/squircle adaptive-icon crop doesn't clip it — the
+            // "any"-purpose icons above are NOT safe for this crop, hence a
+            // dedicated maskable asset rather than reusing one of them.
+            src: '/maskable-icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }

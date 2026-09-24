@@ -15,7 +15,7 @@ export interface LogoProps {
   className?: string;
 }
 
-const MARK_SRC = '/parkdrop-icon-only.png';
+const MARK_SRC = '/parkdrop-icon.svg';
 
 export function Logo({ tone = 'blue', markOnly = false, className }: LogoProps) {
   return (
