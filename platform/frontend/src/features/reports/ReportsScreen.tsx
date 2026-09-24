@@ -44,7 +44,6 @@ export function ReportsScreen() {
     text += `📦 Received: ${m.received_count}\n`;
     text += `✅ Collected: ${m.collected_count}\n`;
     text += `💰 Revenue: ₦${(m.revenue_collected_minor / 100).toLocaleString()}\n`;
-    text += `⏳ Still waiting: ${m.waiting_now_count} (Overdue: ${currentlyOverdueCount})\n`;
     if (m.avg_pickup_time_seconds) {
       text += `⏱️ Avg pickup time: ${formatDuration(m.avg_pickup_time_seconds)}\n`;
     }
