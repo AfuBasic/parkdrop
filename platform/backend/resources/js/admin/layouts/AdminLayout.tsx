@@ -67,13 +67,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const admin = props.auth?.admin;
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Derive breadcrumbs from URL
+  // Derive breadcrumbs from URL intelligently
   const pathParts = currentUrl.split('?')[0].split('/').filter(Boolean);
   const breadcrumbItems = pathParts.slice(1).map((part, index) => {
     const isLast = index === pathParts.slice(1).length - 1;
-    const label = part
-      .replace(/-/g, ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    let label = part;
+
+    // If last segment is a raw UUID or ID, check if page props has a clean name or code
+    const isIdOrUuid = /^[0-9a-fA-F-]{8,}$/.test(part) || /^\d+$/.test(part);
+    if (isIdOrUuid) {
+      if (props.package?.code) {
+        label = props.package.code;
+      } else if (props.pickupPoint?.name) {
+        label = props.pickupPoint.name;
+      } else {
+        label = 'Details';
+      }
+    } else {
+      label = part
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
     return { label, isLast };
   });
 
