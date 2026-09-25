@@ -16,7 +16,7 @@ class AdminDashboardController extends Controller
         $weekStart = now()->startOfWeek();
 
         $pickupPoints = Business::count();
-        $activePickupPoints = Business::where('is_active', true)->count();
+        $activePickupPoints = Business::where('status', 'active')->count();
         $packagesToday = Package::whereDate('created_at', $today)->count();
         $thisWeek = Package::where('created_at', '>=', $weekStart)->count();
         $lastWeek = Package::where('created_at', '>=', $weekStart->copy()->subWeek())
@@ -34,7 +34,7 @@ class AdminDashboardController extends Controller
 
         $collectedToday = Package::where('status', 'collected')->whereDate('created_at', $today)->count();
         $overdue = Package::where('status', 'waiting')->where('created_at', '<', now()->subHours(24))->count();
-        $activeStaff = User::where('is_active', true)->count();
+        $activeStaff = User::where('status', 'active')->count();
 
         $recentActivity = Package::with(['business', 'user'])
             ->latest()
