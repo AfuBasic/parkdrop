@@ -1,6 +1,13 @@
 import { useState } from 'react';
 import { Link } from '@inertiajs/react';
-import { Building2, Package, TrendingUp, TrendingDown, MessageSquare } from 'lucide-react';
+import { Building2, Package, TrendingUp, TrendingDown, MessageSquare, Banknote } from 'lucide-react';
+
+const IconMap: Record<string, any> = {
+  Building2,
+  Package,
+  MessageSquare,
+  Banknote
+};
 
 export default function Dashboard({ kpi, quickStats, recentActivity, needsAttention }: any) {
   return (
@@ -8,11 +15,13 @@ export default function Dashboard({ kpi, quickStats, recentActivity, needsAttent
       <h1 className="text-3xl font-bold text-[#0D1B2A]">Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {kpi.map((item: any) => (
+        {kpi.map((item: any) => {
+          const Icon = IconMap[item.icon] || Package;
+          return (
           <div key={item.label} className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-[#EFF6FF] flex items-center justify-center">
-                <item.icon className="w-5 h-5 text-[#2563EB]" />
+                <Icon className="w-5 h-5 text-[#2563EB]" />
               </div>
               <span className="text-sm text-[#475569]">{item.label}</span>
             </div>
@@ -25,7 +34,8 @@ export default function Dashboard({ kpi, quickStats, recentActivity, needsAttent
               </span>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-sm">
