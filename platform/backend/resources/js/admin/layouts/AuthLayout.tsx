@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { Package } from 'lucide-react';
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
