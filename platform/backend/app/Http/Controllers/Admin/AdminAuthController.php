@@ -20,7 +20,7 @@ class AdminAuthController extends Controller
 
         $request->session()->put('admin_email', $request->input('email'));
 
-        return redirect('/admin/login/verify');
+        return response()->json(['status' => 'ok']);
     }
 
     public function showVerify(Request $request) {
@@ -42,7 +42,7 @@ class AdminAuthController extends Controller
         try {
             $otp->verifyOtp($email, $code);
         } catch (\RuntimeException $e) {
-            return back()->withErrors(['code' => $e->getMessage()]);
+            return response()->json(['message' => $e->getMessage()], 422);
         }
 
         $admin = \App\Models\AdminUser::where('email', $email)->first();
@@ -50,7 +50,7 @@ class AdminAuthController extends Controller
 
         $otp->recordLogin($admin);
 
-        return redirect('/admin/dashboard');
+        return response()->json(['status' => 'ok']);
     }
 
     public function logout(Request $request) {
