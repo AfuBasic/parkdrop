@@ -8,6 +8,7 @@ use App\Models\Package;
 use App\Models\PackageLifecycleEvent;
 use App\Models\SyncChange;
 use App\Models\User;
+use App\Services\Demurrage\DemurrageCalculator;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -94,10 +95,22 @@ class CollectPackageAction
                 'server_received_at' => now(),
             ]);
 
+            // Compute final amount including accrued storage fees.
+            // Accrual freezes at the collection moment — the receipt must never
+            // change after the customer has paid.
+            $accruedMinor = DemurrageCalculator::accruedAmountDueMinor(
+                baseAmountMinor: (int) $lockedPackage->amount_due_minor,
+                dailyFeeMinor: (int) $business->daily_storage_fee_minor,
+                clientCreatedAt: $lockedPackage->client_created_at->toISOString(),
+                terminalAt: $clientEventAt->toISOString(),
+                now: $clientEventAt
+            );
+
             // Update package status
             $lockedPackage->update([
                 'status' => 'COLLECTED',
                 'collected_at' => $clientEventAt,
+                'amount_due_minor' => $accruedMinor,
                 'terminal_actor_name' => $actorName,
                 'version' => $lockedPackage->version + 1,
             ]);
