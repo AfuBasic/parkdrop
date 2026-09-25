@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Middleware\AssignRequestId;
-use App\Http\Middleware\SecurityHeadersMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,13 +14,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
-        $middleware->validateCsrfTokens(except: [
-            'api/*',
+        $middleware->statefulApi(['api/*']);
+        $middleware->validateCsrfTokens(except: ['api/*']);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
-        $middleware->redirectGuestsTo(fn () => response()->json(['message' => 'Unauthenticated.'], 401));
-        $middleware->append(AssignRequestId::class);
-        $middleware->append(SecurityHeadersMiddleware::class);
+
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'guest.admin' => \App\Http\Middleware\RedirectIfAdminAuthenticated::class,
+        ]);
+
+        $middleware->append(\App\Http\Middleware\AssignRequestId::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

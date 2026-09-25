@@ -14,10 +14,15 @@ use App\Http\Controllers\Api\V1\Packages\ResendArrivalSmsController;
 use App\Http\Controllers\Api\V1\Reports\DailyOperationsReportController;
 use App\Http\Controllers\Api\V1\SmsCredits\SmsCreditPurchaseController;
 use App\Http\Controllers\Api\V1\Sync\SyncController;
+use App\Http\Controllers\Api\ViteController;
 use App\Http\Controllers\Webhooks\PaymentWebhookController;
 use App\Http\Controllers\Webhooks\TermiiWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+// Build & Manifest routes
+Route::get('/vite-manifest', [ViteController::class, 'manifest']);
+Route::post('/build', [ViteController::class, 'build']);
 
 // Health & Operational Readiness Probes
 Route::prefix('v1/health')->group(function () {

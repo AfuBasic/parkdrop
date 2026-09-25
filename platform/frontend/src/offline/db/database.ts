@@ -70,6 +70,47 @@ export class ParkDropDatabase extends Dexie {
       queryCache: 'key, fetched_at'
     });
   }
+
+  /**
+   * Purge all local data belonging to a specific business.
+   * Ensures zero data leakage when a user leaves or changes accounts.
+   */
+  async purgeTenantData(businessId: number): Promise<void> {
+    await Promise.all([
+      this.packages.where('business_id').equals(businessId).delete(),
+      this.customers.where('business_id').equals(businessId).delete(),
+      this.payments.where('business_id').equals(businessId).delete(),
+      this.packageMedia.where('business_id').equals(businessId).delete(),
+      this.smsWallets.where('business_id').equals(businessId).delete(),
+      this.mutations.where('business_id').equals(businessId).delete(),
+      this.conflicts.where('business_id').equals(businessId).delete(),
+      this.quarantineRecords.where('business_id').equals(businessId).delete(),
+      this.syncState.delete(businessId),
+    ]);
+  }
+
+  /**
+   * Complete reset of all tenant/transactional data across the local database.
+   * Safe to call on logout or user switch so no previous account's records linger.
+   */
+  async purgeAllTenantData(): Promise<void> {
+    await Promise.all([
+      this.packages.clear(),
+      this.customers.clear(),
+      this.payments.clear(),
+      this.packageMedia.clear(),
+      this.smsWallets.clear(),
+      this.smsCreditTransactions.clear(),
+      this.smsCreditPurchases.clear(),
+      this.mutations.clear(),
+      this.syncState.clear(),
+      this.conflicts.clear(),
+      this.entityAliases.clear(),
+      this.authorization.clear(),
+      this.quarantineRecords.clear(),
+      this.queryCache.clear(),
+    ]);
+  }
 }
 
 export const db = new ParkDropDatabase();

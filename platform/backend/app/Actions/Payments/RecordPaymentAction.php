@@ -8,6 +8,7 @@ use App\Models\Business;
 use App\Models\Package;
 use App\Models\Payment;
 use App\Models\SyncChange;
+use App\Services\Demurrage\DemurrageCalculator;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -66,7 +67,16 @@ class RecordPaymentAction
                 ->where('status', 'COMPLETED')
                 ->sum('amount_minor');
 
-            $remainingBalanceMinor = max(0, $lockedPackage->amount_due_minor - $currentNetPaidMinor);
+            // Accrued total includes storage fees for days the package has been waiting
+            $accruedTotalMinor = DemurrageCalculator::accruedAmountDueMinor(
+                baseAmountMinor: (int) $lockedPackage->amount_due_minor,
+                dailyFeeMinor: (int) $business->daily_storage_fee_minor,
+                clientCreatedAt: $lockedPackage->client_created_at->toISOString(),
+                terminalAt: null,
+                now: Carbon::now()
+            );
+
+            $remainingBalanceMinor = max(0, $accruedTotalMinor - $currentNetPaidMinor);
 
             // Enforce V1 overpayment prevention policy
             if ($amountMinor > $remainingBalanceMinor) {

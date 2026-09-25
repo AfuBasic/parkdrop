@@ -191,14 +191,19 @@ class ProcessOutboxCommand extends Command
             $callLine = "Call: {$digits}\n";
         }
 
+        // Greeting: use customer name when available, fall back to "Dear Customer,"
+        $cleanCustomerName = trim((string) ($customer->name ?? ''));
+        $greeting = $cleanCustomerName !== '' ? "Dear {$cleanCustomerName}," : 'Dear Customer,';
+
         // Single shared template (matches frontend renderCustomerSms in smsTemplate.ts)
+        // Dear {name or Customer},
         // Your package is at {place}.\nShow code {code} at pickup.\nCall: {phone}\nParkDrop
         $code = $package->pickup_code;
-        $message = "Your package is at {$place}.\nShow code {$code} at pickup.\n{$callLine}ParkDrop";
+        $message = "{$greeting}\nYour package is at {$place}.\nShow code {$code} at pickup.\n{$callLine}ParkDrop";
 
-        // Hard character limit check: never exceed 130 characters
-        if (mb_strlen($message) > 130) {
-            Log::warning('[ProcessOutboxCommand] Arrival SMS exceeds 130 character limit.', [
+        // Hard character limit check: never exceed 155 characters
+        if (mb_strlen($message) > 155) {
+            Log::warning('[ProcessOutboxCommand] Arrival SMS exceeds 155 character limit.', [
                 'outbox_event_id' => $event->id,
                 'package_id' => $packageId,
                 'length' => mb_strlen($message),

@@ -6,20 +6,22 @@
  * The pickup-point setup screens preview the real message to the business owner,
  * so if these two drift the preview becomes a lie.
  *
- * Hard limit: 130 characters.
+ * Hard limit: 155 characters.
  * Template:
+ *   Dear {customer name or "Customer"},
  *   Your package is at {pickupPoint}, {park}.
  *   Show code {code} at pickup.
  *   Call: {phone}
  *   ParkDrop
  *
  * (The "Call: {phone}\n" line is omitted if no phone is present).
+ * (The "Dear ..." greeting is "Dear Customer" when no name is supplied).
  */
 
 import { PICKUP_CODE_LENGTH } from '@/features/packages/domain/PackageCodeGenerator';
 
 /** Hard character limit for arrival SMS across client and server. */
-export const SMS_MAX_CHARS = 130;
+export const SMS_MAX_CHARS = 155;
 
 /** Single-segment budget for a GSM 03.38 message. */
 export const GSM7_SINGLE_SEGMENT = 160;
@@ -45,6 +47,7 @@ export interface SmsNames {
 }
 
 export interface CustomerSmsParts extends SmsNames {
+  customerName?: string | null;
   phone?: string | null;
   code: string;
 }
@@ -76,12 +79,14 @@ export function countSeptets(text: string): number {
 
 /**
  * Render customer SMS according to standard template:
+ * Dear {customer name or Customer},
  * Your package is at {pickupPoint}, {park}.
  * Show code {code} at pickup.
  * Call: {phone}
  * ParkDrop
  */
 export function renderCustomerSms({
+  customerName,
   pickupPointName,
   parkName,
   phone,
@@ -93,6 +98,11 @@ export function renderCustomerSms({
   const place = cleanPark !== ''
     ? (cleanPoint !== '' ? `${cleanPoint}, ${cleanPark}` : cleanPark)
     : cleanPoint;
+
+  const cleanName = normaliseForSms(customerName).trim();
+  const greeting = cleanName !== ''
+    ? `Dear ${cleanName},`
+    : 'Dear Customer,';
 
   let callLine = '';
   if (phone) {
@@ -108,7 +118,7 @@ export function renderCustomerSms({
     }
   }
 
-  const text = `Your package is at ${place}.\nShow code ${code} at pickup.\n${callLine}ParkDrop`;
+  const text = `${greeting}\nYour package is at ${place}.\nShow code ${code} at pickup.\n${callLine}ParkDrop`;
   const septetCount = countSeptets(text);
   const isAllGsm7 = isGsm7(text);
 
@@ -138,6 +148,7 @@ export function renderCustomerSms({
  * Backwards-compatibility wrapper for any legacy call site.
  */
 export function renderArrivalSms(parts: {
+  customerName?: string;
   customerFirstName?: string;
   packageId?: string;
   pickupCode: string;
@@ -146,6 +157,7 @@ export function renderArrivalSms(parts: {
   phone?: string | null;
 }): string {
   return renderCustomerSms({
+    customerName: parts.customerName ?? parts.customerFirstName,
     pickupPointName: parts.pickupPointName,
     parkName: parts.parkName,
     phone: parts.phone ?? null,
@@ -157,21 +169,22 @@ export function renderArrivalSms(parts: {
  * Realistic worst-case stand-ins used for computing preview limits.
  */
 export const SMS_PREVIEW_SAMPLE = {
-  pickupCode: '4821',
+  pickupCode: 'ABCDEF',
   phone: '08031234567',
 } as const;
 
 /**
  * How many characters the pickup point and park names may use between them
- * before the arrival SMS exceeds SMS_MAX_CHARS (130 chars).
+ * before the arrival SMS exceeds SMS_MAX_CHARS (155 chars).
  *
  * Computed against the longest possible code length (PICKUP_CODE_LENGTH)
- * and an 11-digit phone number so the user never exceeds 130 characters.
+ * and an 11-digit phone number so the user never exceeds 155 characters.
  */
 export function combinedNameBudget(): number {
   const worstCaseCode = 'A'.repeat(PICKUP_CODE_LENGTH); // 7 chars
   const worstCasePhone = '08031234567'; // 11 chars
   const emptyRender = renderCustomerSms({
+    customerName: undefined,
     pickupPointName: '',
     parkName: '',
     phone: worstCasePhone,
@@ -226,11 +239,12 @@ export function unsupportedCharacters(value: string): string[] {
 }
 
 /** Everything the pickup-point screen needs to render and police the preview. */
-export function checkSmsFit(names: SmsNames, phone: string = SMS_PREVIEW_SAMPLE.phone): SmsFit {
+export function checkSmsFit(names: SmsNames, phone: string = SMS_PREVIEW_SAMPLE.phone, customerName?: string): SmsFit {
   const pickupPointName = normaliseForSms(names.pickupPointName);
   const parkName = normaliseForSms(names.parkName);
 
   const rendered = renderCustomerSms({
+    customerName,
     code: SMS_PREVIEW_SAMPLE.pickupCode,
     pickupPointName,
     parkName,
