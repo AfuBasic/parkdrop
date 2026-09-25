@@ -179,42 +179,45 @@ export function ReportsScreen() {
 
             {/* Bar Chart */}
             {report.daily_chart && report.daily_chart.length > 1 && (
-              <div className="bg-white border border-[var(--pd-line)] rounded-[var(--pd-card-radius)] p-4 flex flex-col gap-4">
+              <div className="bg-white border border-[var(--pd-line)] rounded-[var(--pd-card-radius)] p-4 flex flex-col gap-4 overflow-hidden">
                 <h3 className="text-[16px] font-extrabold text-[var(--pd-navy)] m-0 flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-[var(--pd-muted)]" />
                   {ReportsStrings.chartTitle}
                 </h3>
                 
-                <div className="h-32 flex items-end gap-1 w-full mt-2">
-                  {report.daily_chart.map((day, idx) => {
-                    const hPercent = maxChartVal > 0 ? (day.received_count / maxChartVal) * 100 : 0;
-                    // Only label min/max for 30 days, or all for 7 days
-                    const showLabel = report.daily_chart.length <= 7 || idx === 0 || idx === report.daily_chart.length - 1 || day.received_count === maxChartVal;
-                    // 30 narrow columns leaves no room for a number over
-                    // every bar — the "0" labels ran into each other. Most
-                    // days in that view are 0 anyway, so only label the
-                    // ones with something to say.
-                    const showValueLabel = report.daily_chart.length <= 7 || day.received_count > 0;
+                <div className="w-full overflow-x-auto pb-2 scrollbar-none">
+                  <div
+                    className={`h-36 flex items-end gap-1 mt-2 pb-6 ${
+                      report.daily_chart.length > 14 ? 'min-w-[540px]' : 'w-full'
+                    }`}
+                  >
+                    {report.daily_chart.map((day, idx) => {
+                      const hPercent = maxChartVal > 0 ? (day.received_count / maxChartVal) * 100 : 0;
+                      // In 30-day view, label every 5th day, first, last, or highest volume day
+                      const is30Day = report.daily_chart.length > 14;
+                      const showLabel = !is30Day || idx === 0 || idx === report.daily_chart.length - 1 || idx % 5 === 0 || day.received_count === maxChartVal;
+                      const showValueLabel = !is30Day || day.received_count > 0;
 
-                    return (
-                      <div key={day.date} className="flex-1 flex flex-col items-center justify-end gap-1 h-full group">
-                        <span className="text-[11px] font-bold text-[var(--pd-navy)] tabular-nums h-3.5">
-                          {showValueLabel && day.received_count}
-                        </span>
-                        <div
-                          className="w-full bg-[var(--pd-blue)] rounded-t-sm opacity-90 group-hover:opacity-100 transition-opacity min-h-[4px]"
-                          style={{ height: `${hPercent}%` }}
-                        />
-                        <div className="h-4 flex items-center justify-center">
-                          {showLabel && (
-                            <span className="text-[10px] font-bold text-[var(--pd-muted)] -rotate-45 block mt-2">
-                              {day.short_label}
-                            </span>
-                          )}
+                      return (
+                        <div key={day.date} className="flex-1 flex flex-col items-center justify-end gap-1 h-full group relative">
+                          <span className="text-[10px] font-bold text-[var(--pd-navy)] tabular-nums h-3.5 flex items-center">
+                            {showValueLabel && day.received_count}
+                          </span>
+                          <div
+                            className="w-full bg-[var(--pd-blue)] rounded-t-xs opacity-90 group-hover:opacity-100 transition-opacity min-h-[3px]"
+                            style={{ height: `${hPercent}%` }}
+                          />
+                          <div className="h-4 flex items-center justify-center">
+                            {showLabel && (
+                              <span className="text-[9px] font-bold text-[var(--pd-muted)] whitespace-nowrap block mt-1.5 -rotate-45 origin-top-left">
+                                {day.short_label}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}
