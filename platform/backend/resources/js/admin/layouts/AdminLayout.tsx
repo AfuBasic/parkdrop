@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Brand Header */}
         <div className="flex items-center justify-between px-5 h-16 border-b border-[#1E293B]">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-            <img src="/parkdrop-logo-horizontal.svg" alt="ParkDrop" className="h-7 w-auto invert" />
+            <img src="/parkdrop-logo-horizontal-white.svg" alt="ParkDrop" className="h-7 w-auto" />
             <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#2563EB]/20 text-[#60A5FA] border border-[#2563EB]/30">
               Admin
             </span>
