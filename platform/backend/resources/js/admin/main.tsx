@@ -13,7 +13,12 @@ createInertiaApp({
         resolvePageComponent(
             `./pages/${name}.tsx`,
             import.meta.glob('./pages/**/*.tsx'),
-        ),
+        ).then((module: any) => {
+            if (module.default.layout === undefined && !name.startsWith('Admin/Auth/')) {
+                module.default.layout = (page: React.ReactNode) => <AdminLayout>{page}</AdminLayout>;
+            }
+            return module;
+        }),
     setup({ el, App, props }) {
         createRoot(el).render(
             <StrictMode>
