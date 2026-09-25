@@ -36,7 +36,7 @@ class AdminUsersController extends Controller
 
         $pickupPoints = Business::query()->orderBy('name')->get(['id', 'name']);
 
-        return inertia('Admin/Users', [
+        return inertia('Admin/Users/Index', [
             'users' => $users->through(function ($u) {
                 $membership = $u->businessMemberships->first();
                 $business = $membership?->business;
