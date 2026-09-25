@@ -106,11 +106,10 @@ export default function Dashboard({
         </div>
       </div>
 
-      {/* KPI Cards — Spec: 4 cards, 20px padding, 12px radius, 1px #E2E8F0 border, left accent */}
+      {/* KPI Cards — Spec: 4 cards with Horizon/Rixzo visual aesthetics + embedded sparkline curves */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpi?.map((item, idx) => {
           const Icon = IconMap[item.icon] || Package;
-          // Left accent border per spec §6.1: 3px #2563EB for first card, warning if low SMS
           const borderAccent = item.hasWarning
             ? 'border-l-4 border-l-[#DC2626]'
             : idx === 0
@@ -121,36 +120,53 @@ export default function Dashboard({
             ? 'border-l-4 border-l-[#10B981]'
             : 'border-l-4 border-l-[#64748B]';
 
+          // Micro sparkline paths for Rixzo-like data viz vibe
+          const sparklinePaths = [
+            'M0 24 Q 25 12, 50 18 T 100 8 T 150 14 T 200 4',
+            'M0 20 Q 30 25, 60 14 T 120 18 T 160 8 T 200 6',
+            'M0 22 Q 40 10, 80 18 T 140 12 T 180 6 T 200 2',
+            'M0 16 Q 35 22, 70 12 T 130 16 T 170 10 T 200 12',
+          ];
+          const strokeColors = [
+            '#2563EB',
+            '#3B82F6',
+            '#10B981',
+            item.hasWarning ? '#DC2626' : '#64748B',
+          ];
+
           return (
             <div
               key={item.label}
-              className={`bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-xs transition-all hover:border-[#CBD5E1] ${borderAccent}`}
+              className={`bg-white rounded-xl border border-[#E2E8F0] p-5 shadow-xs transition-all hover:border-[#CBD5E1] relative overflow-hidden flex flex-col justify-between ${borderAccent}`}
             >
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[13px] font-medium text-[#475569]">
-                  {item.label}
-                </span>
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    item.hasWarning ? 'bg-red-50 text-[#DC2626]' : 'bg-[#EFF6FF] text-[#2563EB]'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[13px] font-medium text-[#475569]">
+                    {item.label}
+                  </span>
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                      item.hasWarning ? 'bg-red-50 text-[#DC2626]' : 'bg-[#EFF6FF] text-[#2563EB]'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
                 </div>
+
+                <div className="text-[28px] font-extrabold text-[#0F172A] tracking-tight tabular-nums">
+                  {item.value}
+                </div>
+
+                {item.sub && (
+                  <p className="text-[11px] font-normal text-[#94A3B8] mt-0.5">
+                    {item.sub}
+                  </p>
+                )}
               </div>
 
-              <div className="text-[28px] font-extrabold text-[#0F172A] tracking-tight tabular-nums">
-                {item.value}
-              </div>
-
-              {item.sub && (
-                <p className="text-[12px] font-normal text-[#94A3B8] mt-1">
-                  {item.sub}
-                </p>
-              )}
-
-              {item.trend && (
-                <div className="mt-2.5 flex items-center">
+              {/* Sparkline curve & Trend indicator (Rixzo style) */}
+              <div className="mt-3 pt-3 border-t border-[#F1F5F9] flex items-center justify-between">
+                {item.trend ? (
                   <span
                     className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
                       item.trend.up
@@ -161,11 +177,62 @@ export default function Dashboard({
                     {item.trend.up ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                     {item.trend.value}
                   </span>
-                </div>
-              )}
+                ) : (
+                  <span className="text-[11px] text-[#94A3B8] font-medium">Daily Telemetry</span>
+                )}
+
+                {/* Mini SVG Sparkline */}
+                <svg className="w-20 h-6 shrink-0" viewBox="0 0 200 30" fill="none">
+                  <path
+                    d={sparklinePaths[idx % sparklinePaths.length]}
+                    stroke={strokeColors[idx % strokeColors.length]}
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Horizon-style Quick Action Launcher Bar */}
+      <div className="bg-white rounded-xl border border-[#E2E8F0] p-3 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs font-semibold text-[#475569]">
+          <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
+          <span>Quick Hub Actions:</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/admin/packages"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-semibold text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+          >
+            <Package className="w-3.5 h-3.5 text-[#2563EB]" />
+            <span>Search Parcels</span>
+          </Link>
+          <Link
+            href="/admin/pickup-points"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-semibold text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+          >
+            <Building2 className="w-3.5 h-3.5 text-[#3B82F6]" />
+            <span>Pickup Points</span>
+          </Link>
+          <Link
+            href="/admin/sms-credits"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-semibold text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-[#10B981]" />
+            <span>Grant SMS Pool</span>
+          </Link>
+          <Link
+            href="/admin/finance"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] text-xs font-semibold text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+          >
+            <Banknote className="w-3.5 h-3.5 text-[#F59E0B]" />
+            <span>Revenue Breakdown</span>
+          </Link>
+        </div>
       </div>
 
       {/* Overdue Warning Callout (if any packages >24h) */}
