@@ -57,10 +57,10 @@ class AdminDashboardController extends Controller
 
         return inertia('Admin/Dashboard', [
             'kpi' => [
-                'pickupPoints' => ['value' => $pickupPoints, 'label' => 'Total Pickup Points', 'sub' => "{$activePickupPoints} active, " . ($pickupPoints - $activePickupPoints) . " inactive", 'icon' => 'Building2', 'trend' => null],
-                'packagesToday' => ['value' => $packagesToday, 'label' => 'Packages Today', 'sub' => null, 'icon' => 'Package', 'trend' => $trend > 0 ? ['value' => "+{$trend}%", 'up' => true] : ($trend < 0 ? ['value' => "{$trend}%", 'up' => false] : null)],
-                'revenueToday' => ['value' => '₦' . number_format($revenueToday), 'label' => 'Revenue Today', 'sub' => null, 'icon' => 'Banknote', 'trend' => $revenueTrend > 0 ? ['value' => "+{$revenueTrend}%", 'up' => true] : ($revenueTrend < 0 ? ['value' => "{$revenueTrend}%", 'up' => false] : null)],
-                'smsCredits' => ['value' => '—', 'label' => 'SMS Credits', 'sub' => 'Not yet configured', 'icon' => 'MessageSquare', 'trend' => null],
+                ['value' => $pickupPoints, 'label' => 'Total Pickup Points', 'sub' => "{$activePickupPoints} active, " . ($pickupPoints - $activePickupPoints) . " inactive", 'icon' => 'Building2', 'trend' => null],
+                ['value' => $packagesToday, 'label' => 'Packages Today', 'sub' => null, 'icon' => 'Package', 'trend' => $trend > 0 ? ['value' => "+{$trend}%", 'up' => true] : ($trend < 0 ? ['value' => "{$trend}%", 'up' => false] : null)],
+                ['value' => '₦' . number_format($revenueToday), 'label' => 'Revenue Today', 'sub' => null, 'icon' => 'Banknote', 'trend' => $revenueTrend > 0 ? ['value' => "+{$revenueTrend}%", 'up' => true] : ($revenueTrend < 0 ? ['value' => "{$revenueTrend}%", 'up' => false] : null)],
+                ['value' => '—', 'label' => 'SMS Credits', 'sub' => 'Not yet configured', 'icon' => 'MessageSquare', 'trend' => null],
             ],
             'quickStats' => [
                 'thisWeek' => "This week: {$thisWeek} received · {$collectedToday} collected today",
