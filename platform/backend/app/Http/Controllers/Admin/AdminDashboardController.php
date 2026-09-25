@@ -33,26 +33,70 @@ class AdminDashboardController extends Controller
         $revenueTrend = $revenueYesterday > 0 ? round((($revenueToday - $revenueYesterday) / $revenueYesterday) * 100) : 0;
 
         $totalSmsBalance = (int) SmsWallet::sum('balance');
+        $hasLowSms = SmsWallet::where('balance', '<', 100)->exists();
 
         $collectedToday = Package::where('status', 'COLLECTED')->whereDate('collected_at', $today)->count();
         $overdue = Package::where('status', 'WAITING')->where('created_at', '<', now()->subHours(24))->count();
         $activeStaff = User::where('status', 'active')->count();
 
-        $recentActivity = Package::with(['business', 'customer'])
+        // 7-day throughput chart for dashboard
+        $past7Days = collect(range(6, 0))->map(function ($daysAgo) {
+            $date = now()->subDays($daysAgo)->format('Y-m-d');
+            $dayLabel = now()->subDays($daysAgo)->format('D d');
+            $received = Package::whereDate('created_at', $date)->count();
+            $collected = Package::where('status', 'COLLECTED')->whereDate('collected_at', $date)->count();
+            $revenueMinor = (int) Package::where('status', 'COLLECTED')->whereDate('collected_at', $date)->sum('amount_due_minor');
+
+            return [
+                'date' => $dayLabel,
+                'fullDate' => $date,
+                'received' => $received,
+                'collected' => $collected,
+                'revenue' => round($revenueMinor / 100, 2),
+            ];
+        });
+
+        // Top pickup points by package throughput today
+        $topPickupPoints = Business::with(['pickupPoints'])
+            ->withCount(['packages as today_packages' => fn ($q) => $q->whereDate('created_at', today())])
+            ->withCount(['packages as active_waiting' => fn ($q) => $q->where('status', 'WAITING')])
+            ->orderByDesc('today_packages')
+            ->limit(5)
+            ->get()
+            ->map(function ($b) {
+                $point = $b->pickupPoints->first();
+                return [
+                    'id' => $b->id,
+                    'name' => $b->name,
+                    'park' => $point?->park_name ?? '—',
+                    'today' => $b->today_packages,
+                    'waiting' => $b->active_waiting,
+                ];
+            });
+
+        $recentActivity = Package::with(['business.pickupPoints', 'customer', 'creator'])
             ->latest('created_at')
             ->limit(10)
             ->get()
             ->map(fn ($p) => [
                 'type' => match ($p->status) {
-                    'COLLECTED' => 'package_collected',
-                    'WAITING' => 'package_received',
-                    'RETURNED' => 'package_returned',
-                    'CANCELLED' => 'package_cancelled',
+                    'COLLECTED' => 'collected',
+                    'WAITING' => 'received',
+                    'RETURNED' => 'returned',
+                    'CANCELLED' => 'cancelled',
                     default => 'package',
                 },
-                'description' => $p->customer
-                    ? "Package {$p->public_package_id} for {$p->customer->name} at {$p->business?->name}"
-                    : "Package {$p->public_package_id} at {$p->business?->name}",
+                'code' => $p->public_package_id,
+                'parkName' => $p->business?->pickupPoints?->first()?->park_name ?? $p->business?->name ?? 'Park',
+                'customerName' => $p->customer?->name ?? 'Walk-in customer',
+                'amountFormatted' => '₦' . number_format($p->amount_due_minor / 100, 2),
+                'description' => match ($p->status) {
+                    'COLLECTED' => "Package {$p->public_package_id} collected by {$p->customer?->name} at {$p->business?->name}",
+                    'WAITING' => "New package received for {$p->customer?->name} at {$p->business?->name}",
+                    'RETURNED' => "Package {$p->public_package_id} returned to sender",
+                    'CANCELLED' => "Package {$p->public_package_id} cancelled",
+                    default => "Activity on package {$p->public_package_id}",
+                },
                 'timestamp' => $p->created_at->diffForHumans(),
             ]);
 
@@ -70,35 +114,61 @@ class AdminDashboardController extends Controller
                     'sub' => "{$activePickupPoints} active, " . ($pickupPoints - $activePickupPoints) . " inactive",
                     'icon' => 'Building2',
                     'trend' => null,
+                    'hasWarning' => false,
                 ],
                 [
                     'value' => $packagesToday,
                     'label' => 'Packages Today',
-                    'sub' => null,
+                    'sub' => "{$collectedToday} collected today",
                     'icon' => 'Package',
-                    'trend' => $trend > 0 ? ['value' => "+{$trend}%", 'up' => true] : ($trend < 0 ? ['value' => "{$trend}%", 'up' => false] : null),
+                    'trend' => $trend > 0 ? ['value' => "+{$trend}% vs last week", 'up' => true] : ($trend < 0 ? ['value' => "{$trend}% vs last week", 'up' => false] : null),
+                    'hasWarning' => false,
                 ],
                 [
                     'value' => '₦' . number_format($revenueToday / 100, 2),
                     'label' => 'Revenue Today',
-                    'sub' => null,
+                    'sub' => 'Collected at pickup',
                     'icon' => 'Banknote',
                     'trend' => $revenueTrend > 0 ? ['value' => "+{$revenueTrend}%", 'up' => true] : ($revenueTrend < 0 ? ['value' => "{$revenueTrend}%", 'up' => false] : null),
+                    'hasWarning' => false,
                 ],
                 [
                     'value' => number_format($totalSmsBalance),
                     'label' => 'SMS Credits Balance',
-                    'sub' => 'Across all active wallets',
+                    'sub' => $hasLowSms ? '⚠️ Low balance on some parks' : 'Across all active wallets',
                     'icon' => 'MessageSquare',
                     'trend' => null,
+                    'hasWarning' => $hasLowSms,
                 ],
             ],
             'quickStats' => [
-                'thisWeek' => "This week: {$thisWeek} received · {$collectedToday} collected today",
-                'overdue' => "Overdue: {$overdue} packages >24h",
-                'activePoints' => "Active pickup points: {$activePickupPoints}",
-                'activeStaff' => "Active staff: {$activeStaff}",
+                'thisWeek' => [
+                    'label' => 'This Week',
+                    'value' => "{$thisWeek} received · {$collectedToday} collected today",
+                    'isWarning' => false,
+                    'link' => '/admin/packages',
+                ],
+                'overdue' => [
+                    'label' => 'Overdue (>24h)',
+                    'value' => "{$overdue} packages overdue",
+                    'isWarning' => $overdue > 0,
+                    'link' => '/admin/packages?age=overdue',
+                ],
+                'activePoints' => [
+                    'label' => 'Active Parks',
+                    'value' => "{$activePickupPoints} operational locations",
+                    'isWarning' => false,
+                    'link' => '/admin/pickup-points?status=active',
+                ],
+                'activeStaff' => [
+                    'label' => 'Active Attendants',
+                    'value' => "{$activeStaff} registered staff",
+                    'isWarning' => false,
+                    'link' => '/admin/users?status=active',
+                ],
             ],
+            'chartData' => $past7Days,
+            'topPickupPoints' => $topPickupPoints,
             'recentActivity' => $recentActivity,
             'needsAttention' => $needsAttention,
         ]);
