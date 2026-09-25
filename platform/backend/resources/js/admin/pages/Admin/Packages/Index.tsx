@@ -43,6 +43,7 @@ interface PackagesIndexProps {
     current_page: number;
     last_page: number;
     total: number;
+    links: any[];
   };
   filters: {
     search: string;
@@ -279,7 +280,7 @@ export default function PackagesIndex({ packages, filters, pickupPoints }: Packa
 
                     <TableCell>
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           p.status === 'COLLECTED'
                             ? 'bg-[#F0FDF4] text-[#15803D]'
                             : p.status === 'WAITING'
@@ -289,6 +290,17 @@ export default function PackagesIndex({ packages, filters, pickupPoints }: Packa
                             : 'bg-slate-100 text-slate-700'
                         }`}
                       >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${
+                            p.status === 'COLLECTED'
+                              ? 'bg-[#16A34A]'
+                              : p.status === 'WAITING'
+                              ? 'bg-[#2563EB]'
+                              : p.status === 'RETURNED'
+                              ? 'bg-[#DC2626]'
+                              : 'bg-slate-500'
+                          }`}
+                        />
                         {p.status}
                       </span>
                     </TableCell>
@@ -334,6 +346,42 @@ export default function PackagesIndex({ packages, filters, pickupPoints }: Packa
             )}
           </TableBody>
         </Table>
+
+        {/* Horizon / Rixzo Table Pagination Footer */}
+        {packages && (
+          <div className="px-6 py-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[#64748B]">
+            <div>
+              Showing <span className="font-semibold text-[#0F172A]">{packages.data?.length || 0}</span> of{' '}
+              <span className="font-semibold text-[#0F172A]">{packages.total || 0}</span> parcels
+            </div>
+
+            <div className="flex items-center gap-1">
+              {packages.links && packages.links.map((link: any, idx: number) => {
+                if (!link.url) {
+                  return (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 text-[#94A3B8] rounded-lg cursor-not-allowed select-none"
+                      dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                  );
+                }
+                return (
+                  <Link
+                    key={idx}
+                    href={link.url}
+                    className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                      link.active
+                        ? 'bg-[#2563EB] text-white font-semibold shadow-2xs'
+                        : 'text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0F172A]'
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: link.label }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
