@@ -21,11 +21,12 @@ class AdminPickupPointsController extends Controller
             ]);
 
         if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('name', 'like', "%{$escaped}%")
                   ->orWhereHas('pickupPoints', fn ($pp) =>
-                      $pp->where('park_name', 'like', "%{$search}%")
-                         ->orWhere('contact_phone', 'like', "%{$search}%")
+                      $pp->where('park_name', 'like', "%{$escaped}%")
+                         ->orWhere('contact_phone', 'like', "%{$escaped}%")
                   );
             });
         }

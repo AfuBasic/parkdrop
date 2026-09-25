@@ -23,7 +23,6 @@ class AdminProfileController extends Controller
             'system' => [
                 'laravelVersion' => app()->version(),
                 'phpVersion' => PHP_VERSION,
-                'environment' => config('app.env'),
                 'timezone' => config('app.timezone'),
             ],
         ]);

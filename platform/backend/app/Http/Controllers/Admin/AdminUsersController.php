@@ -16,9 +16,10 @@ class AdminUsersController extends Controller
         $query = User::query()->with(['businessMemberships.business.pickupPoints']);
 
         if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('first_name', 'like', "%{$escaped}%")
+                  ->orWhere('email', 'like', "%{$escaped}%");
             });
         }
 

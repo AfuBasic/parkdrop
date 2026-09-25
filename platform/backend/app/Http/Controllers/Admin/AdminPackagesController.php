@@ -15,14 +15,12 @@ class AdminPackagesController extends Controller
             ->with(['business.pickupPoints', 'customer', 'creator']);
 
         if ($search = $request->query('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('public_package_id', 'like', "%{$search}%")
-                  ->orWhere('pickup_code', 'like', "%{$search}%")
-                  ->orWhereHas('customer', fn ($c) =>
-                      $c->where('name', 'like', "%{$search}%")
-                        ->orWhere('phone_display', 'like', "%{$search}%")
-                        ->orWhere('phone_normalized', 'like', "%{$search}%")
-                  );
+            $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('public_package_id', 'like', "%{$escaped}%")
+                  ->orWhere('pickup_code', 'like', "%{$escaped}%")
+                  ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%{$escaped}%"))
+                  ->orWhereHas('customer', fn ($c) => $c->where('phone_display', 'like', "%{$escaped}%")->orWhere('phone_normalized', 'like', "%{$escaped}%"));
             });
         }
 
@@ -37,6 +35,10 @@ class AdminPackagesController extends Controller
         }
 
         if ($age = $request->query('age')) {
+            $validAges = ['overdue', '3d', '7d'];
+            if (!in_array($age, $validAges, true)) {
+                abort(422, 'Invalid age filter. Use: overdue, 3d, 7d');
+            }
             if ($age === 'overdue') {
                 $query->where('status', 'WAITING')->where('created_at', '<', now()->subHours(24));
             } elseif ($age === '3d') {
@@ -121,7 +123,7 @@ class AdminPackagesController extends Controller
                 'cancelledAt' => $package->cancelled_at?->toISOString(),
                 'terminalReason' => $package->terminal_reason,
                 'terminalReasonNote' => $package->terminal_reason_note,
-                'terminalActorName' => $package->terminal_actor_name,
+                'terminalActorName' => $package->terminal_actor_name ?? $package->creator?->first_name ?? '—',
                 'receivedBy' => $package->creator?->first_name ?? '—',
                 'media' => $package->packageMedia->map(fn ($m) => [
                     'id' => $m->id,
