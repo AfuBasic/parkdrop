@@ -11,7 +11,7 @@ class AdminPickupPointsController extends Controller
     public function index(Request $request)
     {
         $query = Business::query()
-            ->select('id', 'name', 'park', 'contact_phone', 'is_active', 'created_at')
+            ->select('id', 'name', 'park', 'contact_phone', 'status', 'created_at')
             ->withCount(['packages as today_count' => fn ($q) => $q->whereDate('created_at', today())]);
 
         if ($search = $request->query('search')) {
@@ -22,9 +22,9 @@ class AdminPickupPointsController extends Controller
         }
 
         if ($request->query('status') === 'active') {
-            $query->where('is_active', true);
+            $query->where('status', 'active');
         } elseif ($request->query('status') === 'inactive') {
-            $query->where('is_active', false);
+            $query->where('status', 'inactive');
         }
 
         $pickupPoints = $query->orderBy('name')
@@ -36,7 +36,7 @@ class AdminPickupPointsController extends Controller
                 'contactPhone' => $pp->contact_phone,
                 'today' => $pp->today_count,
                 'total' => $pp->packages_count ?? 0,
-                'isActive' => $pp->is_active,
+                'isActive' => $pp->status === 'active',
             ]);
 
         return inertia('Admin/PickupPoints', [
@@ -54,17 +54,17 @@ class AdminPickupPointsController extends Controller
                 'name' => $business->name,
                 'park' => $business->park,
                 'contactPhone' => $business->contact_phone,
-                'isActive' => $business->is_active,
+                'isActive' => $business->status === 'active',
                 'stats' => [
                     'totalReceived' => $business->packages->count(),
-                    'totalCollected' => $business->packages->where('status', 'collected')->count(),
-                    'totalRevenue' => $business->packages->where('status', 'collected')->sum('amount_paid'),
-                    'waiting' => $business->packages->where('status', 'waiting')->count(),
-                    'overdue' => $business->packages->where('status', 'waiting')->filter(fn ($p) => $p->created_at->diffInHours(now()) > 24)->count(),
+                    'totalCollected' => $business->packages->where('status', 'COLLECTED')->count(),
+                    'totalRevenue' => $business->packages->where('status', 'COLLECTED')->sum('amount_due_minor'),
+                    'waiting' => $business->packages->where('status', 'WAITING')->count(),
+                    'overdue' => $business->packages->where('status', 'WAITING')->filter(fn ($p) => $p->created_at->diffInHours(now()) > 24)->count(),
                 ],
                 'recentPackages' => $business->packages()
                     ->latest()->limit(20)
-                    ->get(['id', 'code', 'status', 'created_at', 'amount']),
+                    ->get(['id', 'public_package_id as code', 'status', 'created_at', 'amount_due_minor as amount']),
             ],
         ]);
     }
