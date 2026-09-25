@@ -13,17 +13,27 @@ class AdminSmsCreditsController extends Controller
 {
     public function index(Request $request)
     {
+        // Pre-load transaction sums keyed by wallet id — one query instead of N+1
+        $txSums = SmsCreditTransaction::query()
+            ->select('sms_wallet_id')
+            ->selectRaw('SUM(CASE WHEN type = "allocated" THEN amount ELSE 0 END) as allocated')
+            ->selectRaw('SUM(CASE WHEN type = "deducted" THEN amount ELSE 0 END) as used')
+            ->groupBy('sms_wallet_id')
+            ->get()
+            ->keyBy('sms_wallet_id');
+
         $pickupPoints = Business::query()
-            ->with(['pickupPoints', 'smsWallet.transactions'])
+            ->with(['pickupPoints:id,business_id,park_name,contact_phone', 'smsWallet:id,business_id,balance'])
             ->orderBy('name')
             ->get()
-            ->map(function ($biz) {
+            ->map(function ($biz) use ($txSums) {
                 $point = $biz->pickupPoints->first();
                 $wallet = $biz->smsWallet;
+                $walletId = $wallet?->id;
+                $sums = $walletId ? ($txSums[$walletId] ?? null) : null;
+                $allocated = (int) ($sums?->allocated ?? 0);
+                $used = (int) ($sums?->used ?? 0);
                 $balance = (int) ($wallet?->balance ?? 0);
-
-                $allocated = (int) ($wallet?->transactions->where('type', 'allocated')->sum('amount') ?? 0);
-                $used = (int) ($wallet?->transactions->where('type', 'deducted')->sum('amount') ?? 0);
 
                 return [
                     'id' => $biz->id,
@@ -80,7 +90,7 @@ class AdminSmsCreditsController extends Controller
         ]);
 
         DB::transaction(function () use ($validated) {
-            $wallet = SmsWallet::firstOrCreate(
+            $wallet = SmsWallet::lockForUpdate()->firstOrCreate(
                 ['business_id' => $validated['business_id']],
                 ['balance' => 0]
             );

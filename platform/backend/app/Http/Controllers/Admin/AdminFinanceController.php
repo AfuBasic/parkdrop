@@ -21,12 +21,11 @@ class AdminFinanceController extends Controller
             default => [now()->startOfDay(), now()->endOfDay()],
         };
 
-        $collectedPackages = Package::where('status', 'COLLECTED')
-            ->whereBetween('collected_at', [$start, $end])
-            ->get();
+        $collectedPackagesQuery = Package::where('status', 'COLLECTED')
+            ->whereBetween('collected_at', [$start, $end]);
 
-        $revenueMinor = (int) $collectedPackages->sum('amount_due_minor');
-        $packagesCount = $collectedPackages->count();
+        $revenueMinor = (int) $collectedPackagesQuery->sum('amount_due_minor');
+        $packagesCount = (int) $collectedPackagesQuery->count('id');
         $avgPerPackageMinor = $packagesCount > 0 ? (int) round($revenueMinor / $packagesCount) : 0;
         $owedMinor = (int) Package::where('status', 'WAITING')->sum('amount_due_minor');
 

@@ -21,17 +21,17 @@ class AdminReportsController extends Controller
             default => [now()->subDays(7)->startOfDay(), now()->endOfDay()],
         };
 
-        $packages = Package::whereBetween('created_at', [$start, $end]);
+        $packagesQuery = Package::whereBetween('created_at', [$start, $end]);
 
-        $received = (clone $packages)->count();
-        $collected = (clone $packages)->where('status', 'COLLECTED')->count();
-        $revenueMinor = (clone $packages)->where('status', 'COLLECTED')->sum('amount_due_minor');
-        $waiting = (clone $packages)->where('status', 'WAITING')->count();
-        $overdue = (clone $packages)->where('status', 'WAITING')->where('created_at', '<', now()->subHours(24))->count();
-        $returned = (clone $packages)->where('status', 'RETURNED')->count();
-        $cancelled = (clone $packages)->where('status', 'CANCELLED')->count();
+        $received = (int) $packagesQuery->count('id');
+        $collected = (int) (clone $packagesQuery)->where('status', 'COLLECTED')->count('id');
+        $revenueMinor = (int) (clone $packagesQuery)->where('status', 'COLLECTED')->sum('amount_due_minor');
+        $waiting = (int) (clone $packagesQuery)->where('status', 'WAITING')->count('id');
+        $overdue = (int) (clone $packagesQuery)->where('status', 'WAITING')->where('created_at', '<', now()->subHours(24))->count('id');
+        $returned = (int) (clone $packagesQuery)->where('status', 'RETURNED')->count('id');
+        $cancelled = (int) (clone $packagesQuery)->where('status', 'CANCELLED')->count('id');
 
-        $collectedPackages = (clone $packages)->where('status', 'COLLECTED')->whereNotNull('collected_at')->get();
+        $collectedPackages = (clone $packagesQuery)->where('status', 'COLLECTED')->whereNotNull('collected_at')->get();
         $avgPickupMinutes = $collectedPackages->isNotEmpty()
             ? $collectedPackages->avg(fn ($p) => $p->created_at->diffInMinutes($p->collected_at))
             : null;

@@ -57,13 +57,14 @@ class AdminDashboardController extends Controller
         });
 
         // Top pickup points by package throughput today
-        $topPickupPoints = Business::with(['pickupPoints'])
+        $topPickupPoints = Business::with(['pickupPoints:id,business_id,park_name'])
             ->withCount(['packages as today_packages' => fn ($q) => $q->whereDate('created_at', today())])
             ->withCount(['packages as active_waiting' => fn ($q) => $q->where('status', 'WAITING')])
             ->orderByDesc('today_packages')
             ->limit(5)
             ->get()
             ->map(function ($b) {
+                // First point already loaded — no extra query
                 $point = $b->pickupPoints->first();
                 return [
                     'id' => $b->id,
