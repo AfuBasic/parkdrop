@@ -26,8 +26,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest.admin' => \App\Http\Middleware\RedirectIfAdminAuthenticated::class,
         ]);
 
-        $middleware->append(AssignRequestId::class);
-        $middleware->append(SecurityHeadersMiddleware::class);
+        $middleware->append(\App\Http\Middleware\AssignRequestId::class);
+        $middleware->append(\App\Http\Middleware\SecurityHeadersMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
