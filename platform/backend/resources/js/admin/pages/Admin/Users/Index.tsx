@@ -38,6 +38,7 @@ interface UsersIndexProps {
     current_page: number;
     last_page: number;
     total: number;
+    links?: any[];
   };
   filters: {
     search: string;
@@ -238,13 +239,17 @@ export default function UsersIndex({ users, filters, pickupPoints }: UsersIndexP
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                         u.isActive
                           ? 'bg-[#F0FDF4] text-[#15803D]'
                           : 'bg-[#FEF2F2] text-[#B91C1C]'
                       }`}
                     >
-                      {u.isActive ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          u.isActive ? 'bg-[#16A34A]' : 'bg-[#DC2626]'
+                        }`}
+                      />
                       <span>{u.isActive ? 'Active' : 'Inactive'}</span>
                     </span>
                   </TableCell>
@@ -287,6 +292,44 @@ export default function UsersIndex({ users, filters, pickupPoints }: UsersIndexP
             )}
           </TableBody>
         </Table>
+
+        {/* Horizon / Rixzo Table Pagination Footer */}
+        {users && (
+          <div className="px-6 py-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[#64748B]">
+            <div>
+              Showing <span className="font-semibold text-[#0F172A]">{users.data?.length || 0}</span> of{' '}
+              <span className="font-semibold text-[#0F172A]">{users.total || 0}</span> staff members
+            </div>
+
+            {users.links && users.links.length > 0 && (
+              <div className="flex items-center gap-1">
+                {users.links.map((link: any, idx: number) => {
+                  if (!link.url) {
+                    return (
+                      <span
+                        key={idx}
+                        className="px-2.5 py-1 text-[#94A3B8] rounded-lg cursor-not-allowed select-none"
+                        dangerouslySetInnerHTML={{ __html: link.label }}
+                      />
+                    );
+                  }
+                  return (
+                    <Link
+                      key={idx}
+                      href={link.url}
+                      className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                        link.active
+                          ? 'bg-[#2563EB] text-white font-semibold shadow-2xs'
+                          : 'text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0F172A]'
+                      }`}
+                      dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* CREATE / EDIT DIALOG */}
