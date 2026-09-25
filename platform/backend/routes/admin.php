@@ -24,9 +24,9 @@ Route::prefix('admin')->group(function () {
     // Auth
     Route::middleware('guest.admin')->group(function () {
         Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
-        Route::post('/login/request', [AdminAuthController::class, 'requestOtp'])->name('admin.login.request');
+        Route::post('/login/request', [AdminAuthController::class, 'requestOtp'])->name('admin.login.request')->middleware('throttle:5:15');
         Route::get('/login/verify', [AdminAuthController::class, 'showVerify'])->name('admin.login.verify');
-        Route::post('/login/verify', [AdminAuthController::class, 'verifyOtp'])->name('admin.login.verify.post');
+        Route::post('/login/verify', [AdminAuthController::class, 'verifyOtp'])->name('admin.login.verify.post')->middleware('throttle:10:15');
     });
 
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');

@@ -47,6 +47,7 @@ class AdminAuthController extends Controller
 
         $admin = \App\Models\AdminUser::where('email', $email)->first();
         Auth::guard('admin')->login($admin);
+        $request->session()->regenerate();
 
         $otp->recordLogin($admin);
 
