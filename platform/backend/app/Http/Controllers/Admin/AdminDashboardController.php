@@ -55,7 +55,7 @@ class AdminDashboardController extends Controller
             ->limit(3)
             ->get(['id', 'public_package_id as code', 'created_at']);
 
-        return [
+        return inertia('Admin/Dashboard', [
             'kpi' => [
                 'pickupPoints' => ['value' => $pickupPoints, 'label' => 'Total Pickup Points', 'sub' => "{$activePickupPoints} active, " . ($pickupPoints - $activePickupPoints) . " inactive", 'icon' => 'Building2', 'trend' => null],
                 'packagesToday' => ['value' => $packagesToday, 'label' => 'Packages Today', 'sub' => null, 'icon' => 'Package', 'trend' => $trend > 0 ? ['value' => "+{$trend}%", 'up' => true] : ($trend < 0 ? ['value' => "{$trend}%", 'up' => false] : null)],
@@ -70,6 +70,6 @@ class AdminDashboardController extends Controller
             ],
             'recentActivity' => $recentActivity,
             'needsAttention' => $needsAttention,
-        ];
+        ]);
     }
 }
