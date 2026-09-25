@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --pd-blue: #2563EB;
+    --pd-blue-hover: #1D4ED8;
+    --pd-blue-dark: #163B8C;
+    --pd-navy: #0D1B2A;
+    --pd-tint: #EFF6FF;
+    --pd-tint-strong: #DBEAFE;
+    --pd-page-bg: #F8FAFC;
+    --pd-border: #CBD5E1;
+    --pd-card-border: #E2E8F0;
+    --pd-muted: #475569;
+    --pd-success: #15803D;
+    --pd-success-bg: #F0FDF4;
+    --pd-error: #B91C1C;
+    --pd-error-bg: #FEF2F2;
+    --pd-warning: #92400E;
+    --pd-warning-bg: #FFFBEB;
+  }
+
+  * { -webkit-tap-highlight-color: transparent; }
+
+  body {
+    @apply bg-[#F8FAFC] text-[#0D1B2A];
+    font-family: Manrope, system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .pd-card {
+    @apply bg-white rounded-2xl border border-[#E2E8F0] shadow-sm;
+  }
+
+  .pd-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+           bg-[#2563EB] text-white font-semibold text-lg
+           hover:bg-[#1D4ED8] active:bg-[#163B8C] disabled:opacity-50
+           min-h-[48px] transition-colors;
+  }
+
+  .pd-input {
+    @apply w-full rounded-xl border border-[#CBD5E1] bg-white px-4 py-3
+           text-[17px] text-[#0D1B2A] placeholder:text-[#64748B] outline-none
+           focus:border-[#2563EB] focus:ring-2 focus:ring-[#DBEAFE] min-h-[48px];
+  }
+}
