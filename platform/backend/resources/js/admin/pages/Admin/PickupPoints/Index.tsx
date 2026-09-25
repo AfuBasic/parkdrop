@@ -277,6 +277,42 @@ export default function PickupPointsIndex({ pickupPoints, filters }: PickupPoint
             )}
           </TableBody>
         </Table>
+
+        {/* Horizon / Rixzo Table Pagination Footer */}
+        {pickupPoints && (
+          <div className="px-6 py-4 bg-[#F8FAFC] border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[#64748B]">
+            <div>
+              Showing <span className="font-semibold text-[#0F172A]">{pickupPoints.data?.length || 0}</span> of{' '}
+              <span className="font-semibold text-[#0F172A]">{pickupPoints.total || 0}</span> counters
+            </div>
+
+            <div className="flex items-center gap-1">
+              {pickupPoints.links && pickupPoints.links.map((link: any, idx: number) => {
+                if (!link.url) {
+                  return (
+                    <span
+                      key={idx}
+                      className="px-2.5 py-1 text-[#94A3B8] rounded-lg cursor-not-allowed select-none"
+                      dangerouslySetInnerHTML={{ __html: link.label }}
+                    />
+                  );
+                }
+                return (
+                  <Link
+                    key={idx}
+                    href={link.url}
+                    className={`px-3 py-1 rounded-lg font-medium transition-colors ${
+                      link.active
+                        ? 'bg-[#2563EB] text-white font-semibold shadow-2xs'
+                        : 'text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0F172A]'
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: link.label }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ADD / EDIT MODAL DIALOG — Spec §6.2 */}
