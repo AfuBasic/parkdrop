@@ -10,8 +10,9 @@ class AdminSmsCreditsController extends Controller
 {
     public function index(Request $request)
     {
-        $pickupPoints = Business::withSum('smsCreditTransactions as allocated' => fn ($q) => $q->where('type', 'allocated'), 'amount')
-            ->withSum('smsCreditTransactions as used' => fn ($q) => $q->where('type', 'used'), 'amount')
+        $pickupPoints = Business::query()
+            ->withSum(['smsCreditTransactions as allocated' => fn ($q) => $q->where('type', 'allocated')], 'amount')
+            ->withSum(['smsCreditTransactions as used' => fn ($q) => $q->where('type', 'used')], 'amount')
             ->orderBy('name')
             ->get()
             ->map(fn ($pp) => [
