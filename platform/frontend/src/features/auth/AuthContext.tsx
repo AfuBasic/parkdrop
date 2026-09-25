@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import * as React from 'react';
 import { db, type DeviceMeta, type RememberedIdentity } from '@/lib/db';
+import { db as offlineDb } from '@/offline/db/database';
 import { authApi } from './api';
 import { getMostRecentRememberedIdentity, saveRememberedIdentity, clearAllRememberedIdentities } from './lib/rememberedIdentity';
 import type { AuthUser, AuthBusiness } from './types';
@@ -125,8 +126,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      authApi.getSession().then((res) => {
+      authApi.getSession().then(async (res) => {
         if (!res.authenticated || !res.user) return; // no upgrade possible
+
+        // Detect user or business change across sessions on this device
+        if (offlineAuth && res.business && offlineAuth.business_id !== res.business.id) {
+          // Different business: purge previous tenant's local data to prevent leak
+          await offlineDb.purgeTenantData(offlineAuth.business_id);
+        }
 
         setUser(res.user);
         setBusiness(res.business);
@@ -174,6 +181,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [initAuth]);
 
   const setAuthenticatedUser = async (authUser: AuthUser, authBusiness: AuthBusiness | null, authRole?: string | null) => {
+    // Check if switching to a different business/user
+    const currentAuth = await getValidOfflineAuthorization();
+    if (currentAuth && authBusiness && currentAuth.business_id !== authBusiness.id) {
+      // Purge old business data
+      await offlineDb.purgeTenantData(currentAuth.business_id);
+    } else if (currentAuth && !authBusiness) {
+      // User has no business yet (fresh onboarding) — wipe previous data
+      await offlineDb.purgeAllTenantData();
+    }
+
     setUser(authUser);
     setBusiness(authBusiness);
     setRole(authRole || null);
@@ -214,6 +231,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (import.meta.env.DEV) console.warn('Logout request failed:', e);
     }
 
+    // Purge tenant transactional data from offline storage on logout
+    if (business?.id) {
+      await offlineDb.purgeTenantData(business.id);
+    } else {
+      await offlineDb.purgeAllTenantData();
+    }
+
     setUser(null);
     setBusiness(null);
     setRole(null);
@@ -231,6 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const forgetRememberedIdentity = async () => {
     await clearAllRememberedIdentities();
     await db.deviceMeta.clear();
+    await offlineDb.purgeAllTenantData();
     await clearOfflineAuthorization();
     clearActivity();
     setRememberedIdentity(null);
