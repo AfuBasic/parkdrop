@@ -67,6 +67,20 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# --- Node / Vite build -------------------------------------------------------
+# Compiles the React admin SPA so public/build/manifest.json exists at
+# runtime. Without this, @vite() in the blade template throws a 500 because
+# it can't resolve the manifest.
+FROM node:22-alpine AS node-build
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --prefer-offline
+
+COPY . .
+RUN npm run build
+
 # --- Dependencies + app code -------------------------------------------------
 FROM base AS build
 
@@ -79,6 +93,10 @@ RUN composer install \
         --no-interaction
 
 COPY . .
+
+# Copy the compiled Vite assets from the node-build stage so the PHP image
+# includes public/build/manifest.json and the hashed JS/CSS bundles.
+COPY --from=node-build /app/public/build ./public/build
 
 # --no-scripts above skipped artisan-dependent post-install hooks (like
 # package:discover) since there's no .env / APP_KEY at build time yet —
