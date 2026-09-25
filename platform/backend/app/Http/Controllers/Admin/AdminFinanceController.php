@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Business;
+use App\Models\Package;
 use Illuminate\Http\Request;
 
 class AdminFinanceController extends Controller
@@ -15,40 +16,65 @@ class AdminFinanceController extends Controller
         [$start, $end] = match ($period) {
             'today' => [now()->startOfDay(), now()->endOfDay()],
             'week' => [now()->startOfWeek(), now()->endOfWeek()],
-            '7d' => [now()->subDays(7), now()],
-            '30d' => [now()->subDays(30), now()],
+            '7d' => [now()->subDays(7)->startOfDay(), now()->endOfDay()],
+            '30d' => [now()->subDays(30)->startOfDay(), now()->endOfDay()],
             default => [now()->startOfDay(), now()->endOfDay()],
         };
 
-        $collectedPackages = \App\Models\Package::where('status', 'collected')
-            ->whereBetween('created_at', [$start, $end])
+        $collectedPackages = Package::where('status', 'COLLECTED')
+            ->whereBetween('collected_at', [$start, $end])
             ->get();
 
-        $revenue = $collectedPackages->sum('amount_paid');
+        $revenueMinor = (int) $collectedPackages->sum('amount_due_minor');
         $packagesCount = $collectedPackages->count();
-        $avgPerPackage = $packagesCount > 0 ? $revenue / $packagesCount : 0;
-        $owed = \App\Models\Package::where('status', 'waiting')->sum('amount');
+        $avgPerPackageMinor = $packagesCount > 0 ? (int) round($revenueMinor / $packagesCount) : 0;
+        $owedMinor = (int) Package::where('status', 'WAITING')->sum('amount_due_minor');
 
-        $dailyRevenue = \App\Models\Package::where('status', 'collected')
-            ->whereBetween('created_at', [$start, $end])
-            ->selectRaw('DATE(created_at) as date, SUM(amount_paid) as revenue')
+        $dailyRevenue = Package::where('status', 'COLLECTED')
+            ->whereBetween('collected_at', [$start, $end])
+            ->selectRaw('DATE(collected_at) as date, SUM(amount_due_minor) as revenue_minor, COUNT(*) as package_count')
             ->groupBy('date')
             ->orderBy('date')
-            ->get();
+            ->get()
+            ->map(fn ($row) => [
+                'date' => $row->date,
+                'revenue' => round($row->revenue_minor / 100, 2),
+                'count' => (int) $row->package_count,
+            ]);
 
         $byPickupPoint = Business::query()
-            ->withSum(['packages as revenue' => fn ($q) => $q->where('status', 'collected')->whereBetween('created_at', [$start, $end])], 'amount_paid')
-            ->having('revenue', '>', 0)
-            ->orderByDesc('revenue')
-            ->get();
+            ->with(['pickupPoints'])
+            ->withSum([
+                'packages as revenue_minor' => fn ($q) =>
+                    $q->where('status', 'COLLECTED')->whereBetween('collected_at', [$start, $end])
+            ], 'amount_due_minor')
+            ->withCount([
+                'packages as collected_count' => fn ($q) =>
+                    $q->where('status', 'COLLECTED')->whereBetween('collected_at', [$start, $end])
+            ])
+            ->having('revenue_minor', '>', 0)
+            ->orderByDesc('revenue_minor')
+            ->get()
+            ->map(function ($biz) {
+                $point = $biz->pickupPoints->first();
+                return [
+                    'id' => $biz->id,
+                    'name' => $biz->name,
+                    'park' => $point?->park_name ?? '—',
+                    'revenueMinor' => (int) $biz->revenue_minor,
+                    'revenueFormatted' => '₦' . number_format(($biz->revenue_minor ?? 0) / 100, 2),
+                    'packagesCount' => (int) $biz->collected_count,
+                ];
+            });
 
         return inertia('Admin/Finance', [
             'period' => $period,
             'kpi' => [
-                'revenue' => $revenue,
+                'revenueMinor' => $revenueMinor,
+                'revenueFormatted' => '₦' . number_format($revenueMinor / 100, 2),
                 'collected' => $packagesCount,
-                'average' => $avgPerPackage,
-                'owed' => $owed,
+                'averageFormatted' => '₦' . number_format($avgPerPackageMinor / 100, 2),
+                'owedFormatted' => '₦' . number_format($owedMinor / 100, 2),
             ],
             'dailyRevenue' => $dailyRevenue,
             'byPickupPoint' => $byPickupPoint,
