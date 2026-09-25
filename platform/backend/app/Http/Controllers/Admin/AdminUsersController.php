@@ -25,9 +25,9 @@ class AdminUsersController extends Controller
         }
 
         if ($request->query('status') === 'active') {
-            $query->where('is_active', true);
+            $query->where('status', 'active');
         } elseif ($request->query('status') === 'inactive') {
-            $query->where('is_active', false);
+            $query->where('status', 'inactive');
         }
 
         $users = $query->orderBy('name')->paginate(25);
@@ -39,7 +39,7 @@ class AdminUsersController extends Controller
                 'phone' => $u->phone,
                 'email' => $u->email,
                 'pickupPoint' => $u->business?->name,
-                'isActive' => $u->is_active,
+                'isActive' => $u->status === 'active',
                 'packagesHandled' => $u->packages()->count(),
             ]),
         ]);
