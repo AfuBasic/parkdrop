@@ -23,17 +23,15 @@ class AdminDashboardController extends Controller
             ->where('created_at', '<', $weekStart)->count();
         $trend = $lastWeek > 0 ? round((($thisWeek - $lastWeek) / $lastWeek) * 100) : 0;
 
-        $revenueToday = Package::where('status', 'collected')->whereDate('created_at', $today)->sum('amount_paid');
-        $revenueYesterday = Package::where('status', 'collected')
-            ->whereDate('created_at', $today->copy()->subDay())->sum('amount_paid');
+        $revenueToday = Package::where('status', 'COLLECTED')->whereDate('created_at', $today)->sum('amount_due_minor');
+        $revenueYesterday = Package::where('status', 'COLLECTED')
+            ->whereDate('created_at', $today->copy()->subDay())->sum('amount_due_minor');
         $revenueTrend = $revenueYesterday > 0 ? round((($revenueToday - $revenueYesterday) / $revenueYesterday) * 100) : 0;
 
-        $smsRemaining = Business::sum(function () {
-            return 0;
-        });
+        $smsRemaining = 0;
 
-        $collectedToday = Package::where('status', 'collected')->whereDate('created_at', $today)->count();
-        $overdue = Package::where('status', 'waiting')->where('created_at', '<', now()->subHours(24))->count();
+        $collectedToday = Package::where('status', 'COLLECTED')->whereDate('created_at', $today)->count();
+        $overdue = Package::where('status', 'WAITING')->where('created_at', '<', now()->subHours(24))->count();
         $activeStaff = User::where('status', 'active')->count();
 
         $recentActivity = Package::with(['business', 'user'])
@@ -42,8 +40,8 @@ class AdminDashboardController extends Controller
             ->get()
             ->map(fn ($p) => [
                 'type' => match ($p->status) {
-                    'collected' => 'package_collected',
-                    'waiting' => 'package_received',
+                    'COLLECTED' => 'package_collected',
+                    'WAITING' => 'package_received',
                     default => 'package',
                 },
                 'description' => $p->user
@@ -52,10 +50,10 @@ class AdminDashboardController extends Controller
                 'timestamp' => $p->created_at->diffForHumans(),
             ]);
 
-        $needsAttention = Package::where('status', 'waiting')
+        $needsAttention = Package::where('status', 'WAITING')
             ->orderBy('created_at')
             ->limit(3)
-            ->get(['id', 'code', 'created_at']);
+            ->get(['id', 'public_package_id as code', 'created_at']);
 
         return [
             'kpi' => [
