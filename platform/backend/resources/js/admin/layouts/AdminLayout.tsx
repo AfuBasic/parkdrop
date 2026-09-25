@@ -185,7 +185,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navbar */}
         <header className="h-16 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-4 sm:px-6 shrink-0 z-10">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1 max-w-xl">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
@@ -195,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
 
             {/* Breadcrumbs */}
-            <nav className="flex items-center gap-1.5 text-xs sm:text-sm text-[#64748B]">
+            <nav className="hidden md:flex items-center gap-1.5 text-xs text-[#64748B]">
               <Link href="/admin/dashboard" className="hover:text-[#0D1B2A] transition-colors">
                 Admin
               </Link>
@@ -214,20 +214,72 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </React.Fragment>
               ))}
             </nav>
+
+            {/* Horizon-style Global Search Bar */}
+            <div className="relative w-full max-w-xs ml-2 hidden sm:block">
+              <input
+                type="text"
+                placeholder="Search parcels, pickup points..."
+                className="w-full pl-9 pr-12 py-1.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#0D1B2A] placeholder-[#94A3B8] focus:outline-hidden focus:border-[#2563EB] focus:bg-white transition-all shadow-2xs"
+              />
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#94A3B8]">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                <kbd className="px-1.5 py-0.5 text-[10px] font-semibold text-[#64748B] bg-white border border-[#CBD5E1] rounded shadow-2xs">
+                  ⌘K
+                </kbd>
+              </div>
+            </div>
           </div>
 
-          {/* Quick Header Right Info */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#F1F5F9] text-[11px] font-medium text-[#475569]">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+          {/* Quick Header Right Controls (Rixzo + Horizon style) */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Live operational indicator */}
+            <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-semibold text-emerald-800">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Production Live</span>
             </div>
+
+            {/* Notification Bell with Badge */}
+            <Link
+              href="/admin/packages?status=overdue"
+              title="Attention & Alerts"
+              className="relative p-2 rounded-xl text-[#64748B] hover:text-[#0D1B2A] hover:bg-[#F1F5F9] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#EF4444] ring-2 ring-white" />
+            </Link>
+
+            {/* Quick Link to Error Log */}
+            <Link
+              href="/admin/error-log"
+              title="Error Monitor"
+              className="p-2 rounded-xl text-[#64748B] hover:text-[#0D1B2A] hover:bg-[#F1F5F9] transition-colors"
+            >
+              <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />
+            </Link>
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-[#E2E8F0] mx-0.5" />
+
+            {/* Profile Avatar Pill */}
             <Link
               href="/admin/profile"
-              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-[#F1F5F9] transition-colors text-xs font-medium text-[#475569]"
+              className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-[#F1F5F9] transition-colors"
             >
-              <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs ring-2 ring-[#2563EB]/20">
                 {admin?.email ? admin.email.substring(0, 1).toUpperCase() : 'A'}
+              </div>
+              <div className="hidden xl:block text-left">
+                <p className="text-xs font-semibold text-[#0F172A] leading-none">
+                  {admin?.email?.split('@')[0] || 'Admin'}
+                </p>
+                <p className="text-[10px] text-[#64748B] mt-0.5">Afutunde Staff</p>
               </div>
             </Link>
           </div>
