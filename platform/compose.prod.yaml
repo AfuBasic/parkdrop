@@ -39,6 +39,20 @@ x-backend-env: &backend-env
     CACHE_STORE: 'redis'
     SESSION_DRIVER: 'redis'
     QUEUE_CONNECTION: 'redis'
+    APP_NAME: '${APP_NAME:-ParkDrop}'
+    APP_ENV: '${APP_ENV:-production}'
+    APP_KEY: '${APP_KEY}'
+    APP_URL: '${APP_URL:-https://api.parkdrop.com.ng}'
+    FRONTEND_URL: '${FRONTEND_URL:-https://app.parkdrop.com.ng}'
+    # Mail service configuration
+    MAIL_MAILER: '${MAIL_MAILER:-smtp}'
+    MAIL_SCHEME: '${MAIL_SCHEME:-null}'
+    MAIL_HOST: '${MAIL_HOST:-smtp.zeptomail.com}'
+    MAIL_PORT: '${MAIL_PORT:-587}'
+    MAIL_USERNAME: '${MAIL_USERNAME}'
+    MAIL_PASSWORD: '${MAIL_PASSWORD}'
+    MAIL_FROM_ADDRESS: '${MAIL_FROM_ADDRESS:-noreply@parkdrop.com.ng}'
+    MAIL_FROM_NAME: '${MAIL_FROM_NAME:-ParkDrop}'
     # No reverb service — nothing in the app actually opens a WebSocket
     # connection to it yet (frontend has laravel-echo/pusher-js installed
     # but never imports them). Laravel's own default (BROADCAST_CONNECTION
