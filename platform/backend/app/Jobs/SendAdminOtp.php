@@ -21,9 +21,20 @@ class SendAdminOtp implements ShouldQueue
 
     public function handle(): void
     {
+        \Illuminate\Support\Facades\Log::info("[SendAdminOtp] Dispatching OTP email to {$this->email}");
+
         Mail::raw("Your ParkDrop admin login code is: {$this->code}\n\nThis code expires in 10 minutes.", function ($message) {
             $message->to($this->email)
                 ->subject('ParkDrop Admin Login Code');
         });
+
+        \Illuminate\Support\Facades\Log::info("[SendAdminOtp] OTP email successfully sent to {$this->email}");
+    }
+
+    public function failed(\Throwable $exception): void
+    {
+        \Illuminate\Support\Facades\Log::error("[SendAdminOtp] Failed to deliver OTP to {$this->email}: " . $exception->getMessage(), [
+            'exception' => $exception,
+        ]);
     }
 }

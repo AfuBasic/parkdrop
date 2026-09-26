@@ -28,9 +28,41 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
         $this->gate();
 
         Horizon::auth(function ($request) {
-            $user = $request->user('admin') ?? $request->user();
+            // 1. Local environment always permitted
+            if (app()->environment('local')) {
+                return true;
+            }
 
-            return Gate::forUser($user)->check('viewHorizon') || app()->environment('local');
+            // 2. Secret query token / header bypass (e.g. /horizon?token=your_secret)
+            $configuredSecret = env('HORIZON_SECRET');
+            if (!empty($configuredSecret) && ($request->query('token') === $configuredSecret || $request->header('X-Horizon-Secret') === $configuredSecret)) {
+                return true;
+            }
+
+            // 3. HTTP Basic Auth bypass (prompt in browser if configured in .env)
+            $basicUser = env('HORIZON_BASIC_AUTH_USER', 'admin');
+            $basicPass = env('HORIZON_BASIC_AUTH_PASSWORD');
+            if (!empty($basicPass)) {
+                if ($request->getUser() === $basicUser && $request->getPassword() === $basicPass) {
+                    return true;
+                }
+            }
+
+            // 4. Logged-in admin with whitelisted email
+            $user = $request->user('admin') ?? $request->user();
+            if (Gate::forUser($user)->check('viewHorizon')) {
+                return true;
+            }
+
+            // If basic auth password is configured and user isn't logged in, trigger browser login prompt
+            if (!empty($basicPass) && !$user) {
+                header('WWW-Authenticate: Basic realm="Horizon Dashboard"');
+                header('HTTP/1.0 401 Unauthorized');
+                echo 'Unauthorized';
+                exit;
+            }
+
+            return false;
         });
     }
 
