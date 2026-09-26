@@ -14,13 +14,16 @@ import {
   X,
   LogOut,
   ChevronRight,
-  ShieldAlert
+  ShieldAlert,
+  Activity,
+  ExternalLink
 } from 'lucide-react';
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  external?: boolean;
 }
 
 interface NavSection {
@@ -55,6 +58,7 @@ const navSections: NavSection[] = [
     title: 'SYSTEM',
     items: [
       { href: '/admin/error-log', label: 'Error Log', icon: AlertTriangle },
+      { href: '/horizon', label: 'Horizon Queues', icon: Activity, external: true },
       { href: '/admin/profile', label: 'Profile', icon: UserCheck },
     ],
   },
@@ -145,6 +149,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       ? currentUrl === '/admin/dashboard' || currentUrl === '/admin'
                       : currentUrl.startsWith(item.href);
                   const Icon = item.icon;
+
+                  if (item.external) {
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={() => setSidebarOpen(false)}
+                        className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-[#94A3B8] hover:bg-[#1E293B] hover:text-white"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-4 h-4 shrink-0 text-[#64748B]" />
+                          <span>{item.label}</span>
+                        </div>
+                        <ExternalLink className="w-3.5 h-3.5 text-[#64748B]" />
+                      </a>
+                    );
+                  }
 
                   return (
                     <Link

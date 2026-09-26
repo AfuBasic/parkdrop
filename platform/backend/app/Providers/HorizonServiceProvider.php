@@ -21,6 +21,20 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     }
 
     /**
+     * Configure the Horizon authorization services.
+     */
+    protected function authorization(): void
+    {
+        $this->gate();
+
+        Horizon::auth(function ($request) {
+            $user = $request->user('admin') ?? $request->user();
+
+            return Gate::forUser($user)->check('viewHorizon') || app()->environment('local');
+        });
+    }
+
+    /**
      * Register the Horizon gate.
      *
      * This gate determines who can access Horizon in non-local environments.
@@ -28,9 +42,14 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewHorizon', function ($user = null) {
-            return in_array(optional($user)->email, [
-                //
-            ]);
+            $allowedEmails = array_filter(array_map(
+                'trim',
+                explode(',', (string) env('HORIZON_ALLOWED_EMAILS', env('ADMIN_EMAIL', 'afutunde@gmail.com')))
+            ));
+
+            $email = optional($user)->email;
+
+            return !empty($email) && in_array(strtolower($email), array_map('strtolower', $allowedEmails), true);
         });
     }
 }

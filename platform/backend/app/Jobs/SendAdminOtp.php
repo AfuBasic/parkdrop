@@ -21,7 +21,7 @@ class SendAdminOtp implements ShouldQueue
 
     public function handle(): void
     {
-        Mail::send('emails.admin-otp', ['code' => $this->code], function ($message) {
+        Mail::raw("Your ParkDrop admin login code is: {$this->code}\n\nThis code expires in 10 minutes.", function ($message) {
             $message->to($this->email)
                 ->subject('ParkDrop Admin Login Code');
         });
