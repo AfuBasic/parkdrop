@@ -8,7 +8,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class SendAdminOtp implements ShouldQueue
 {
@@ -21,19 +23,19 @@ class SendAdminOtp implements ShouldQueue
 
     public function handle(): void
     {
-        \Illuminate\Support\Facades\Log::info("[SendAdminOtp] Dispatching OTP email to {$this->email}");
+        Log::info("[SendAdminOtp] Dispatching OTP email to {$this->email}");
 
         Mail::raw("Your ParkDrop admin login code is: {$this->code}\n\nThis code expires in 10 minutes.", function ($message) {
             $message->to($this->email)
                 ->subject('ParkDrop Admin Login Code');
         });
 
-        \Illuminate\Support\Facades\Log::info("[SendAdminOtp] OTP email successfully sent to {$this->email}");
+        Log::info("[SendAdminOtp] OTP email successfully sent to {$this->email}");
     }
 
-    public function failed(\Throwable $exception): void
+    public function failed(Throwable $exception): void
     {
-        \Illuminate\Support\Facades\Log::error("[SendAdminOtp] Failed to deliver OTP to {$this->email}: " . $exception->getMessage(), [
+        Log::error("[SendAdminOtp] Failed to deliver OTP to {$this->email}: {$exception->getMessage()}", [
             'exception' => $exception,
         ]);
     }
