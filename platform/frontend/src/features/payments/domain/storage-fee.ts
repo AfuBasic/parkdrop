@@ -55,3 +55,49 @@ export function accruedAmountDueMinor(
   const extraDays = extraStorageDays(pkg, now);
   return baseMinor + extraDays * safeRate;
 }
+
+export interface FeeBreakdown {
+  basePriceMinor: number;
+  demurrageMinor: number;
+  totalDueMinor: number;
+  extraDays: number;
+  dailyRateMinor: number;
+}
+
+/**
+ * Breakdown of initial base drop fee vs demurrage (daily storage fee).
+ */
+export function calculateFeeBreakdown(
+  pkg: LocalPackage,
+  dailyStorageFeeMinor: number,
+  now: Date = new Date()
+): FeeBreakdown {
+  const safeRate = Math.max(0, Math.floor(dailyStorageFeeMinor || 0));
+  const extraDays = extraStorageDays(pkg, now);
+  const currentAccruedDemurrageMinor = extraDays * safeRate;
+
+  if (pkg.status === 'COLLECTED') {
+    const totalMinor = Math.max(0, Math.floor(pkg.amount_due_minor || 0));
+    const demurrageMinor = Math.min(totalMinor, currentAccruedDemurrageMinor);
+    const basePriceMinor = Math.max(0, totalMinor - demurrageMinor);
+    return {
+      basePriceMinor,
+      demurrageMinor,
+      totalDueMinor: totalMinor,
+      extraDays,
+      dailyRateMinor: safeRate,
+    };
+  }
+
+  const basePriceMinor = Math.max(0, Math.floor(pkg.amount_due_minor || 0));
+  const demurrageMinor = currentAccruedDemurrageMinor;
+  const totalDueMinor = basePriceMinor + demurrageMinor;
+
+  return {
+    basePriceMinor,
+    demurrageMinor,
+    totalDueMinor,
+    extraDays,
+    dailyRateMinor: safeRate,
+  };
+}

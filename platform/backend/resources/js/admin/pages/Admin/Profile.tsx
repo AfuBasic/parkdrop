@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from '@inertiajs/react';
 import {
   UserCheck,
@@ -10,6 +10,7 @@ import {
   Mail,
   CheckCircle2
 } from 'lucide-react';
+import { LogoutConfirmModal } from '@/components/ui/LogoutConfirmModal';
 
 interface ProfileProps {
   admin: {
@@ -29,6 +30,8 @@ interface ProfileProps {
 }
 
 export default function Profile({ admin, system }: ProfileProps) {
+  const [showLogout, setShowLogout] = useState(false);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Page Header */}
@@ -135,16 +138,20 @@ export default function Profile({ admin, system }: ProfileProps) {
 
       {/* Logout Row */}
       <div className="flex justify-end pt-2">
-        <Link
-          href="/admin/logout"
-          method="post"
-          as="button"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#DC2626] text-white text-xs font-semibold hover:bg-[#B91C1C] transition-colors shadow-xs"
+        <button
+          type="button"
+          onClick={() => setShowLogout(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#DC2626] text-white text-xs font-semibold hover:bg-[#B91C1C] transition-colors shadow-xs cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out of Admin Console</span>
-        </Link>
+        </button>
       </div>
+
+      <LogoutConfirmModal
+        open={showLogout}
+        onOpenChange={setShowLogout}
+      />
     </div>
   );
 }

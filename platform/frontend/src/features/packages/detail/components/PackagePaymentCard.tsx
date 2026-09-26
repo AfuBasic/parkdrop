@@ -1,6 +1,7 @@
-import { CreditCard, Check, Minus, Clock } from 'lucide-react';
+import { CreditCard, Check, Minus, Clock, CalendarDays } from 'lucide-react';
 import type { LocalPayment } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
+import type { FeeBreakdown } from '@/features/payments/domain/storage-fee';
 import { PackagesStrings } from '@/features/packages/strings';
 import { formatNaira } from '@/features/packages/domain/package-filters';
 import { Section } from '@/design-system/shell/Section';
@@ -9,12 +10,14 @@ export interface PackagePaymentCardProps {
   paymentSummary: PaymentSummaryData;
   payments: LocalPayment[];
   packageStatus?: string;
+  feeBreakdown?: FeeBreakdown;
 }
 
 export function PackagePaymentCard({
   paymentSummary,
   payments,
   packageStatus,
+  feeBreakdown,
 }: PackagePaymentCardProps) {
   // Heading chip and label framing:
   // While package is Waiting and nothing paid yet, payment happens at collection point.
@@ -78,6 +81,35 @@ export function PackagePaymentCard({
             </span>
           </div>
         </div>
+
+        {/* Breakdown: Base Drop Fee vs Accrued Demurrage */}
+        {feeBreakdown && (
+          <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-[var(--pd-page)] border border-[var(--pd-line)] text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[var(--pd-muted)] font-bold">Base Drop Fee:</span>
+              <span className="font-extrabold text-[var(--pd-navy)] tabular-nums">
+                {formatNaira(feeBreakdown.basePriceMinor)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[var(--pd-muted)] font-bold">
+                Demurrage (Storage):
+              </span>
+              <span className={`font-extrabold tabular-nums ${feeBreakdown.demurrageMinor > 0 ? 'text-[#D97706]' : 'text-[var(--pd-navy)]'}`}>
+                {formatNaira(feeBreakdown.demurrageMinor)}
+              </span>
+            </div>
+            {feeBreakdown.extraDays > 0 ? (
+              <span className="text-[11px] text-[#D97706] font-semibold">
+                {feeBreakdown.extraDays} extra {feeBreakdown.extraDays === 1 ? 'day' : 'days'} held ({formatNaira(feeBreakdown.dailyRateMinor)}/day)
+              </span>
+            ) : (
+              <span className="text-[11px] text-[var(--pd-muted)]">
+                Day 1 included (no demurrage accrued)
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Payment History List */}
         {payments.length > 0 && (

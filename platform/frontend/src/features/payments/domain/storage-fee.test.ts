@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extraStorageDays, accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from './storage-fee';
+import { extraStorageDays, accruedAmountDueMinor, calculateFeeBreakdown, DEFAULT_DAILY_STORAGE_FEE_MINOR } from './storage-fee';
 import type { LocalPackage } from '@/offline/db/schema';
 
 function makePackage(overrides: Partial<LocalPackage> = {}): LocalPackage {
@@ -72,5 +72,17 @@ describe('storage-fee', () => {
 
   it('has a sane default matching the backend column default', () => {
     expect(DEFAULT_DAILY_STORAGE_FEE_MINOR).toBe(50_000);
+  });
+
+  it('separates base drop fee and demurrage accurately in calculateFeeBreakdown', () => {
+    const pkg = makePackage({ amount_due_minor: 100_000 });
+    const now = new Date('2026-09-22T08:00:00.000Z'); // 1 extra day = 50,000 demurrage
+
+    const breakdown = calculateFeeBreakdown(pkg, 50_000, now);
+    expect(breakdown.basePriceMinor).toBe(100_000);
+    expect(breakdown.demurrageMinor).toBe(50_000);
+    expect(breakdown.totalDueMinor).toBe(150_000);
+    expect(breakdown.extraDays).toBe(1);
+    expect(breakdown.dailyRateMinor).toBe(50_000);
   });
 });

@@ -102,7 +102,7 @@ export function PackageDetailScreen({
     );
   }
 
-  const { package: pkg, customer, media, mediaPreviewUrl, payments, paymentSummary, activityTimeline } = data;
+  const { package: pkg, customer, media, mediaPreviewUrl, payments, paymentSummary, feeBreakdown, activityTimeline } = data;
 
   // 1. Release with Payment Collection Handler
   const handleConfirmCollectAndRelease = async (pickupCode: string) => {
@@ -240,6 +240,7 @@ export function PackageDetailScreen({
           paymentSummary={paymentSummary}
           payments={payments}
           packageStatus={pkg.status}
+          feeBreakdown={feeBreakdown}
         />
 
         {/* Photo Card with Direct Camera Capture */}

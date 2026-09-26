@@ -29,7 +29,7 @@ Route::prefix('admin')->group(function () {
         Route::post('/login/verify', [AdminAuthController::class, 'verifyOtp'])->name('admin.login.verify.post')->middleware('throttle:10,15');
     });
 
-    Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+    Route::match(['get', 'post'], '/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
     // Protected
     Route::middleware('admin')->group(function () {

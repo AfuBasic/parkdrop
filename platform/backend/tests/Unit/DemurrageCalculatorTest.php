@@ -134,6 +134,30 @@ class DemurrageCalculatorTest extends TestCase
         ))->toBe(100_000); // still just the base
     }
 
+    public function test_calculate_breakdown_separates_base_and_demurrage(): void
+    {
+        $pkg = $this->makePackage('2026-09-20T13:00:00.000Z');
+        $now = Carbon::create(2026, 9, 23, 8, 0, 0); // 2 extra nights = 100,000 minor demurrage
+
+        $breakdownWaiting = DemurrageCalculator::calculateBreakdown(
+            100_000, 50_000, $pkg['created'], null, $now, 'WAITING'
+        );
+
+        expect($breakdownWaiting['basePriceMinor'])->toBe(100_000);
+        expect($breakdownWaiting['demurrageMinor'])->toBe(100_000);
+        expect($breakdownWaiting['totalDueMinor'])->toBe(200_000);
+        expect($breakdownWaiting['extraDays'])->toBe(2);
+
+        // When COLLECTED, amount_due_minor has been updated to 200,000
+        $breakdownCollected = DemurrageCalculator::calculateBreakdown(
+            200_000, 50_000, $pkg['created'], '2026-09-23T08:00:00.000Z', $now, 'COLLECTED'
+        );
+
+        expect($breakdownCollected['basePriceMinor'])->toBe(100_000);
+        expect($breakdownCollected['demurrageMinor'])->toBe(100_000);
+        expect($breakdownCollected['totalDueMinor'])->toBe(200_000);
+    }
+
     // --- Helpers ---
 
     private function makePackage(string $createdAt): array

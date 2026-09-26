@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Business;
 use App\Models\Package;
+use App\Services\Demurrage\DemurrageCalculator;
 use Illuminate\Http\Request;
 
 class AdminPackagesController extends Controller
@@ -55,6 +56,20 @@ class AdminPackagesController extends Controller
         return inertia('Admin/Packages/Index', [
             'packages' => $packages->through(function ($p) {
                 $firstPoint = $p->business?->pickupPoints?->first();
+                $dailyFee = (int) ($p->business?->daily_storage_fee_minor ?? 50000);
+                $terminalAt = $p->collected_at?->toISOString()
+                    ?? $p->returned_at?->toISOString()
+                    ?? $p->cancelled_at?->toISOString();
+
+                $breakdown = DemurrageCalculator::calculateBreakdown(
+                    amountDueMinor: (int) $p->amount_due_minor,
+                    dailyFeeMinor: $dailyFee,
+                    clientCreatedAt: $p->client_created_at ? $p->client_created_at->toISOString() : $p->created_at->toISOString(),
+                    terminalAt: $terminalAt,
+                    now: now(),
+                    status: $p->status
+                );
+
                 return [
                     'id' => $p->id,
                     'code' => $p->public_package_id,
@@ -68,7 +83,10 @@ class AdminPackagesController extends Controller
                         'name' => $p->business?->name ?? '—',
                         'park' => $firstPoint?->park_name ?? '—',
                     ],
-                    'amountMinor' => (int) $p->amount_due_minor,
+                    'amountMinor' => $breakdown['totalDueMinor'],
+                    'basePriceMinor' => $breakdown['basePriceMinor'],
+                    'demurrageMinor' => $breakdown['demurrageMinor'],
+                    'extraDays' => $breakdown['extraDays'],
                     'status' => $p->status,
                     'createdAt' => $p->created_at->toISOString(),
                     'collectedAt' => $p->collected_at?->toISOString(),
@@ -98,6 +116,19 @@ class AdminPackagesController extends Controller
         ])->findOrFail($id);
 
         $firstPoint = $package->business?->pickupPoints?->first();
+        $dailyFee = (int) ($package->business?->daily_storage_fee_minor ?? 50000);
+        $terminalAt = $package->collected_at?->toISOString()
+            ?? $package->returned_at?->toISOString()
+            ?? $package->cancelled_at?->toISOString();
+
+        $breakdown = DemurrageCalculator::calculateBreakdown(
+            amountDueMinor: (int) $package->amount_due_minor,
+            dailyFeeMinor: $dailyFee,
+            clientCreatedAt: $package->client_created_at ? $package->client_created_at->toISOString() : $package->created_at->toISOString(),
+            terminalAt: $terminalAt,
+            now: now(),
+            status: $package->status
+        );
 
         return inertia('Admin/Packages/Detail', [
             'package' => [
@@ -115,7 +146,11 @@ class AdminPackagesController extends Controller
                     'park' => $firstPoint?->park_name ?? '—',
                     'contactPhone' => $firstPoint?->contact_phone ?? '—',
                 ],
-                'amountDueMinor' => (int) $package->amount_due_minor,
+                'amountDueMinor' => $breakdown['totalDueMinor'],
+                'basePriceMinor' => $breakdown['basePriceMinor'],
+                'demurrageMinor' => $breakdown['demurrageMinor'],
+                'extraDays' => $breakdown['extraDays'],
+                'dailyRateMinor' => $breakdown['dailyRateMinor'],
                 'amountPaidMinor' => (int) $package->payments->where('status', 'COMPLETED')->sum('amount_minor'),
                 'createdAt' => $package->created_at->toISOString(),
                 'collectedAt' => $package->collected_at?->toISOString(),
