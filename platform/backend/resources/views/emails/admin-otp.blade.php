@@ -3,7 +3,7 @@
 
 Your login code is:
 
-**{{ $code }}**
+**{{ $code ?? '' }}**
 
 This code expires in 10 minutes. Do not share it with anyone.
 
