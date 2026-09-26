@@ -26,6 +26,8 @@ export interface PackageCardData {
   customerPhone?: string | null;
   paymentState: PaymentState;
   amountDueMinor: number;
+  basePriceMinor?: number;
+  demurrageMinor?: number;
   balanceMinor: number;
   ageDays: number;
   ageBand: AgeBand;

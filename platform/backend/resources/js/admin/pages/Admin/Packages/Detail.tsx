@@ -33,6 +33,10 @@ interface PackageDetailProps {
       contactPhone: string;
     };
     amountDueMinor: number;
+    basePriceMinor?: number;
+    demurrageMinor?: number;
+    extraDays?: number;
+    dailyRateMinor?: number;
     amountPaidMinor: number;
     createdAt: string;
     collectedAt?: string | null;
@@ -124,13 +128,50 @@ export default function PackageDetail({ package: p }: PackageDetailProps) {
           </div>
 
           <div>
-            <span className="text-xs text-[#64748B] block">Storage Fee Due</span>
+            <span className="text-xs text-[#64748B] block">Total Amount Due</span>
             <p className="text-base font-bold font-mono text-[#0F172A] mt-0.5">
               ₦{(p.amountDueMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
             </p>
-            <span className={`text-[11px] font-semibold ${isPaid ? 'text-[#10B981]' : 'text-[#D97706]'}`}>
+            <span className={`text-[11px] font-semibold ${isPaid ? 'text-[#10B981]' : isWaiting ? 'text-[#D97706]' : 'text-slate-600'}`}>
               {isPaid ? 'Fully settled' : isWaiting ? 'Awaiting collection payment' : 'Status closed'}
             </span>
+          </div>
+        </div>
+
+        {/* Price Breakdown Grid: Base Price vs Demurrage */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#F1F5F9]">
+          <div className="bg-[#F8FAFC] p-3 rounded-xl border border-[#E2E8F0]">
+            <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider block">
+              Base Drop Fee
+            </span>
+            <p className="text-sm font-bold font-mono text-[#0F172A] mt-0.5">
+              ₦{((p.basePriceMinor ?? p.amountDueMinor) / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+            </p>
+            <span className="text-[10px] text-[#64748B]">Initial parcel intake charge</span>
+          </div>
+
+          <div className="bg-[#F8FAFC] p-3 rounded-xl border border-[#E2E8F0]">
+            <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider block">
+              Demurrage (Storage Fee)
+            </span>
+            <p className={`text-sm font-bold font-mono mt-0.5 ${(p.demurrageMinor ?? 0) > 0 ? 'text-[#D97706]' : 'text-[#0F172A]'}`}>
+              ₦{((p.demurrageMinor ?? 0) / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+            </p>
+            <span className="text-[10px] text-[#64748B]">
+              {(p.extraDays ?? 0) > 0
+                ? `${p.extraDays} extra ${p.extraDays === 1 ? 'day' : 'days'} @ ₦${((p.dailyRateMinor ?? 50000) / 100).toFixed(0)}/day`
+                : 'Day 1 covered (no extra days)'}
+            </span>
+          </div>
+
+          <div className="bg-[#EFF6FF] p-3 rounded-xl border border-[#BFDBFE]">
+            <span className="text-[11px] font-semibold text-[#1D4ED8] uppercase tracking-wider block">
+              Total Payable
+            </span>
+            <p className="text-sm font-bold font-mono text-[#1D4ED8] mt-0.5">
+              ₦{(p.amountDueMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+            </p>
+            <span className="text-[10px] text-[#2563EB]">Base fee + Demurrage</span>
           </div>
         </div>
       </div>
@@ -144,9 +185,16 @@ export default function PackageDetail({ package: p }: PackageDetailProps) {
               Payment Ledger
             </h2>
           </div>
-          <span className="text-xs font-mono font-semibold text-[#64748B]">
-            Paid: ₦{(p.amountPaidMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })} / ₦{(p.amountDueMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
-          </span>
+          <div className="text-right">
+            <span className="text-xs font-mono font-semibold text-[#64748B] block">
+              Paid: ₦{(p.amountPaidMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })} / ₦{(p.amountDueMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+            </span>
+            {(p.demurrageMinor ?? 0) > 0 && (
+              <span className="text-[10px] text-[#D97706] font-medium block">
+                Includes ₦{((p.demurrageMinor ?? 0) / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })} demurrage
+              </span>
+            )}
+          </div>
         </div>
 
         {p.payments && p.payments.length > 0 ? (
@@ -167,10 +215,12 @@ export default function PackageDetail({ package: p }: PackageDetailProps) {
             ))}
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#64748B]">
-            {isWaiting
-              ? `Amount due: ₦${(p.amountDueMinor / 100).toFixed(2)}, not yet collected from recipient.`
-              : 'No separate payment transaction receipt logged.'}
+          <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#64748B] space-y-1">
+            <p>
+              {isWaiting
+                ? `Total due: ₦${(p.amountDueMinor / 100).toFixed(2)} (Base: ₦${(((p.basePriceMinor ?? p.amountDueMinor)) / 100).toFixed(2)}${(p.demurrageMinor ?? 0) > 0 ? ` + Demurrage: ₦${((p.demurrageMinor ?? 0) / 100).toFixed(2)}` : ''}), not yet collected from recipient.`
+                : 'No separate payment transaction receipt logged.'}
+            </p>
           </div>
         )}
       </div>

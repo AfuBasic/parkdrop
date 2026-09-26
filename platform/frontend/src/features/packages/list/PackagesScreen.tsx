@@ -28,7 +28,7 @@ import {
   sortPackages,
   isOverdue24h,
 } from '@/features/packages/domain/package-filters';
-import { accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
+import { accruedAmountDueMinor, calculateFeeBreakdown, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import { formatTime } from '@/lib/formatters';
 
 export interface PackagesScreenProps {
@@ -197,8 +197,8 @@ export function PackagesScreen({
     const cardItems: PackageCardData[] = allPackages.map((pkg) => {
       const customer = customerMap.get(pkg.customer_id);
       const pkgPayments = paymentsByPackageId.get(pkg.id) || [];
-      const effectiveAmountDueMinor = accruedAmountDueMinor(pkg, dailyStorageFeeMinor, now);
-      const paymentEval = evaluatePackagePayment(effectiveAmountDueMinor, pkgPayments);
+      const breakdown = calculateFeeBreakdown(pkg, dailyStorageFeeMinor, now);
+      const paymentEval = evaluatePackagePayment(breakdown.totalDueMinor, pkgPayments);
       const ageDays = calculateAgeDays(pkg.client_created_at, now);
 
       return {
@@ -206,7 +206,9 @@ export function PackagesScreen({
         customerName: customer?.name || null,
         customerPhone: customer?.phone_display || customer?.phone_normalized || null,
         paymentState: paymentEval.paymentState,
-        amountDueMinor: effectiveAmountDueMinor,
+        amountDueMinor: breakdown.totalDueMinor,
+        basePriceMinor: breakdown.basePriceMinor,
+        demurrageMinor: breakdown.demurrageMinor,
         balanceMinor: paymentEval.balanceMinor,
         ageDays,
         ageBand: getAgeBand(ageDays),

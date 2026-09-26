@@ -30,6 +30,9 @@ interface PackageItem {
     park: string;
   };
   amountMinor: number;
+  basePriceMinor?: number;
+  demurrageMinor?: number;
+  extraDays?: number;
   status: string;
   createdAt: string;
   collectedAt?: string | null;
@@ -272,10 +275,25 @@ export default function PackagesIndex({ packages, filters, pickupPoints }: Packa
                       <p className="text-xs text-[#94A3B8]">{p.pickupPoint.park}</p>
                     </TableCell>
 
-                    <TableCell className="text-right font-mono font-bold text-sm text-[#0F172A] tabular-nums">
-                      {p.amountMinor > 0
-                        ? `₦${(p.amountMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}`
-                        : '—'}
+                    <TableCell className="text-right font-mono text-sm tabular-nums">
+                      {p.amountMinor > 0 ? (
+                        <div>
+                          <span className="font-bold text-[#0F172A] block">
+                            ₦{(p.amountMinor / 100).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
+                          </span>
+                          {(p.demurrageMinor ?? 0) > 0 ? (
+                            <span className="text-[10px] text-[#D97706] font-medium block">
+                              Base: ₦{((p.basePriceMinor ?? (p.amountMinor - (p.demurrageMinor ?? 0))) / 100).toLocaleString('en-NG')} + Dem: ₦{((p.demurrageMinor ?? 0) / 100).toLocaleString('en-NG')}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-[#64748B] block">
+                              Base fee only
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[#94A3B8]">—</span>
+                      )}
                     </TableCell>
 
                     <TableCell>

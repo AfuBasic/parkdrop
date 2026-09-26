@@ -1,5 +1,6 @@
 import type { LocalPackage, LocalCustomer, LocalPackageMedia, LocalPayment } from '@/offline/db/schema';
 import type { PaymentSummaryData } from '@/features/payments/domain/payment-summary';
+import type { FeeBreakdown } from '@/features/payments/domain/storage-fee';
 
 export interface PackageDetailActivityItem {
   id: string;
@@ -32,5 +33,6 @@ export interface PackageDetailData {
   mediaPreviewUrl: string | null;
   payments: LocalPayment[];
   paymentSummary: PaymentSummaryData;
+  feeBreakdown: FeeBreakdown;
   activityTimeline: PackageDetailActivityItem[];
 }

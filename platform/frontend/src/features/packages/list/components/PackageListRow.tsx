@@ -24,7 +24,7 @@ export function PackageListRow({
   onSelect,
   showStatusBadge = false,
 }: PackageListRowProps) {
-  const { pkg, customerName, customerPhone, paymentState, amountDueMinor, balanceMinor, ageBand, ageDisplay } = data;
+  const { pkg, customerName, customerPhone, paymentState, amountDueMinor, balanceMinor, basePriceMinor, demurrageMinor, ageBand, ageDisplay } = data;
 
   const hasName = Boolean(customerName && customerName.trim().length > 0);
   const displayName = hasName ? customerName!.trim() : formatNationalDisplay(customerPhone || '');
@@ -128,6 +128,11 @@ export function PackageListRow({
             <span className="text-[18px] font-extrabold text-[var(--pd-navy)] tabular-nums">
               {formatNaira(displayAmountMinor)}
             </span>
+            {(demurrageMinor ?? 0) > 0 && (
+              <span className="text-[11px] font-bold text-[#D97706] tabular-nums">
+                +{formatNaira(demurrageMinor!)} storage
+              </span>
+            )}
             {renderPaymentChip()}
           </div>
         </div>

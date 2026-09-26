@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/offline/db/database';
 import { calculatePaymentSummary } from '@/features/payments/domain/payment-summary';
-import { accruedAmountDueMinor, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
+import { accruedAmountDueMinor, calculateFeeBreakdown, DEFAULT_DAILY_STORAGE_FEE_MINOR } from '@/features/payments/domain/storage-fee';
 import type { PackageDetailData, PackageDetailActivityItem } from '@/features/packages/detail/package-detail-types';
 
 export interface UsePackageDetailResult {
@@ -70,8 +70,10 @@ export function usePackageDetail(
           return b.id.localeCompare(a.id);
         });
 
+      const feeBreakdown = calculateFeeBreakdown(pkg, dailyStorageFeeMinor);
+
       const paymentSummary = calculatePaymentSummary(
-        accruedAmountDueMinor(pkg, dailyStorageFeeMinor),
+        feeBreakdown.totalDueMinor,
         payments
       );
 
@@ -206,6 +208,7 @@ export function usePackageDetail(
         mediaPreviewUrl,
         payments,
         paymentSummary,
+        feeBreakdown,
         activityTimeline: timeline,
       };
 

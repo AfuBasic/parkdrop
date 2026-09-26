@@ -18,6 +18,7 @@ import {
   Activity,
   ExternalLink
 } from 'lucide-react';
+import { LogoutConfirmModal } from '@/components/ui/LogoutConfirmModal';
 
 interface NavItem {
   href: string;
@@ -70,6 +71,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const props = page.props as any;
   const admin = props.auth?.admin;
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Derive breadcrumbs from URL intelligently
   const pathParts = currentUrl.split('?')[0].split('/').filter(Boolean);
@@ -207,15 +209,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <p className="text-[10px] text-[#64748B] truncate">Afutunde Staff</p>
             </div>
           </div>
-          <Link
-            href="/admin/logout"
-            method="post"
-            as="button"
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors w-full"
+          <button
+            type="button"
+            onClick={() => setShowLogoutModal(true)}
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors w-full cursor-pointer text-left"
           >
             <LogOut className="w-4 h-4 shrink-0" />
             <span>Sign Out</span>
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -320,6 +321,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <p className="text-[10px] text-[#64748B] mt-0.5">Afutunde Staff</p>
               </div>
             </Link>
+
+            {/* Quick Header Sign Out */}
+            <button
+              type="button"
+              onClick={() => setShowLogoutModal(true)}
+              title="Sign Out"
+              className="p-2 rounded-xl text-[#64748B] hover:text-[#EF4444] hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </header>
 
@@ -328,6 +339,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {children}
         </main>
       </div>
+
+      {/* Confirmation Modal */}
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onOpenChange={setShowLogoutModal}
+      />
     </div>
   );
 }

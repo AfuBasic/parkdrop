@@ -63,4 +63,40 @@ class DemurrageCalculator
 
         return $base + $extraDays * $rate;
     }
+
+    /**
+     * Breakdown between initial base fee and demurrage (accrued storage fee).
+     */
+    public static function calculateBreakdown(
+        int $amountDueMinor,
+        int $dailyFeeMinor,
+        string $clientCreatedAt,
+        ?string $terminalAt,
+        Carbon $now,
+        string $status = 'WAITING'
+    ): array {
+        $rate = max(0, (int) $dailyFeeMinor);
+        $extraDays = self::extraStorageDays($clientCreatedAt, $terminalAt, $now);
+        $currentAccruedDemurrageMinor = $extraDays * $rate;
+
+        // If collected, amount_due_minor has already incorporated demurrage
+        if ($status === 'COLLECTED') {
+            $totalMinor = max(0, (int) $amountDueMinor);
+            $demurrageMinor = min($totalMinor, $currentAccruedDemurrageMinor);
+            $basePriceMinor = max(0, $totalMinor - $demurrageMinor);
+        } else {
+            // While WAITING (or other non-collected status), amount_due_minor is the base price
+            $basePriceMinor = max(0, (int) $amountDueMinor);
+            $demurrageMinor = $currentAccruedDemurrageMinor;
+            $totalMinor = $basePriceMinor + $demurrageMinor;
+        }
+
+        return [
+            'basePriceMinor' => $basePriceMinor,
+            'demurrageMinor' => $demurrageMinor,
+            'totalDueMinor' => $totalMinor,
+            'extraDays' => $extraDays,
+            'dailyRateMinor' => $rate,
+        ];
+    }
 }
