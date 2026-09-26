@@ -34,14 +34,14 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
             }
 
             // 2. Secret query token / header bypass (e.g. /horizon?token=your_secret)
-            $configuredSecret = env('HORIZON_SECRET');
+            $configuredSecret = config('horizon.secret');
             if (!empty($configuredSecret) && ($request->query('token') === $configuredSecret || $request->header('X-Horizon-Secret') === $configuredSecret)) {
                 return true;
             }
 
             // 3. HTTP Basic Auth bypass (prompt in browser if configured in .env)
-            $basicUser = env('HORIZON_BASIC_AUTH_USER', 'admin');
-            $basicPass = env('HORIZON_BASIC_AUTH_PASSWORD');
+            $basicUser = config('horizon.basic_auth_user', 'admin');
+            $basicPass = config('horizon.basic_auth_password');
             if (!empty($basicPass)) {
                 if ($request->getUser() === $basicUser && $request->getPassword() === $basicPass) {
                     return true;
@@ -76,7 +76,7 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
         Gate::define('viewHorizon', function ($user = null) {
             $allowedEmails = array_filter(array_map(
                 'trim',
-                explode(',', (string) env('HORIZON_ALLOWED_EMAILS', env('ADMIN_EMAIL', 'afutunde@gmail.com')))
+                explode(',', (string) config('horizon.allowed_emails', 'afutunde@gmail.com'))
             ));
 
             $email = optional($user)->email;
