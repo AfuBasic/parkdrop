@@ -45,6 +45,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Horizon Access & Authentication Settings
+    |--------------------------------------------------------------------------
+    */
+    'secret' => env('HORIZON_SECRET'),
+    'basic_auth_user' => env('HORIZON_BASIC_AUTH_USER', 'admin'),
+    'basic_auth_password' => env('HORIZON_BASIC_AUTH_PASSWORD'),
+    'allowed_emails' => env('HORIZON_ALLOWED_EMAILS', env('ADMIN_EMAIL', 'afutunde@gmail.com')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Horizon Redis Connection
     |--------------------------------------------------------------------------
     |
