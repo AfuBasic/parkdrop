@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Jobs\SendAdminOtp;
-use App\Jobs\SendAdminOtp;
 use App\Models\AdminUser;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
